@@ -21,8 +21,8 @@ async function bootstrap() {
   app.use(cookieParser());
 
   const allowedOrigins = [
-    'http://localhost:3500',
-    'http://192.168.20.163:3500',
+    'http://localhost:4600',
+    'http://192.168.20.163:4600',
     'https://api-test.edl.com.la',
   ];
 
