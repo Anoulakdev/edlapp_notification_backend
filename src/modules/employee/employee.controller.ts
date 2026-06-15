@@ -11,7 +11,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService) {}
 
-  @Post()
+  @Post('sync')
   @Roles(1)
   create() {
     return this.employeeService.create();
