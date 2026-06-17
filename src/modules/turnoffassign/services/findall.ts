@@ -7,6 +7,11 @@ export async function FindAllTurnoffAssign(
 ) {
   const turnoffAssigns = await prisma.turnoffAssign.findMany({
     where: { userAppId: Number(userAppId) },
+    orderBy: {
+      turnoff: {
+        id: 'desc',
+      },
+    },
     include: {
       turnoff: true,
     },

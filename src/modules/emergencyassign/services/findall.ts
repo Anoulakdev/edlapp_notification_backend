@@ -7,6 +7,11 @@ export async function FindAllEmergencyAssign(
 ) {
   const emergencyAssigns = await prisma.emergencyAssign.findMany({
     where: { userAppId: Number(userAppId) },
+    orderBy: {
+      emergency: {
+        id: 'desc',
+      },
+    },
     include: {
       emergency: true,
     },
