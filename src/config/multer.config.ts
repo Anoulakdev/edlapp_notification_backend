@@ -5,7 +5,17 @@ import * as fs from 'fs';
 export const multerConfig = (destination?: string) => ({
   storage: diskStorage({
     destination: (req, file, callback) => {
-      const dir = `${process.env.UPLOAD_BASE_PATH}/${destination}`;
+      let dest = destination;
+      if (!dest) {
+        if (file.fieldname === 'commentAudio') {
+          dest = 'audio';
+        } else if (file.fieldname === 'commentImg') {
+          dest = 'comment';
+        } else {
+          dest = 'problem';
+        }
+      }
+      const dir = `${process.env.UPLOAD_BASE_PATH || ''}/${dest}`;
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }

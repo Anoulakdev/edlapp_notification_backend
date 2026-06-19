@@ -39,7 +39,9 @@ function chunkArray<T>(array: T[], size: number): T[][] {
   return result;
 }
 
-async function fetchEmployeesBatch(empCodeString: string): Promise<ApiEmployee[]> {
+async function fetchEmployeesBatch(
+  empCodeString: string,
+): Promise<ApiEmployee[]> {
   try {
     const response = await externalApi.get<ApiEmployeeResponse>(
       `/organization-svc/employee/get?search=${empCodeString}`,
@@ -47,7 +49,10 @@ async function fetchEmployeesBatch(empCodeString: string): Promise<ApiEmployee[]
 
     return response.data.data?.employees || [];
   } catch (err: unknown) {
-    console.error(`Failed to fetch employees batch for search string: ${empCodeString}`, err);
+    console.error(
+      `Failed to fetch employees batch for search string: ${empCodeString}`,
+      err,
+    );
     return [];
   }
 }

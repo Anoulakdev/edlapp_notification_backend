@@ -10,8 +10,8 @@ import { updateEmergencyAssign } from './services/update';
 export class EmergencyassignService {
   constructor(private prisma: PrismaService) {}
 
-  findAll(userAppId: number) {
-    return FindAllEmergencyAssign(this.prisma, userAppId);
+  findAll(userAppId: number, page?: number, limit?: number) {
+    return FindAllEmergencyAssign(this.prisma, userAppId, page, limit);
   }
 
   findOne(id: number) {

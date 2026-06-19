@@ -71,7 +71,10 @@ export async function sendFCM(tokens: string[], title: string, body: string) {
 
       results.push(response);
     } catch (error) {
-      console.error(`Error sending batch ${batchIdx} FCM notifications:`, error);
+      console.error(
+        `Error sending batch ${batchIdx} FCM notifications:`,
+        error,
+      );
     }
   }
 

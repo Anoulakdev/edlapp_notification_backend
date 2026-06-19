@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateTurnoffdocDto {
   @IsString()
@@ -35,14 +36,17 @@ export class CreateTurnoffdocDto {
   @IsOptional()
   turnoffFile?: string;
 
+  @Type(() => Number)
   @IsInt()
   @IsOptional()
   provinceId?: number;
 
+  @Type(() => Number)
   @IsInt()
   @IsOptional()
   districtId?: number;
 
+  @Type(() => Number)
   @IsArray()
   @IsInt({ each: true })
   @IsOptional()

@@ -94,9 +94,9 @@ export async function findAllUser(
 
   if (Object.keys(employeeWhere).length > 0) {
     where.employee = {
-      ...((where.employee as Prisma.EmployeeWhereInput) || {}),
+      ...(where.employee || {}),
       ...employeeWhere,
-    };
+    } as Prisma.EmployeeWhereInput;
   }
 
   const page = options.page ? Number(options.page) : undefined;

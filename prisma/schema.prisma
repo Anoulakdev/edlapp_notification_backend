@@ -9,23 +9,26 @@ datasource db {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  username      String         @unique
+  id            Int             @id @default(autoincrement())
+  username      String          @unique
   password      String
-  status        String         @default("A") @db.VarChar(50)
+  status        String          @default("A") @db.VarChar(50)
   employeeId    Int
-  employee      Employee       @relation(fields: [employeeId], references: [id])
+  employee      Employee        @relation(fields: [employeeId], references: [id])
   roleId        Int
-  role          Role           @relation(fields: [roleId], references: [id])
+  role          Role            @relation(fields: [roleId], references: [id])
   provinceId    Int?
-  province      Province?      @relation(fields: [provinceId], references: [id])
+  province      Province?       @relation(fields: [provinceId], references: [id])
   districtId    Int?
-  district      District?      @relation(fields: [districtId], references: [id])
-  createdAt     DateTime       @default(now()) @db.Timestamptz(0)
-  updatedAt     DateTime       @updatedAt @db.Timestamptz(0)
+  district      District?       @relation(fields: [districtId], references: [id])
+  createdAt     DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt     DateTime        @updatedAt @db.Timestamptz(0)
   fcmtokens     FcmToken[]
   turnoffDocs   TurnoffDoc[]
   emergencyDocs EmergencyDoc[]
+  problemtypes  ProblemType[]
+  userReceiver  ProblemAssign[] @relation("UserReceiver")
+  userActive    ProblemAssign[] @relation("UserActive")
 }
 
 model FcmToken {
@@ -153,6 +156,7 @@ model Province {
   users          User[]
   turnoffDocs    TurnoffDoc[]
   emergencyDocs  EmergencyDoc[]
+  problemDocs    ProblemDoc[]
 }
 
 model District {
@@ -165,6 +169,7 @@ model District {
   users         User[]
   turnoffDocs   TurnoffDoc[]
   emergencyDocs EmergencyDoc[]
+  problemDocs   ProblemDoc[]
 }
 
 model Village {
@@ -175,12 +180,7 @@ model Village {
   village_code       String?            @db.VarChar(50)
   turnoffAddresses   TurnoffAddress[]
   emergencyAddresses EmergencyAddress[]
-}
-
-model Source {
-  id          Int     @id @default(autoincrement())
-  name        String  @db.VarChar(255)
-  description String? @db.VarChar(255)
+  problemDocs        ProblemDoc[]
 }
 
 model TurnoffDoc {
@@ -282,4 +282,75 @@ model EmergencyAssign {
 
   @@index([emergencyId])
   @@index([userAppId])
+}
+
+model SourceType {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(255)
+  description String?      @db.VarChar(255)
+  problemdocs ProblemDoc[]
+}
+
+model ProblemType {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(255)
+  code        String?      @db.VarChar(255)
+  createdById Int
+  createdBy   User         @relation(fields: [createdById], references: [id])
+  createdAt   DateTime     @default(now()) @db.Timestamptz(0)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(0)
+  problemdocs ProblemDoc[]
+}
+
+model ProblemStatus {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(255)
+  problemdocs ProblemDoc[]
+}
+
+model ProblemDoc {
+  id              Int            @id @default(autoincrement())
+  problemtypeId   Int
+  problemtype     ProblemType    @relation(fields: [problemtypeId], references: [id])
+  fullName        String         @db.VarChar(255)
+  description     String?        @db.VarChar(255)
+  tel             String         @db.VarChar(255)
+  lat             Float
+  lng             Float
+  problemImg      String?        @db.VarChar(255)
+  provinceId      Int
+  province        Province       @relation(fields: [provinceId], references: [id])
+  districtId      Int
+  district        District       @relation(fields: [districtId], references: [id])
+  villageId       Int
+  village         Village        @relation(fields: [villageId], references: [id])
+  problemstatusId Int            @default(1)
+  problemstatus   ProblemStatus  @relation(fields: [problemstatusId], references: [id])
+  sourcetypeId    Int
+  sourcetype      SourceType     @relation(fields: [sourcetypeId], references: [id])
+  createdById     Int
+  createdAt       DateTime       @default(now()) @db.Timestamptz(0)
+  updatedAt       DateTime       @updatedAt @db.Timestamptz(0)
+  problemAssigns  ProblemAssign?
+
+  @@index([problemtypeId])
+  @@index([problemstatusId])
+  @@index([sourcetypeId])
+}
+
+model ProblemAssign {
+  id             Int        @id @default(autoincrement())
+  problemId      Int        @unique
+  problem        ProblemDoc @relation(fields: [problemId], references: [id])
+  userReceiverId Int?
+  userReceiver   User?      @relation("UserReceiver", fields: [userReceiverId], references: [id])
+  userActiveId   Int?
+  userActive     User?      @relation("UserActive", fields: [userActiveId], references: [id])
+  commentText    String?    @db.VarChar(255)
+  commentAudio   String?    @db.VarChar(255)
+  commentImg     String?    @db.VarChar(255)
+  createdAt      DateTime   @default(now()) @db.Timestamptz(0)
+  updatedAt      DateTime   @updatedAt @db.Timestamptz(0)
+
+  @@index([problemId])
 }

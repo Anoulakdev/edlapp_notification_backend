@@ -21,8 +21,12 @@ export class TurnoffassignController {
 
   @Get()
   @Roles(6)
-  findAll(@Query('userAppId') userAppId: number) {
-    return this.turnoffassignService.findAll(userAppId);
+  findAll(
+    @Query('userAppId') userAppId: number,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.turnoffassignService.findAll(userAppId, page, limit);
   }
 
   @Get(':id')

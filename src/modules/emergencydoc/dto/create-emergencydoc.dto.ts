@@ -2,10 +2,11 @@ import {
   IsArray,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
-  IsNumber,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateEmergencydocDto {
   @IsString()
@@ -28,9 +29,13 @@ export class CreateEmergencydocDto {
   @IsString()
   endTime: string;
 
+  @Type(() => Number)
+  @IsNumber()
   @IsOptional()
   lat?: number;
 
+  @Type(() => Number)
+  @IsNumber()
   @IsOptional()
   lng?: number;
 
@@ -38,14 +43,17 @@ export class CreateEmergencydocDto {
   @IsOptional()
   emergencyImg?: string;
 
+  @Type(() => Number)
   @IsInt()
   @IsOptional()
   provinceId?: number;
 
+  @Type(() => Number)
   @IsInt()
   @IsOptional()
   districtId?: number;
 
+  @Type(() => Number)
   @IsArray()
   @IsInt({ each: true })
   @IsOptional()

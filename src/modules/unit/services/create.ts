@@ -92,8 +92,12 @@ export async function createUnit(
       if (isNew) created++;
       else updated++;
 
-      const divisionId = d.divisionId !== null && divisionIds.has(d.divisionId) ? d.divisionId : null;
-      const officeId = d.officeId !== null && officeIds.has(d.officeId) ? d.officeId : null;
+      const divisionId =
+        d.divisionId !== null && divisionIds.has(d.divisionId)
+          ? d.divisionId
+          : null;
+      const officeId =
+        d.officeId !== null && officeIds.has(d.officeId) ? d.officeId : null;
 
       await prisma.unit.upsert({
         where: { id: d.id },

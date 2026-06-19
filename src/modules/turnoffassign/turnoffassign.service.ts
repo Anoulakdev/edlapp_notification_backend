@@ -10,8 +10,8 @@ import { updateTurnoffAssign } from './services/update';
 export class TurnoffassignService {
   constructor(private prisma: PrismaService) {}
 
-  findAll(userAppId: number) {
-    return FindAllTurnoffAssign(this.prisma, userAppId);
+  findAll(userAppId: number, page?: number, limit?: number) {
+    return FindAllTurnoffAssign(this.prisma, userAppId, page, limit);
   }
 
   findOne(id: number) {

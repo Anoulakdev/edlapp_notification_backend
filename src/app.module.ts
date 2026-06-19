@@ -22,6 +22,10 @@ import { TurnoffdocModule } from './modules/turnoffdoc/turnoffdoc.module';
 import { TurnoffassignModule } from './modules/turnoffassign/turnoffassign.module';
 import { EmergencydocModule } from './modules/emergencydoc/emergencydoc.module';
 import { EmergencyassignModule } from './modules/emergencyassign/emergencyassign.module';
+import { SourcetypeModule } from './modules/sourcetype/sourcetype.module';
+import { ProblemstatusModule } from './modules/problemstatus/problemstatus.module';
+import { ProblemtypeModule } from './modules/problemtype/problemtype.module';
+import { ProblemdocModule } from './modules/problemdoc/problemdoc.module';
 
 @Module({
   imports: [
@@ -46,6 +50,10 @@ import { EmergencyassignModule } from './modules/emergencyassign/emergencyassign
     TurnoffassignModule,
     EmergencydocModule,
     EmergencyassignModule,
+    SourcetypeModule,
+    ProblemstatusModule,
+    ProblemtypeModule,
+    ProblemdocModule,
   ],
   controllers: [AppController],
   providers: [AppService],
