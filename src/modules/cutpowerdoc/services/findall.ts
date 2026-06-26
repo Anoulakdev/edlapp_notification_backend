@@ -3,48 +3,56 @@ import { AuthUser } from '../../../interfaces/auth-user.interface';
 import { Prisma } from '../../../../generated/prisma/client';
 import moment from 'moment-timezone';
 
-export class FindAllEmergencyDocOptions {
+export class FindAllCutpowerDocOptions {
   page?: number;
   limit?: number;
   search?: string;
-  emergencyDate?: string;
+  cutpowerDate?: string;
   provinceId?: number;
   districtId?: number;
   filterMyDocs?: boolean;
 }
 
-export async function FindAllEmergencyDoc(
+export async function FindAllCutpowerDoc(
   prisma: PrismaService,
   user: AuthUser,
-  options: FindAllEmergencyDocOptions = {},
+  options: FindAllCutpowerDocOptions = {},
 ) {
-  const where: Prisma.EmergencyDocWhereInput = {};
+  const where: Prisma.CutpowerDocWhereInput = {};
 
-  if (options.filterMyDocs) {
-    where.createdById = user.id;
-  }
-
-  if (options.emergencyDate) {
-    where.emergencyDate = {
-      gte: moment.tz(options.emergencyDate, 'Asia/Vientiane').startOf('day').toDate(),
-      lte: moment.tz(options.emergencyDate, 'Asia/Vientiane').endOf('day').toDate(),
+  if (options.cutpowerDate) {
+    where.cutpowerDate = {
+      gte: moment.tz(options.cutpowerDate, 'Asia/Vientiane').startOf('day').toDate(),
+      lte: moment.tz(options.cutpowerDate, 'Asia/Vientiane').endOf('day').toDate(),
     };
   }
 
-  if (user.roleId === 4) {
-    where.provinceId = user.provinceId ? Number(user.provinceId) : undefined;
-    if (options.districtId) {
-      where.districtId = Number(options.districtId);
-    }
-  } else if (user.roleId === 5) {
-    where.provinceId = user.provinceId ? Number(user.provinceId) : undefined;
-    where.districtId = user.districtId ? Number(user.districtId) : undefined;
+  if (options.filterMyDocs) {
+    where.createdById = user.id;
   } else {
-    if (options.provinceId) {
-      where.provinceId = Number(options.provinceId);
-    }
-    if (options.districtId) {
-      where.districtId = Number(options.districtId);
+    if (user.roleId === 4) {
+      const provinceFilter: Prisma.CutpowerDocWhereInput = {
+        provinceId: user.provinceId ? Number(user.provinceId) : undefined,
+      };
+      if (options.districtId) {
+        provinceFilter.districtId = Number(options.districtId);
+      }
+      where.OR = [{ createdById: user.id }, provinceFilter];
+    } else if (user.roleId === 5) {
+      where.OR = [
+        { createdById: user.id },
+        {
+          provinceId: user.provinceId ? Number(user.provinceId) : undefined,
+          districtId: user.districtId ? Number(user.districtId) : undefined,
+        },
+      ];
+    } else {
+      if (options.provinceId) {
+        where.provinceId = Number(options.provinceId);
+      }
+      if (options.districtId) {
+        where.districtId = Number(options.districtId);
+      }
     }
   }
 
@@ -79,7 +87,7 @@ export async function FindAllEmergencyDoc(
     },
     province: true,
     district: true,
-    emergencyAddresses: {
+    cutpowerAddresses: {
       select: {
         village: {
           select: {
@@ -96,7 +104,7 @@ export async function FindAllEmergencyDoc(
     const take = limit;
 
     const [data, total] = await Promise.all([
-      prisma.emergencyDoc.findMany({
+      prisma.cutpowerDoc.findMany({
         where,
         orderBy: {
           id: 'desc',
@@ -105,19 +113,19 @@ export async function FindAllEmergencyDoc(
         skip,
         take,
       }),
-      prisma.emergencyDoc.count({ where }),
+      prisma.cutpowerDoc.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
 
-    const mappedData = data.map((emergencyDoc) => {
+    const mappedData = data.map((cutpower) => {
       return {
-        ...emergencyDoc,
-        emergencyDate: moment(emergencyDoc.emergencyDate)
+        ...cutpower,
+        cutpowerDate: moment(cutpower.cutpowerDate)
           .tz('Asia/Vientiane')
           .format('YYYY-MM-DD'),
-        createdAt: moment(emergencyDoc.createdAt).tz('Asia/Vientiane').format(),
-        updatedAt: moment(emergencyDoc.updatedAt).tz('Asia/Vientiane').format(),
+        createdAt: moment(cutpower.createdAt).tz('Asia/Vientiane').format(),
+        updatedAt: moment(cutpower.updatedAt).tz('Asia/Vientiane').format(),
       };
     });
 
@@ -130,7 +138,7 @@ export async function FindAllEmergencyDoc(
     };
   }
 
-  const emergencies = await prisma.emergencyDoc.findMany({
+  const cutpowerDocs = await prisma.cutpowerDoc.findMany({
     where,
     orderBy: {
       id: 'desc',
@@ -138,14 +146,14 @@ export async function FindAllEmergencyDoc(
     include,
   });
 
-  return emergencies.map((emergencyDoc) => {
+  return cutpowerDocs.map((cutpowerDoc) => {
     return {
-      ...emergencyDoc,
-      emergencyDate: moment(emergencyDoc.emergencyDate)
+      ...cutpowerDoc,
+      cutpowerDate: moment(cutpowerDoc.cutpowerDate)
         .tz('Asia/Vientiane')
         .format('YYYY-MM-DD'),
-      createdAt: moment(emergencyDoc.createdAt).tz('Asia/Vientiane').format(),
-      updatedAt: moment(emergencyDoc.updatedAt).tz('Asia/Vientiane').format(),
+      createdAt: moment(cutpowerDoc.createdAt).tz('Asia/Vientiane').format(),
+      updatedAt: moment(cutpowerDoc.updatedAt).tz('Asia/Vientiane').format(),
     };
   });
 }

@@ -32,6 +32,11 @@ export class SourcetypeController {
     return this.sourcetypeService.findAll();
   }
 
+  @Get('selectsource')
+  selectSource() {
+    return this.sourcetypeService.selectSource();
+  }
+
   @Get(':id')
   @Roles(1)
   findOne(@Param('id') id: string) {

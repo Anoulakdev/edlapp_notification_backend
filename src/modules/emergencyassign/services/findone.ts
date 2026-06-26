@@ -19,9 +19,9 @@ export async function findOneEmergencyAssign(
     updatedAt: moment(emergencyAssign.updatedAt).tz('Asia/Vientiane').format(),
     emergency: {
       ...emergencyAssign.emergency,
-      emergencyDate: moment(emergencyAssign.emergency.emergencyDate).format(
-        'YYYY-MM-DD',
-      ),
+      emergencyDate: moment(emergencyAssign.emergency.emergencyDate)
+        .tz('Asia/Vientiane')
+        .format('YYYY-MM-DD'),
     },
   };
 }

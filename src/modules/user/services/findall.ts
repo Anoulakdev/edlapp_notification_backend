@@ -38,6 +38,7 @@ export async function findAllUser(
       where.roleId = { in: allowedRoles };
     }
   } else if (user.roleId === 4) {
+    where.provinceId = user.provinceId;
     const allowedRoles = [4, 5];
     if (options.roleId !== undefined && options.roleId !== null) {
       const targetRoleId = Number(options.roleId);

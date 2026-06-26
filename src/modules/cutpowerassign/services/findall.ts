@@ -1,7 +1,7 @@
 import { PrismaService } from '../../../prisma/prisma.service';
 import moment from 'moment-timezone';
 
-export async function FindAllEmergencyAssign(
+export async function FindAllCutpowerAssign(
   prisma: PrismaService,
   userAppId: number,
   page?: number,
@@ -14,36 +14,36 @@ export async function FindAllEmergencyAssign(
     const take = limit;
 
     const [data, total] = await Promise.all([
-      prisma.emergencyAssign.findMany({
+      prisma.cutpowerAssign.findMany({
         where,
         orderBy: {
-          emergency: {
+          cutpower: {
             id: 'desc',
           },
         },
         include: {
-          emergency: true,
+          cutpower: true,
         },
         skip,
         take,
       }),
-      prisma.emergencyAssign.count({ where }),
+      prisma.cutpowerAssign.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
 
-    const mappedData = data.map((emergencyAssign) => {
+    const mappedData = data.map((cutpowerAssign) => {
       return {
-        ...emergencyAssign,
-        createdAt: moment(emergencyAssign.createdAt)
+        ...cutpowerAssign,
+        createdAt: moment(cutpowerAssign.createdAt)
           .tz('Asia/Vientiane')
           .format(),
-        updatedAt: moment(emergencyAssign.updatedAt)
+        updatedAt: moment(cutpowerAssign.updatedAt)
           .tz('Asia/Vientiane')
           .format(),
-        emergency: {
-          ...emergencyAssign.emergency,
-          emergencyDate: moment(emergencyAssign.emergency.emergencyDate)
+        cutpower: {
+          ...cutpowerAssign.cutpower,
+          cutpowerDate: moment(cutpowerAssign.cutpower.cutpowerDate)
             .tz('Asia/Vientiane')
             .format('YYYY-MM-DD'),
         },
@@ -59,30 +59,26 @@ export async function FindAllEmergencyAssign(
     };
   }
 
-  const emergencyAssigns = await prisma.emergencyAssign.findMany({
+  const cutpowerAssigns = await prisma.cutpowerAssign.findMany({
     where,
     orderBy: {
-      emergency: {
+      cutpower: {
         id: 'desc',
       },
     },
     include: {
-      emergency: true,
+      cutpower: true,
     },
   });
 
-  return emergencyAssigns.map((emergencyAssign) => {
+  return cutpowerAssigns.map((cutpowerAssign) => {
     return {
-      ...emergencyAssign,
-      createdAt: moment(emergencyAssign.createdAt)
-        .tz('Asia/Vientiane')
-        .format(),
-      updatedAt: moment(emergencyAssign.updatedAt)
-        .tz('Asia/Vientiane')
-        .format(),
-      emergency: {
-        ...emergencyAssign.emergency,
-        emergencyDate: moment(emergencyAssign.emergency.emergencyDate)
+      ...cutpowerAssign,
+      createdAt: moment(cutpowerAssign.createdAt).tz('Asia/Vientiane').format(),
+      updatedAt: moment(cutpowerAssign.updatedAt).tz('Asia/Vientiane').format(),
+      cutpower: {
+        ...cutpowerAssign.cutpower,
+        cutpowerDate: moment(cutpowerAssign.cutpower.cutpowerDate)
           .tz('Asia/Vientiane')
           .format('YYYY-MM-DD'),
       },

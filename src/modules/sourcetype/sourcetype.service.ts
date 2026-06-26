@@ -7,6 +7,7 @@ import { findAllSourceType } from './services/findall';
 import { findOneSourceType } from './services/findone';
 import { updateSourceType } from './services/update';
 import { removeSourceType } from './services/remove';
+import { selectSource } from './services/selectSource';
 
 @Injectable()
 export class SourcetypeService {
@@ -18,6 +19,10 @@ export class SourcetypeService {
 
   findAll() {
     return findAllSourceType(this.prisma);
+  }
+
+  selectSource() {
+    return selectSource(this.prisma);
   }
 
   findOne(id: number) {

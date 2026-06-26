@@ -2,8 +2,8 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { NotFoundException } from '@nestjs/common';
 import moment from 'moment-timezone';
 
-export async function findOneEmergencyDoc(prisma: PrismaService, id: number) {
-  const emergencyDoc = await prisma.emergencyDoc.findUnique({
+export async function findOneCutpowerDoc(prisma: PrismaService, id: number) {
+  const cutpower = await prisma.cutpowerDoc.findUnique({
     where: { id },
     include: {
       createdBy: {
@@ -22,22 +22,22 @@ export async function findOneEmergencyDoc(prisma: PrismaService, id: number) {
       },
       province: true,
       district: true,
-      emergencyAddresses: {
+      cutpowerAddresses: {
         select: {
           id: true,
           village: true,
         },
       },
-      emergencyAssigns: true,
+      cutpowerAssigns: true,
     },
   });
-  if (!emergencyDoc) throw new NotFoundException('emergencyDoc not found');
+  if (!cutpower) throw new NotFoundException('cutpower not found');
   return {
-    ...emergencyDoc,
-    emergencyDate: moment(emergencyDoc.emergencyDate)
+    ...cutpower,
+    cutpowerDate: moment(cutpower.cutpowerDate)
       .tz('Asia/Vientiane')
       .format('YYYY-MM-DD'),
-    createdAt: moment(emergencyDoc.createdAt).tz('Asia/Vientiane').format(),
-    updatedAt: moment(emergencyDoc.updatedAt).tz('Asia/Vientiane').format(),
+    createdAt: moment(cutpower.createdAt).tz('Asia/Vientiane').format(),
+    updatedAt: moment(cutpower.updatedAt).tz('Asia/Vientiane').format(),
   };
 }

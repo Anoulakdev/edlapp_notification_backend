@@ -1,5 +1,5 @@
 import { PrismaService } from '../../../prisma/prisma.service';
-import { UpdateEmergencydocDto } from '../dto/update-emergencydoc.dto';
+import { UpdateCutpowerdocDto } from '../dto/update-cutpowerdoc.dto';
 import axios from 'axios';
 import { sendFCM } from '../../../fcm/fcm.service';
 import moment from 'moment';
@@ -7,9 +7,9 @@ import moment from 'moment';
 export async function updateAddress(
   prisma: PrismaService,
   id: number,
-  updateEmergencydocDto: UpdateEmergencydocDto,
+  updateCutpowerdocDto: UpdateCutpowerdocDto,
 ) {
-  const { provinceId, districtId, villageId } = updateEmergencydocDto;
+  const { provinceId, districtId, villageId } = updateCutpowerdocDto;
 
   if (!id) {
     throw new Error('id is required');
@@ -55,7 +55,7 @@ export async function updateAddress(
       });
 
       assignData = Array.from(uniqueUserIds).map((userId) => ({
-        emergencyId: Number(id),
+        cutpowerId: Number(id),
         userAppId: userId,
         docview: false,
       }));
@@ -69,22 +69,22 @@ export async function updateAddress(
 
   // Run database update in a transaction
   const result = await prisma.$transaction(async (tx) => {
-    // ✅ check emergencydoc
-    const emergencydoc = await tx.emergencyDoc.findUnique({
+    // ✅ check turnoffdoc
+    const cutpowerdoc = await tx.cutpowerDoc.findUnique({
       where: { id: Number(id) },
     });
 
-    if (!emergencydoc) {
-      throw new Error('emergencydoc not found');
+    if (!cutpowerdoc) {
+      throw new Error('cutpowerdoc not found');
     }
 
     // ✅ delete ของเก่า
-    await tx.emergencyAddress.deleteMany({
-      where: { emergencyId: Number(id) },
+    await tx.cutpowerAddress.deleteMany({
+      where: { cutpowerId: Number(id) },
     });
 
-    await tx.emergencyAssign.deleteMany({
-      where: { emergencyId: Number(id) },
+    await tx.cutpowerAssign.deleteMany({
+      where: { cutpowerId: Number(id) },
     });
 
     let data: any[] = [];
@@ -92,27 +92,27 @@ export async function updateAddress(
     // ✅ กรณี village
     if (villageId?.length) {
       data = villageId.map((villId: number) => ({
-        emergencyId: Number(id),
+        cutpowerId: Number(id),
         villageId: Number(villId),
       }));
     }
 
     // ✅ insert ใหม่
-    await tx.emergencyAddress.createMany({
+    await tx.cutpowerAddress.createMany({
       data,
       skipDuplicates: true,
     });
 
     // ✅ insert assign ของผู้ใช้ในหมู่บ้านนั้นๆ
     if (assignData.length) {
-      await tx.emergencyAssign.createMany({
+      await tx.cutpowerAssign.createMany({
         data: assignData,
         skipDuplicates: true,
       });
     }
 
-    // ✅ อัปเดต provinceId และ districtId ใน emergencydoc
-    await tx.emergencyDoc.update({
+    // ✅ อัปเดต provinceId และ districtId ใน turnoffDoc
+    await tx.cutpowerDoc.update({
       where: { id: Number(id) },
       data: {
         provinceId: Number(provinceId),
@@ -123,22 +123,17 @@ export async function updateAddress(
     return {
       message: 'Update address success',
       count: data.length,
-      title: emergencydoc.title,
-      emergencyDate: emergencydoc.emergencyDate || '',
-      startTime: emergencydoc.startTime || '',
-      endTime: emergencydoc.endTime || '',
+      title: cutpowerdoc.title,
+      cutpowerDate: cutpowerdoc.cutpowerDate,
     };
   });
 
   // ✅ Send FCM notifications in the background (WITHOUT await to optimize API response time/performance)
   if (fcmTokens.length) {
-    const timeStr = result.startTime && result.endTime
-      ? ` ເວລາ: ${result.startTime} - ${result.endTime} ໂມງ`
-      : '';
     sendFCM(
       fcmTokens,
       result.title,
-      `ວັນທີ: ${moment(result.emergencyDate).format('DD/MM/YYYY')}${timeStr}`,
+      `ວັນທີ: ${moment(result.cutpowerDate).format('DD/MM/YYYY')}`,
     ).catch((fcmError) => {
       console.error(
         'Failed to send FCM notifications in background:',

@@ -21,10 +21,6 @@ export async function FindAllTurnoffDoc(
 ) {
   const where: Prisma.TurnoffDocWhereInput = {};
 
-  if (options.filterMyDocs) {
-    where.createdById = user.id;
-  }
-
   if (options.startDate) {
     where.startDate = {
       gte: moment(options.startDate).startOf('day').toDate(),
@@ -37,20 +33,32 @@ export async function FindAllTurnoffDoc(
     };
   }
 
-  if (user.roleId === 4) {
-    where.provinceId = user.provinceId ? Number(user.provinceId) : undefined;
-    if (options.districtId) {
-      where.districtId = Number(options.districtId);
-    }
-  } else if (user.roleId === 5) {
-    where.provinceId = user.provinceId ? Number(user.provinceId) : undefined;
-    where.districtId = user.districtId ? Number(user.districtId) : undefined;
+  if (options.filterMyDocs) {
+    where.createdById = user.id;
   } else {
-    if (options.provinceId) {
-      where.provinceId = Number(options.provinceId);
-    }
-    if (options.districtId) {
-      where.districtId = Number(options.districtId);
+    if (user.roleId === 4) {
+      const provinceFilter: Prisma.TurnoffDocWhereInput = {
+        provinceId: user.provinceId ? Number(user.provinceId) : undefined,
+      };
+      if (options.districtId) {
+        provinceFilter.districtId = Number(options.districtId);
+      }
+      where.OR = [{ createdById: user.id }, provinceFilter];
+    } else if (user.roleId === 5) {
+      where.OR = [
+        { createdById: user.id },
+        {
+          provinceId: user.provinceId ? Number(user.provinceId) : undefined,
+          districtId: user.districtId ? Number(user.districtId) : undefined,
+        },
+      ];
+    } else {
+      if (options.provinceId) {
+        where.provinceId = Number(options.provinceId);
+      }
+      if (options.districtId) {
+        where.districtId = Number(options.districtId);
+      }
     }
   }
 
@@ -58,6 +66,7 @@ export async function FindAllTurnoffDoc(
     const searchLower = options.search.trim();
     if (searchLower) {
       where.OR = [
+        { id: Number(searchLower) },
         { title: { contains: searchLower, mode: 'insensitive' } },
         { description: { contains: searchLower, mode: 'insensitive' } },
       ];

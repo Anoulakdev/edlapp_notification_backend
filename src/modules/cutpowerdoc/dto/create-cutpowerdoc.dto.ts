@@ -2,13 +2,12 @@ import {
   IsArray,
   IsInt,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class CreateEmergencydocDto {
+export class CreateCutpowerdocDto {
   @IsString()
   @IsNotEmpty()
   title: string;
@@ -19,29 +18,11 @@ export class CreateEmergencydocDto {
 
   @IsNotEmpty()
   @IsString()
-  emergencyDate: string;
+  cutpowerDate: string;
 
   @IsString()
   @IsOptional()
-  startTime?: string;
-
-  @IsString()
-  @IsOptional()
-  endTime?: string;
-
-  @Type(() => Number)
-  @IsNumber()
-  @IsOptional()
-  lat?: number;
-
-  @Type(() => Number)
-  @IsNumber()
-  @IsOptional()
-  lng?: number;
-
-  @IsString()
-  @IsOptional()
-  emergencyImg?: string;
+  cutpowerFile?: string;
 
   @Type(() => Number)
   @IsInt()

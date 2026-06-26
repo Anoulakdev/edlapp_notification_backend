@@ -23,9 +23,9 @@ import { TurnoffassignModule } from './modules/turnoffassign/turnoffassign.modul
 import { EmergencydocModule } from './modules/emergencydoc/emergencydoc.module';
 import { EmergencyassignModule } from './modules/emergencyassign/emergencyassign.module';
 import { SourcetypeModule } from './modules/sourcetype/sourcetype.module';
-import { ProblemstatusModule } from './modules/problemstatus/problemstatus.module';
-import { ProblemtypeModule } from './modules/problemtype/problemtype.module';
-import { ProblemdocModule } from './modules/problemdoc/problemdoc.module';
+import { CutpowerdocModule } from './modules/cutpowerdoc/cutpowerdoc.module';
+import { MeterstatusModule } from './modules/meterstatus/meterstatus.module';
+import { CutpowerassignModule } from './modules/cutpowerassign/cutpowerassign.module';
 
 @Module({
   imports: [
@@ -50,10 +50,10 @@ import { ProblemdocModule } from './modules/problemdoc/problemdoc.module';
     TurnoffassignModule,
     EmergencydocModule,
     EmergencyassignModule,
+    CutpowerdocModule,
+    CutpowerassignModule,
     SourcetypeModule,
-    ProblemstatusModule,
-    ProblemtypeModule,
-    ProblemdocModule,
+    MeterstatusModule,
   ],
   controllers: [AppController],
   providers: [AppService],
