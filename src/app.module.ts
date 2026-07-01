@@ -26,6 +26,9 @@ import { SourcetypeModule } from './modules/sourcetype/sourcetype.module';
 import { CutpowerdocModule } from './modules/cutpowerdoc/cutpowerdoc.module';
 import { MeterstatusModule } from './modules/meterstatus/meterstatus.module';
 import { CutpowerassignModule } from './modules/cutpowerassign/cutpowerassign.module';
+import { RegistermeterModule } from './modules/registermeter/registermeter.module';
+import { TopicModule } from './modules/topic/topic.module';
+import { ConversationModule } from './modules/conversation/conversation.module';
 
 @Module({
   imports: [
@@ -54,6 +57,9 @@ import { CutpowerassignModule } from './modules/cutpowerassign/cutpowerassign.mo
     CutpowerassignModule,
     SourcetypeModule,
     MeterstatusModule,
+    RegistermeterModule,
+    TopicModule,
+    ConversationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

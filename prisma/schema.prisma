@@ -13,6 +13,7 @@ model ExternalUser {
   name          String?        @db.VarChar(255)
   tel           String?        @db.VarChar(255)
   conversations Conversation[]
+  messages      Message[]
 }
 
 model User {
@@ -37,6 +38,7 @@ model User {
   topics        Topic[]
   userCalls     UserAcceptMeter[] @relation("userCall")
   userProvinces UserAcceptMeter[] @relation("userProvince")
+  messages      Message[]
 }
 
 model FcmToken {
@@ -405,20 +407,22 @@ model Topic {
 }
 
 model Conversation {
-  id             Int          @id @default(autoincrement())
-  externalUserId Int
-  externalUser   ExternalUser @relation(fields: [externalUserId], references: [id])
-  topicId        Int
-  topic          Topic        @relation(fields: [topicId], references: [id])
-  status         String       @default("open")
-  lastMessage    String?
-  lastMessageAt  DateTime?
-  unreadCount    Int          @default(0)
-  createdAt      DateTime     @default(now()) @db.Timestamptz(0)
-  updatedAt      DateTime     @updatedAt @db.Timestamptz(0)
-  messages       Message[]
+  id                  Int          @id @default(autoincrement())
+  externalUserId      Int
+  externalUser        ExternalUser @relation(fields: [externalUserId], references: [id])
+  topicId             Int
+  topic               Topic        @relation(fields: [topicId], references: [id])
+  lastMessage         String?      @db.Text
+  lastMessageAt       DateTime?    @db.Timestamptz(0)
+  unreadExternalCount Int          @default(0)
+  unreadAgentCount    Int          @default(0)
+  createdAt           DateTime     @default(now()) @db.Timestamptz(0)
+  updatedAt           DateTime     @updatedAt @db.Timestamptz(0)
+  messages            Message[]
 
+  @@unique([externalUserId, topicId])
   @@index([externalUserId])
+  @@index([topicId])
 }
 
 enum SenderType {
@@ -432,15 +436,30 @@ enum MessageStatus {
   seen
 }
 
+enum MessageType {
+  text
+  image
+  audio
+  location
+}
+
 model Message {
   id             Int           @id @default(autoincrement())
   conversationId Int
   conversation   Conversation  @relation(fields: [conversationId], references: [id])
   senderType     SenderType
-  senderId       Int
-  content        String        @db.Text
+  edlappId       Int? // mobile app
+  edlappUser     ExternalUser? @relation(fields: [edlappId], references: [id])
+  agentId        Int? // call center
+  agentUser      User?         @relation(fields: [agentId], references: [id])
+  mType          MessageType   @default(text)
+  content        String?       @db.Text
+  fileImg        String?       @db.VarChar(255)
+  fileAudio      String?       @db.VarChar(255)
+  lat            Float?
+  lng            Float?
   status         MessageStatus @default(sent)
-  seenAt         DateTime?
+  seenAt         DateTime?     @db.Timestamptz(0)
   createdAt      DateTime      @default(now()) @db.Timestamptz(0)
   updatedAt      DateTime      @updatedAt @db.Timestamptz(0)
 

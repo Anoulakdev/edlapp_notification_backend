@@ -7,6 +7,7 @@ import { findAllMeterstatus } from './services/findall';
 import { findOneMeterstatus } from './services/findone';
 import { updateMeterstatus } from './services/update';
 import { removeMeterstatus } from './services/remove';
+import { selectStatus } from './services/selectStatus';
 
 @Injectable()
 export class MeterstatusService {
@@ -18,6 +19,10 @@ export class MeterstatusService {
 
   findAll() {
     return findAllMeterstatus(this.prisma);
+  }
+
+  selectStatus() {
+    return selectStatus(this.prisma);
   }
 
   findOne(id: number) {

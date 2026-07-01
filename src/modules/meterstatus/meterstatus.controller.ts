@@ -32,6 +32,11 @@ export class MeterstatusController {
     return this.meterstatusService.findAll();
   }
 
+  @Get('selectstatus')
+  selectStatus() {
+    return this.meterstatusService.selectStatus();
+  }
+
   @Get(':id')
   @Roles(1)
   findOne(@Param('id') id: string) {

@@ -4,6 +4,9 @@ CREATE TYPE "SenderType" AS ENUM ('edlapp', 'callcenter');
 -- CreateEnum
 CREATE TYPE "MessageStatus" AS ENUM ('sent', 'delivered', 'seen');
 
+-- CreateEnum
+CREATE TYPE "MessageType" AS ENUM ('text', 'image', 'audio', 'location');
+
 -- CreateTable
 CREATE TABLE "ExternalUser" (
     "id" INTEGER NOT NULL,
@@ -371,10 +374,10 @@ CREATE TABLE "Conversation" (
     "id" SERIAL NOT NULL,
     "externalUserId" INTEGER NOT NULL,
     "topicId" INTEGER NOT NULL,
-    "status" TEXT NOT NULL DEFAULT 'open',
     "lastMessage" TEXT,
-    "lastMessageAt" TIMESTAMP(3),
-    "unreadCount" INTEGER NOT NULL DEFAULT 0,
+    "lastMessageAt" TIMESTAMPTZ(0),
+    "unreadExternalCount" INTEGER NOT NULL DEFAULT 0,
+    "unreadAgentCount" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(0) NOT NULL,
 
@@ -386,10 +389,16 @@ CREATE TABLE "Message" (
     "id" SERIAL NOT NULL,
     "conversationId" INTEGER NOT NULL,
     "senderType" "SenderType" NOT NULL,
-    "senderId" INTEGER NOT NULL,
-    "content" TEXT NOT NULL,
+    "edlappId" INTEGER,
+    "agentId" INTEGER,
+    "mType" "MessageType" NOT NULL DEFAULT 'text',
+    "content" TEXT,
+    "fileImg" VARCHAR(255),
+    "fileAudio" VARCHAR(255),
+    "lat" DOUBLE PRECISION,
+    "lng" DOUBLE PRECISION,
     "status" "MessageStatus" NOT NULL DEFAULT 'sent',
-    "seenAt" TIMESTAMP(3),
+    "seenAt" TIMESTAMPTZ(0),
     "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(0) NOT NULL,
 
@@ -473,6 +482,9 @@ CREATE UNIQUE INDEX "UserAcceptMeter_meterId_key" ON "UserAcceptMeter"("meterId"
 
 -- CreateIndex
 CREATE INDEX "Conversation_externalUserId_idx" ON "Conversation"("externalUserId");
+
+-- CreateIndex
+CREATE INDEX "Conversation_topicId_idx" ON "Conversation"("topicId");
 
 -- CreateIndex
 CREATE INDEX "Message_conversationId_createdAt_idx" ON "Message"("conversationId", "createdAt");
@@ -620,3 +632,9 @@ ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_topicId_fkey" FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE "Message" ADD CONSTRAINT "Message_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_edlappId_fkey" FOREIGN KEY ("edlappId") REFERENCES "ExternalUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
