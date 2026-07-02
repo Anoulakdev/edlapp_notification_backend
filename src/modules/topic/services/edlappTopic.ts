@@ -1,6 +1,6 @@
 import { PrismaService } from '../../../prisma/prisma.service';
 
-export async function selectTopic(prisma: PrismaService) {
+export async function edlappTopic(prisma: PrismaService, userAppId: number) {
   const topics = await prisma.topic.findMany({
     where: {
       actived: true,
@@ -12,8 +12,11 @@ export async function selectTopic(prisma: PrismaService) {
       id: true,
       name: true,
       conversations: {
+        where: {
+          externalUserId: Number(userAppId),
+        },
         select: {
-          unreadAgentCount: true,
+          unreadExternalCount: true,
         },
       },
     },
@@ -21,7 +24,7 @@ export async function selectTopic(prisma: PrismaService) {
 
   return topics.map((t) => {
     const unreadCount = t.conversations.reduce(
-      (sum, c) => sum + (c.unreadAgentCount || 0),
+      (sum, c) => sum + (c.unreadExternalCount || 0),
       0,
     );
     return {

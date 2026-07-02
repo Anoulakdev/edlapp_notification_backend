@@ -39,14 +39,4 @@ export class CreateConversationDto {
   @IsNumber()
   @IsOptional()
   lng?: number;
-
-  @Type(() => Number)
-  @IsInt()
-  @IsOptional()
-  edlappId?: number;
-
-  @Type(() => Number)
-  @IsInt()
-  @IsOptional()
-  agentId?: number;
 }

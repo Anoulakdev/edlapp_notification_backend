@@ -36,8 +36,15 @@ export class TopicController {
   }
 
   @Get('selecttopic')
+  @Roles(2, 3)
   selectTopic() {
     return this.topicService.selectTopic();
+  }
+
+  @Get('edlapptopic')
+  @Roles(6)
+  edlappTopic(@Query('userAppId') userAppId: number) {
+    return this.topicService.edlappTopic(userAppId);
   }
 
   @Get(':id')

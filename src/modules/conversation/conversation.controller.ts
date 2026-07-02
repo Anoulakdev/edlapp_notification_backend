@@ -8,7 +8,6 @@ import {
   Delete,
   Req,
   UseInterceptors,
-  UploadedFile,
   UploadedFiles,
   UseGuards,
   Query,
@@ -17,10 +16,7 @@ import { ConversationService } from './conversation.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { UpdateConversationDto } from './dto/update-conversation.dto';
 import type { UserRequest } from '../../interfaces/user-request.interface';
-import {
-  FileInterceptor,
-  FileFieldsInterceptor,
-} from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../../config/multer.config';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -59,6 +55,26 @@ export class ConversationController {
     return this.conversationService.edlAppCreate(createConversationDto);
   }
 
+  @Post('callcreate')
+  @Roles(2, 3)
+  callCreate(
+    @Req() req: UserRequest,
+    @UploadedFiles()
+    files: {
+      fileImg?: Express.Multer.File[];
+      fileAudio?: Express.Multer.File[];
+    },
+    @Body() createConversationDto: CreateConversationDto,
+  ) {
+    if (files?.fileImg?.[0]) {
+      createConversationDto.fileImg = files.fileImg[0].filename;
+    }
+    if (files?.fileAudio?.[0]) {
+      createConversationDto.fileAudio = files.fileAudio[0].filename;
+    }
+    return this.conversationService.callCreate(req.user, createConversationDto);
+  }
+
   @Get('edlappget')
   @Roles(6)
   edlAppGet(
@@ -75,21 +91,38 @@ export class ConversationController {
     );
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.conversationService.findOne(+id);
-  // }
+  @Get('callget')
+  @Roles(2, 3)
+  callGet(
+    @Query('externalUserId') externalUserId: number,
+    @Query('topicId') topicId: number,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.conversationService.callGet(
+      externalUserId,
+      topicId,
+      page,
+      limit,
+    );
+  }
 
-  // @Put(':id')
-  // update(
-  //   @Param('id') id: string,
-  //   @Body() updateConversationDto: UpdateConversationDto,
-  // ) {
-  //   return this.conversationService.update(+id, updateConversationDto);
-  // }
+  @Put(':id')
+  updateMessage(
+    @Param('id') id: string,
+    @Body() updateConversationDto: UpdateConversationDto,
+  ) {
+    return this.conversationService.updateMessage(+id, updateConversationDto);
+  }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.conversationService.remove(+id);
-  // }
+  @Get('topic/:topicId')
+  @Roles(2, 3)
+  listByTopic(@Param('topicId') topicId: string) {
+    return this.conversationService.listByTopic(+topicId);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.conversationService.remove(+id);
+  }
 }

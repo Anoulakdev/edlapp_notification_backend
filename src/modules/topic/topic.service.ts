@@ -10,6 +10,7 @@ import { updateTopic } from './services/update';
 import { removeTopic } from './services/remove';
 import { selectTopic } from './services/selectTopic';
 import { updateStatus } from './services/updateStatus';
+import { edlappTopic } from './services/edlappTopic';
 
 @Injectable()
 export class TopicService {
@@ -25,6 +26,10 @@ export class TopicService {
 
   selectTopic() {
     return selectTopic(this.prisma);
+  }
+
+  edlappTopic(userAppId: number) {
+    return edlappTopic(this.prisma, userAppId);
   }
 
   findOne(id: number) {
