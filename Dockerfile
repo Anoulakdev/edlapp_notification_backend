@@ -7,8 +7,8 @@ RUN npm install -g pnpm
 # Set working directory
 WORKDIR /app
 
-# --- Build Stage ---
-FROM base AS builder
+# --- Dependencies Stage ---
+FROM base AS dependencies
 
 # Copy package configuration
 COPY package.json ./
@@ -24,6 +24,13 @@ COPY prisma.config.ts ./
 
 # Generate Prisma client
 RUN pnpm prisma generate
+
+# --- Migration Stage ---
+FROM dependencies AS migrator
+# This stage has all devDependencies and is targeted by docker-compose for migrations
+
+# --- Build Stage ---
+FROM dependencies AS builder
 
 # Copy tsconfig and source files
 COPY tsconfig.json tsconfig.build.json nest-cli.json ./
