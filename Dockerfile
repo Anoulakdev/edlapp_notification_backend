@@ -1,22 +1,17 @@
 # Base image
 FROM node:20-alpine AS base
 
-# Install pnpm
-RUN npm install -g pnpm
-
 # Set working directory
 WORKDIR /app
 
 # --- Dependencies Stage ---
 FROM base AS dependencies
 
-# Copy package configuration
-COPY package.json ./
-# Copy pnpm-lock.yaml if it exists (using wildcard to prevent error if it doesn't exist)
-COPY pnpm-lock.yam[l] ./
+# Copy package configuration and lockfile
+COPY package.json package-lock.json ./
 
 # Install dependencies (including devDependencies for building)
-RUN pnpm install
+RUN npm ci
 
 # Copy TSConfig and Nest configuration files so Prisma generate can detect module resolution settings
 COPY tsconfig.json tsconfig.build.json nest-cli.json ./
@@ -26,7 +21,7 @@ COPY prisma ./prisma/
 COPY prisma.config.ts ./
 
 # Generate Prisma client
-RUN pnpm prisma generate
+RUN npx prisma generate
 
 # --- Migration Stage ---
 FROM dependencies AS migrator
@@ -39,10 +34,10 @@ FROM dependencies AS builder
 COPY src ./src/
 
 # Build NestJS application
-RUN pnpm run build
+RUN npm run build
 
 # Remove development dependencies to keep output small
-RUN pnpm prune --prod
+RUN npm prune --production
 
 # --- Production Stage ---
 FROM base AS runner
@@ -64,4 +59,4 @@ ENV NODE_ENV=production
 ENV PORT=4500
 
 # Start command
-CMD ["pnpm", "run", "start:prod"]
+CMD ["npm", "run", "start:prod"]
