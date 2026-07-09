@@ -11,7 +11,7 @@ FROM base AS dependencies
 COPY package.json package-lock.json ./
 
 # Install dependencies (including devDependencies for building)
-RUN npm ci
+RUN npm install
 
 # Copy TSConfig and Nest configuration files so Prisma generate can detect module resolution settings
 COPY tsconfig.json tsconfig.build.json nest-cli.json ./
