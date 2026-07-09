@@ -18,6 +18,9 @@ COPY pnpm-lock.yam[l] ./
 # Install dependencies (including devDependencies for building)
 RUN pnpm install
 
+# Copy TSConfig and Nest configuration files so Prisma generate can detect module resolution settings
+COPY tsconfig.json tsconfig.build.json nest-cli.json ./
+
 # Copy Prisma schema and config
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
@@ -32,8 +35,7 @@ FROM dependencies AS migrator
 # --- Build Stage ---
 FROM dependencies AS builder
 
-# Copy tsconfig and source files
-COPY tsconfig.json tsconfig.build.json nest-cli.json ./
+# Copy source files
 COPY src ./src/
 
 # Build NestJS application
