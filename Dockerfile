@@ -18,8 +18,9 @@ COPY pnpm-lock.yam[l] ./
 # Install dependencies (including devDependencies for building)
 RUN pnpm install
 
-# Copy Prisma schema
+# Copy Prisma schema and config
 COPY prisma ./prisma/
+COPY prisma.config.ts ./
 
 # Generate Prisma client
 RUN pnpm prisma generate
@@ -44,6 +45,7 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
 # Expose port (as configured in src/main.ts, defaulting to 4500)
 EXPOSE 4500
