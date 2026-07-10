@@ -24,6 +24,7 @@ async function bootstrap() {
     'http://localhost:4600',
     'http://192.168.20.233:4600',
     'https://notification.edl.com.la',
+    'https://notification-api.edl.com.la',
   ];
 
   app.enableCors({
