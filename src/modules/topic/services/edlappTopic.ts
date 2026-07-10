@@ -11,6 +11,7 @@ export async function edlappTopic(prisma: PrismaService, userAppId: number) {
     select: {
       id: true,
       name: true,
+      description: true,
       conversations: {
         where: {
           externalUserId: Number(userAppId),
@@ -30,6 +31,7 @@ export async function edlappTopic(prisma: PrismaService, userAppId: number) {
     return {
       id: t.id,
       name: t.name,
+      description: t.description,
       unreadCount,
     };
   });

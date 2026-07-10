@@ -400,6 +400,7 @@ model UserAcceptMeter {
 model Topic {
   id            Int            @id @default(autoincrement())
   name          String         @db.VarChar(255)
+  description   String?        @db.Text
   actived       Boolean        @default(true)
   createdById   Int
   createdBy     User           @relation(fields: [createdById], references: [id])
