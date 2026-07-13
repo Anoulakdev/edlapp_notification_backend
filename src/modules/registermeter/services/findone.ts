@@ -58,6 +58,11 @@ export async function findOneRegisterMeter(prisma: PrismaService, id: number) {
     try {
       const response = await axios.get(
         `${process.env.EDLAPP_URL_API}/getUserById/${registermeter.createdById}`,
+        {
+          headers: {
+            'x-api-key': process.env.API_KEY,
+          },
+        },
       );
       createdName = response.data?.data?.username || '';
       createdTel = response.data?.data?.phone_no || '';

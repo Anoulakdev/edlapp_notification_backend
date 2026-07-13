@@ -39,6 +39,11 @@ export async function edlAppCreate(
     try {
       const response = await axios.get(
         `${process.env.EDLAPP_URL_API}/getUserById/${externalUserId}`,
+        {
+          headers: {
+            'x-api-key': process.env.API_KEY,
+          },
+        },
       );
       if (response.data?.data) {
         name = response.data.data.username || '';

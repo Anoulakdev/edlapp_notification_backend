@@ -32,16 +32,38 @@ export class ConversationService {
     return conversation;
   }
 
-  edlAppGet(
+  async edlAppGet(
     externalUserId: number,
     topicId: number,
     page?: number,
     limit?: number,
   ) {
-    return edlAppGet(this.prisma, Number(externalUserId), Number(topicId), {
+    const messages = await edlAppGet(this.prisma, Number(externalUserId), Number(topicId), {
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
     });
+
+    try {
+      const conversation = await this.prisma.conversation.findUnique({
+        where: {
+          externalUserId_topicId: {
+            externalUserId: Number(externalUserId),
+            topicId: Number(topicId),
+          },
+        },
+      });
+      if (conversation) {
+        this.conversationGateway.emitMessagesSeen(
+          conversation.id,
+          conversation.topicId,
+          'edlapp',
+        );
+      }
+    } catch (e) {
+      console.error('Failed to emit messagesSeen inside edlAppGet:', e);
+    }
+
+    return messages;
   }
 
   async callGet(
@@ -56,6 +78,22 @@ export class ConversationService {
     });
 
     try {
+      const conversation = await this.prisma.conversation.findUnique({
+        where: {
+          externalUserId_topicId: {
+            externalUserId: Number(externalUserId),
+            topicId: Number(topicId),
+          },
+        },
+      });
+      if (conversation) {
+        this.conversationGateway.emitMessagesSeen(
+          conversation.id,
+          conversation.topicId,
+          'callcenter',
+        );
+      }
+
       const conversations = await this.prisma.conversation.findMany({
         where: { topicId: Number(topicId) },
         select: { unreadAgentCount: true },
@@ -63,7 +101,7 @@ export class ConversationService {
       const unreadCount = conversations.reduce((sum, c) => sum + (c.unreadAgentCount || 0), 0);
       this.conversationGateway.emitTopicUnreadCountUpdate(Number(topicId), unreadCount);
     } catch (e) {
-      console.error('Failed to emit topic unread count inside callGet:', e);
+      console.error('Failed to emit messagesSeen or topic unread count inside callGet:', e);
     }
 
     return messages;

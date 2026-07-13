@@ -82,4 +82,14 @@ export class ConversationGateway
     this.server.emit('topicUnreadCountUpdate', { topicId, unreadCount });
     console.log(`Emitted topicUnreadCountUpdate to topic_${topicId} globally: ${unreadCount}`);
   }
+
+  // Helper method to emit message seen status
+  emitMessagesSeen(conversationId: number, topicId: number, senderType: 'edlapp' | 'callcenter') {
+    const convRoom = `conversation_${conversationId}`;
+    const topicRoom = `topic_${topicId}`;
+    const payload = { conversationId, topicId, senderType };
+    this.server.to(convRoom).emit('messagesSeen', payload);
+    this.server.to(topicRoom).emit('messagesSeen', payload);
+    console.log(`Emitted messagesSeen to rooms ${convRoom} and ${topicRoom}: ${JSON.stringify(payload)}`);
+  }
 }

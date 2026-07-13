@@ -39,6 +39,11 @@ export async function callCreate(
     try {
       const response = await axios.get(
         `${process.env.EDLAPP_URL_API}/getUserById/${externalUserId}`,
+        {
+          headers: {
+            'x-api-key': process.env.API_KEY,
+          },
+        },
       );
 
       const apiUserData = response.data?.data;
@@ -170,6 +175,9 @@ export async function callCreate(
       fcmTokens,
       `ທ່ານມີຂໍ້ຄວາມຈາກ ສູນບໍລິການລູກຄ້າ EDL`,
       `ຫົວຂໍ້ "${topicName}"`,
+      {
+        topicId: String(topicId),
+      },
     ).catch((fcmError) => {
       console.error(
         'Failed to send FCM notifications in background:',

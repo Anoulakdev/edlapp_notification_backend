@@ -17,7 +17,12 @@ export function initFirebase() {
 // ===============================
 // 🔥 send FCM
 // ===============================
-export async function sendFCM(tokens: string[], title: string, body: string) {
+export async function sendFCM(
+  tokens: string[],
+  title: string,
+  body: string,
+  data?: Record<string, string>,
+) {
   if (!tokens.length) return;
 
   initFirebase();
@@ -38,6 +43,7 @@ export async function sendFCM(tokens: string[], title: string, body: string) {
           title,
           body,
         },
+        data: data || undefined,
         apns: {
           headers: {
             'apns-priority': '10',

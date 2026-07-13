@@ -30,6 +30,9 @@ export async function updateAddress(
           params: {
             village_id: villageId.join(','),
           },
+          headers: {
+            'x-api-key': process.env.API_KEY,
+          },
         },
       );
 
@@ -144,6 +147,9 @@ export async function updateAddress(
       fcmTokens,
       result.title,
       `ວັນທີ: ${dateText} ເວລາ: ${result.startTime} - ${result.endTime} ໂມງ`,
+      {
+        turnoffId: String(id),
+      },
     ).catch((fcmError) => {
       console.error(
         'Failed to send FCM notifications in background:',
