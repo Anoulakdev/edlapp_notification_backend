@@ -14,6 +14,7 @@ import {
   Query,
   Sse,
   MessageEvent,
+  Header,
 } from '@nestjs/common';
 import { TurnoffdocService } from './turnoffdoc.service';
 import { CreateTurnoffdocDto } from './dto/create-turnoffdoc.dto';
@@ -54,6 +55,8 @@ export class TurnoffdocController {
     );
   }
 
+  @Header('X-Accel-Buffering', 'no')
+  @Header('Cache-Control', 'no-cache, no-transform')
   @Sse('sse')
   @Roles(2, 3, 4, 5)
   sse(): Observable<MessageEvent> {

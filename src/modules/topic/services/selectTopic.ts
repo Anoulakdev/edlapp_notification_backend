@@ -11,6 +11,7 @@ export async function selectTopic(prisma: PrismaService) {
     select: {
       id: true,
       name: true,
+      description: true,
       conversations: {
         select: {
           unreadAgentCount: true,
@@ -27,6 +28,7 @@ export async function selectTopic(prisma: PrismaService) {
     return {
       id: t.id,
       name: t.name,
+      description: t.description,
       unreadCount,
     };
   });

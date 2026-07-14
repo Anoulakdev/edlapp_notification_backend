@@ -6,6 +6,7 @@ import { createDistrict } from './services/create';
 import { findAllDistrict } from './services/findall';
 import { findOneDistrict } from './services/findone';
 import { selectDistrict } from './services/selectDistrict';
+import { AuthUser } from '../../interfaces/auth-user.interface';
 
 @Injectable()
 export class DistrictService {
@@ -19,8 +20,8 @@ export class DistrictService {
     return findAllDistrict(this.prisma);
   }
 
-  selectDistrict(provinceCode?: string) {
-    return selectDistrict(this.prisma, provinceCode);
+  selectDistrict(provinceCode?: string, user?: AuthUser) {
+    return selectDistrict(this.prisma, provinceCode, user);
   }
 
   findOne(id: number) {

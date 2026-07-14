@@ -19,10 +19,7 @@ export async function FindAllEmergencyDoc(
   options: FindAllEmergencyDocOptions = {},
 ) {
   const where: Prisma.EmergencyDocWhereInput = {};
-
-  if (options.filterMyDocs) {
-    where.createdById = user.id;
-  }
+  const andFilters: Prisma.EmergencyDocWhereInput[] = [];
 
   if (options.emergencyDate) {
     where.emergencyDate = {
@@ -31,32 +28,80 @@ export async function FindAllEmergencyDoc(
     };
   }
 
-  if (user.roleId === 4) {
-    where.provinceId = user.provinceId ? Number(user.provinceId) : undefined;
-    if (options.districtId) {
-      where.districtId = Number(options.districtId);
-    }
-  } else if (user.roleId === 5) {
-    where.provinceId = user.provinceId ? Number(user.provinceId) : undefined;
-    where.districtId = user.districtId ? Number(user.districtId) : undefined;
+  if (options.filterMyDocs) {
+    where.createdById = user.id;
   } else {
-    if (options.provinceId) {
-      where.provinceId = Number(options.provinceId);
-    }
-    if (options.districtId) {
-      where.districtId = Number(options.districtId);
+    if (user.roleId === 4) {
+      const provinceFilter: Prisma.EmergencyDocWhereInput = {
+        provinceId: user.provinceId ? Number(user.provinceId) : undefined,
+      };
+      if (user.provinceId === 1 && user.employee?.divisionId === 185) {
+        if (options.districtId) {
+          const targetDistrictId = Number(options.districtId);
+          if ([1, 2, 3, 4].includes(targetDistrictId)) {
+            provinceFilter.districtId = targetDistrictId;
+          } else {
+            provinceFilter.districtId = { in: [] };
+          }
+        } else {
+          provinceFilter.districtId = { in: [1, 2, 3, 4] };
+        }
+      } else if (user.provinceId === 1 && user.employee?.divisionId === 188) {
+        if (options.districtId) {
+          const targetDistrictId = Number(options.districtId);
+          if ([5, 6, 7, 8, 9].includes(targetDistrictId)) {
+            provinceFilter.districtId = targetDistrictId;
+          } else {
+            provinceFilter.districtId = { in: [] };
+          }
+        } else {
+          provinceFilter.districtId = { in: [5, 6, 7, 8, 9] };
+        }
+      } else {
+        if (options.districtId) {
+          provinceFilter.districtId = Number(options.districtId);
+        }
+      }
+      andFilters.push({
+        OR: [{ createdById: user.id }, provinceFilter],
+      });
+    } else if (user.roleId === 5) {
+      andFilters.push({
+        OR: [
+          { createdById: user.id },
+          {
+            provinceId: user.provinceId ? Number(user.provinceId) : undefined,
+            districtId: user.districtId ? Number(user.districtId) : undefined,
+          },
+        ],
+      });
+    } else {
+      if (options.provinceId) {
+        where.provinceId = Number(options.provinceId);
+      }
+      if (options.districtId) {
+        where.districtId = Number(options.districtId);
+      }
     }
   }
 
   if (options.search) {
     const searchLower = options.search.trim();
     if (searchLower) {
-      where.OR = [
-        { id: Number(searchLower) },
+      const searchOr: Prisma.EmergencyDocWhereInput[] = [
         { title: { contains: searchLower, mode: 'insensitive' } },
         { description: { contains: searchLower, mode: 'insensitive' } },
       ];
+      const searchNum = Number(searchLower);
+      if (!isNaN(searchNum)) {
+        searchOr.push({ id: searchNum });
+      }
+      andFilters.push({ OR: searchOr });
     }
+  }
+
+  if (andFilters.length > 0) {
+    where.AND = andFilters;
   }
 
   const page = options.page ? Number(options.page) : undefined;

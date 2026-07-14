@@ -19,6 +19,7 @@ export async function findAllUser(
   options: FindAllUserOptions = {},
 ) {
   const where: Prisma.UserWhereInput = {};
+  const andFilters: Prisma.UserWhereInput[] = [];
 
   // Apply role-based visibility restrictions
   if (user.roleId === 1) {
@@ -39,6 +40,29 @@ export async function findAllUser(
     }
   } else if (user.roleId === 4) {
     where.provinceId = user.provinceId;
+    if (user.provinceId === 1) {
+      if (user.employee?.divisionId === 185) {
+        andFilters.push({
+          OR: [
+            { districtId: { in: [1, 2, 3, 4] } },
+            {
+              roleId: 4,
+              employee: { divisionId: 185 },
+            },
+          ],
+        });
+      } else if (user.employee?.divisionId === 188) {
+        andFilters.push({
+          OR: [
+            { districtId: { in: [5, 6, 7, 8, 9] } },
+            {
+              roleId: 4,
+              employee: { divisionId: 188 },
+            },
+          ],
+        });
+      }
+    }
     const allowedRoles = [4, 5];
     if (options.roleId !== undefined && options.roleId !== null) {
       const targetRoleId = Number(options.roleId);
@@ -76,21 +100,27 @@ export async function findAllUser(
   if (options.search) {
     const searchLower = options.search.trim();
     if (searchLower) {
-      where.OR = [
-        { username: { contains: searchLower, mode: 'insensitive' } },
-        {
-          employee: {
-            OR: [
-              { first_name: { contains: searchLower, mode: 'insensitive' } },
-              { last_name: { contains: searchLower, mode: 'insensitive' } },
-              { emp_code: { contains: searchLower, mode: 'insensitive' } },
-              { tel: { contains: searchLower, mode: 'insensitive' } },
-              { email: { contains: searchLower, mode: 'insensitive' } },
-            ],
+      andFilters.push({
+        OR: [
+          { username: { contains: searchLower, mode: 'insensitive' } },
+          {
+            employee: {
+              OR: [
+                { first_name: { contains: searchLower, mode: 'insensitive' } },
+                { last_name: { contains: searchLower, mode: 'insensitive' } },
+                { emp_code: { contains: searchLower, mode: 'insensitive' } },
+                { tel: { contains: searchLower, mode: 'insensitive' } },
+                { email: { contains: searchLower, mode: 'insensitive' } },
+              ],
+            },
           },
-        },
-      ];
+        ],
+      });
     }
+  }
+
+  if (andFilters.length > 0) {
+    where.AND = andFilters;
   }
 
   if (Object.keys(employeeWhere).length > 0) {

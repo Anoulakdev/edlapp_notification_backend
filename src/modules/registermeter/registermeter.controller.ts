@@ -14,6 +14,7 @@ import {
   Query,
   Sse,
   MessageEvent,
+  Header,
 } from '@nestjs/common';
 import { RegistermeterService } from './registermeter.service';
 import { CreateRegistermeterDto } from './dto/create-registermeter.dto';
@@ -74,6 +75,8 @@ export class RegistermeterController {
     return this.registermeterService.createForward(req.user, createForwardDto);
   }
 
+  @Header('X-Accel-Buffering', 'no')
+  @Header('Cache-Control', 'no-cache, no-transform')
   @Sse('sse')
   @Roles(2, 3, 4, 5)
   sse(): Observable<MessageEvent> {

@@ -14,6 +14,7 @@ import {
   Query,
   Sse,
   MessageEvent,
+  Header,
 } from '@nestjs/common';
 import { EmergencydocService } from './emergencydoc.service';
 import { CreateEmergencydocDto } from './dto/create-emergencydoc.dto';
@@ -54,6 +55,8 @@ export class EmergencydocController {
     );
   }
 
+  @Header('X-Accel-Buffering', 'no')
+  @Header('Cache-Control', 'no-cache, no-transform')
   @Sse('sse')
   @Roles(2, 3, 4, 5)
   sse(): Observable<MessageEvent> {

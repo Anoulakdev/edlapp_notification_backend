@@ -8,6 +8,7 @@ import {
   Query,
   // Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { DistrictService } from './district.service';
 // import { CreateDistrictDto } from './dto/create-district.dto';
@@ -15,6 +16,7 @@ import { DistrictService } from './district.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import type { UserRequest } from '../../interfaces/user-request.interface';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('districts')
@@ -34,8 +36,11 @@ export class DistrictController {
   }
 
   @Get('selectdistrict')
-  selectDistrict(@Query('provinceCode') provinceCode?: string) {
-    return this.districtService.selectDistrict(provinceCode);
+  selectDistrict(
+    @Req() req: UserRequest,
+    @Query('provinceCode') provinceCode?: string,
+  ) {
+    return this.districtService.selectDistrict(provinceCode, req.user);
   }
 
   @Get(':id')

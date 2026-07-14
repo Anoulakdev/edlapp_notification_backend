@@ -21,10 +21,7 @@ export async function FindAllRegistermeter(
   options: FindAllRegistermeterOptions = {},
 ) {
   const where: Prisma.RegisterMeterWhereInput = {};
-
-  if (options.filterMyDocs) {
-    where.createdById = user.id;
-  }
+  const andFilters: Prisma.RegisterMeterWhereInput[] = [];
 
   if (user.roleId === 4) {
     if (options.meterStatusId) {
@@ -57,41 +54,85 @@ export async function FindAllRegistermeter(
     where.sourcetypeId = Number(options.sourcetypeId);
   }
 
-  if (user.roleId === 4) {
-    where.provinceId = user.provinceId ? Number(user.provinceId) : undefined;
-    if (options.districtId) {
-      where.districtId = Number(options.districtId);
-    }
-    if (options.villageId) {
-      where.villageId = Number(options.villageId);
-    }
-  } else if (user.roleId === 5) {
-    where.provinceId = user.provinceId ? Number(user.provinceId) : undefined;
-    where.districtId = user.districtId ? Number(user.districtId) : undefined;
-    if (options.villageId) {
-      where.villageId = Number(options.villageId);
-    }
+  if (options.filterMyDocs) {
+    where.createdById = user.id;
   } else {
-    if (options.provinceId) {
-      where.provinceId = Number(options.provinceId);
-    }
-    if (options.districtId) {
-      where.districtId = Number(options.districtId);
-    }
-    if (options.villageId) {
-      where.villageId = Number(options.villageId);
+    if (user.roleId === 4) {
+      const provinceFilter: Prisma.RegisterMeterWhereInput = {
+        provinceId: user.provinceId ? Number(user.provinceId) : undefined,
+      };
+      if (user.provinceId === 1 && user.employee?.divisionId === 185) {
+        if (options.districtId) {
+          const targetDistrictId = Number(options.districtId);
+          if ([1, 2, 3, 4].includes(targetDistrictId)) {
+            provinceFilter.districtId = targetDistrictId;
+          } else {
+            provinceFilter.districtId = { in: [] };
+          }
+        } else {
+          provinceFilter.districtId = { in: [1, 2, 3, 4] };
+        }
+      } else if (user.provinceId === 1 && user.employee?.divisionId === 188) {
+        if (options.districtId) {
+          const targetDistrictId = Number(options.districtId);
+          if ([5, 6, 7, 8, 9].includes(targetDistrictId)) {
+            provinceFilter.districtId = targetDistrictId;
+          } else {
+            provinceFilter.districtId = { in: [] };
+          }
+        } else {
+          provinceFilter.districtId = { in: [5, 6, 7, 8, 9] };
+        }
+      } else {
+        if (options.districtId) {
+          provinceFilter.districtId = Number(options.districtId);
+        }
+      }
+      if (options.villageId) {
+        provinceFilter.villageId = Number(options.villageId);
+      }
+      andFilters.push({
+        OR: [{ createdById: user.id }, provinceFilter],
+      });
+    } else if (user.roleId === 5) {
+      andFilters.push({
+        OR: [
+          { createdById: user.id },
+          {
+            provinceId: user.provinceId ? Number(user.provinceId) : undefined,
+            districtId: user.districtId ? Number(user.districtId) : undefined,
+            villageId: options.villageId ? Number(options.villageId) : undefined,
+          },
+        ],
+      });
+    } else {
+      if (options.provinceId) {
+        where.provinceId = Number(options.provinceId);
+      }
+      if (options.districtId) {
+        where.districtId = Number(options.districtId);
+      }
+      if (options.villageId) {
+        where.villageId = Number(options.villageId);
+      }
     }
   }
 
   if (options.search) {
     const searchLower = options.search.trim();
     if (searchLower) {
-      where.OR = [
-        { fullName: { contains: searchLower, mode: 'insensitive' } },
-        { phone: { contains: searchLower, mode: 'insensitive' } },
-        { accountNear: { contains: searchLower, mode: 'insensitive' } },
-      ];
+      andFilters.push({
+        OR: [
+          { fullName: { contains: searchLower, mode: 'insensitive' } },
+          { phone: { contains: searchLower, mode: 'insensitive' } },
+          { accountNear: { contains: searchLower, mode: 'insensitive' } },
+        ],
+      });
     }
+  }
+
+  if (andFilters.length > 0) {
+    where.AND = andFilters;
   }
 
   const page = options.page ? Number(options.page) : undefined;

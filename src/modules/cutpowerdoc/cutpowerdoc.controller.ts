@@ -14,6 +14,7 @@ import {
   Query,
   Sse,
   MessageEvent,
+  Header,
 } from '@nestjs/common';
 import { CutpowerdocService } from './cutpowerdoc.service';
 import { CreateCutpowerdocDto } from './dto/create-cutpowerdoc.dto';
@@ -54,6 +55,8 @@ export class CutpowerdocController {
     );
   }
 
+  @Header('X-Accel-Buffering', 'no')
+  @Header('Cache-Control', 'no-cache, no-transform')
   @Sse('sse')
   @Roles(2, 3, 4, 5)
   sse(): Observable<MessageEvent> {

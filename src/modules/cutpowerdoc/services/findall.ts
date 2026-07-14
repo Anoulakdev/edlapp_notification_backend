@@ -19,6 +19,7 @@ export async function FindAllCutpowerDoc(
   options: FindAllCutpowerDocOptions = {},
 ) {
   const where: Prisma.CutpowerDocWhereInput = {};
+  const andFilters: Prisma.CutpowerDocWhereInput[] = [];
 
   if (options.cutpowerDate) {
     where.cutpowerDate = {
@@ -34,18 +35,46 @@ export async function FindAllCutpowerDoc(
       const provinceFilter: Prisma.CutpowerDocWhereInput = {
         provinceId: user.provinceId ? Number(user.provinceId) : undefined,
       };
-      if (options.districtId) {
-        provinceFilter.districtId = Number(options.districtId);
+      if (user.provinceId === 1 && user.employee?.divisionId === 185) {
+        if (options.districtId) {
+          const targetDistrictId = Number(options.districtId);
+          if ([1, 2, 3, 4].includes(targetDistrictId)) {
+            provinceFilter.districtId = targetDistrictId;
+          } else {
+            provinceFilter.districtId = { in: [] };
+          }
+        } else {
+          provinceFilter.districtId = { in: [1, 2, 3, 4] };
+        }
+      } else if (user.provinceId === 1 && user.employee?.divisionId === 188) {
+        if (options.districtId) {
+          const targetDistrictId = Number(options.districtId);
+          if ([5, 6, 7, 8, 9].includes(targetDistrictId)) {
+            provinceFilter.districtId = targetDistrictId;
+          } else {
+            provinceFilter.districtId = { in: [] };
+          }
+        } else {
+          provinceFilter.districtId = { in: [5, 6, 7, 8, 9] };
+        }
+      } else {
+        if (options.districtId) {
+          provinceFilter.districtId = Number(options.districtId);
+        }
       }
-      where.OR = [{ createdById: user.id }, provinceFilter];
+      andFilters.push({
+        OR: [{ createdById: user.id }, provinceFilter],
+      });
     } else if (user.roleId === 5) {
-      where.OR = [
-        { createdById: user.id },
-        {
-          provinceId: user.provinceId ? Number(user.provinceId) : undefined,
-          districtId: user.districtId ? Number(user.districtId) : undefined,
-        },
-      ];
+      andFilters.push({
+        OR: [
+          { createdById: user.id },
+          {
+            provinceId: user.provinceId ? Number(user.provinceId) : undefined,
+            districtId: user.districtId ? Number(user.districtId) : undefined,
+          },
+        ],
+      });
     } else {
       if (options.provinceId) {
         where.provinceId = Number(options.provinceId);
@@ -59,12 +88,20 @@ export async function FindAllCutpowerDoc(
   if (options.search) {
     const searchLower = options.search.trim();
     if (searchLower) {
-      where.OR = [
-        { id: Number(searchLower) },
+      const searchOr: Prisma.CutpowerDocWhereInput[] = [
         { title: { contains: searchLower, mode: 'insensitive' } },
         { description: { contains: searchLower, mode: 'insensitive' } },
       ];
+      const searchNum = Number(searchLower);
+      if (!isNaN(searchNum)) {
+        searchOr.push({ id: searchNum });
+      }
+      andFilters.push({ OR: searchOr });
     }
+  }
+
+  if (andFilters.length > 0) {
+    where.AND = andFilters;
   }
 
   const page = options.page ? Number(options.page) : undefined;
