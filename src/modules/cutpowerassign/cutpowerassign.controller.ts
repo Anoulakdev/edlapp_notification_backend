@@ -22,7 +22,7 @@ export class CutpowerassignController {
   constructor(private readonly cutpowerassignService: CutpowerassignService) {}
 
   @Get()
-  @Roles(6)
+  @Roles(7)
   findAll(
     @Query('userAppId') userAppId: number,
     @Query('page') page?: number,
@@ -32,13 +32,13 @@ export class CutpowerassignController {
   }
 
   @Get(':id')
-  @Roles(6)
+  @Roles(7)
   findOne(@Param('id') id: string) {
     return this.cutpowerassignService.findOne(+id);
   }
 
   @Put(':id')
-  @Roles(6)
+  @Roles(7)
   update(
     @Param('id') id: string,
     @Body() updateCutpowerassignDto: UpdateCutpowerassignDto,

@@ -6,6 +6,8 @@ export interface AuthUser {
   roleId: number;
   provinceId: number | null;
   districtId: number | null;
+  branchId: number | null;
+  repairDistrictId: number | null;
   employee: {
     id: number;
     first_name: string;

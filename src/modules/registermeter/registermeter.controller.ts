@@ -47,7 +47,7 @@ export class RegistermeterController {
   constructor(private readonly registermeterService: RegistermeterService) {}
 
   @Post()
-  @Roles(2, 3, 6)
+  @Roles(2, 4, 7)
   create(
     @Req() req: UserRequest,
     @UploadedFiles()
@@ -67,7 +67,7 @@ export class RegistermeterController {
   }
 
   @Post('createforward')
-  @Roles(2, 3)
+  @Roles(2, 4)
   createForward(
     @Req() req: UserRequest,
     @Body() createForwardDto: CreateForwardDto,
@@ -78,13 +78,13 @@ export class RegistermeterController {
   @Header('X-Accel-Buffering', 'no')
   @Header('Cache-Control', 'no-cache, no-transform')
   @Sse('sse')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 4, 5, 6)
   sse(): Observable<MessageEvent> {
     return this.registermeterService.getEventsObservable();
   }
 
   @Get()
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 4, 5, 6)
   findAll(
     @Req() req: UserRequest,
     @Query('page') page?: number,
@@ -111,7 +111,7 @@ export class RegistermeterController {
   }
 
   @Get('edlapp')
-  @Roles(6)
+  @Roles(7)
   EDLAPP(
     @Query('userAppId') userAppId: number,
     @Query('page') page?: number,
@@ -131,7 +131,7 @@ export class RegistermeterController {
   }
 
   @Put(':id')
-  @Roles(2, 3, 6)
+  @Roles(2, 4, 7)
   update(
     @Param('id') id: string,
     @UploadedFiles()
@@ -151,7 +151,7 @@ export class RegistermeterController {
   }
 
   @Put('updateforward/:id')
-  @Roles(4)
+  @Roles(6)
   updateForward(
     @Req() req: UserRequest,
     @Param('id') id: string,
@@ -165,7 +165,7 @@ export class RegistermeterController {
   }
 
   @Delete(':id')
-  @Roles(2, 3, 6)
+  @Roles(2, 4, 7)
   remove(@Param('id') id: string) {
     return this.registermeterService.remove(+id);
   }

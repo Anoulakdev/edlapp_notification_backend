@@ -28,16 +28,11 @@ export class EmergencydocService {
     this.events$.next({ data: { action: 'refresh' } });
   }
 
-  async create(
-    createEmergencydocDto: CreateEmergencydocDto,
-    user: AuthUser,
-    Docfilename: string,
-  ) {
+  async create(createEmergencydocDto: CreateEmergencydocDto, user: AuthUser) {
     const result = await createEmergencyDoc(
       this.prisma,
       user,
       createEmergencydocDto,
-      Docfilename,
     );
     this.triggerRefresh();
     return result;

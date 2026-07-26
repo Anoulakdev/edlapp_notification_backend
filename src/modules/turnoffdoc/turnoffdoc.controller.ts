@@ -34,7 +34,7 @@ export class TurnoffdocController {
   constructor(private readonly turnoffdocService: TurnoffdocService) {}
 
   @Post()
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 4, 5, 6)
   create(
     @UploadedFile() turnoffFile: Express.Multer.File,
     @Req() req: UserRequest,
@@ -58,13 +58,13 @@ export class TurnoffdocController {
   @Header('X-Accel-Buffering', 'no')
   @Header('Cache-Control', 'no-cache, no-transform')
   @Sse('sse')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 3, 4, 5, 6)
   sse(): Observable<MessageEvent> {
     return this.turnoffdocService.getEventsObservable();
   }
 
   @Get()
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 3, 4, 5, 6)
   findAll(
     @Req() req: UserRequest,
     @Query('page') page?: number,
@@ -89,13 +89,13 @@ export class TurnoffdocController {
   }
 
   @Get(':id')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 3, 4, 5, 6)
   findOne(@Param('id') id: string) {
     return this.turnoffdocService.findOne(+id);
   }
 
   @Put(':id')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 4, 5, 6)
   update(
     @Param('id') id: string,
     @UploadedFile() turnoffFile: Express.Multer.File,
@@ -108,7 +108,7 @@ export class TurnoffdocController {
   }
 
   @Put('updateaddress/:id')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 4, 5, 6)
   updateAddress(
     @Param('id') id: string,
     @Body() updateTurnoffdocDto: UpdateTurnoffdocDto,

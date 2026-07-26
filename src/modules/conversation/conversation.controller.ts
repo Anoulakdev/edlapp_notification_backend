@@ -37,7 +37,7 @@ export class ConversationController {
   constructor(private readonly conversationService: ConversationService) {}
 
   @Post('edlappcreate')
-  @Roles(6)
+  @Roles(7)
   edlAppCreate(
     @UploadedFiles()
     files: {
@@ -56,7 +56,7 @@ export class ConversationController {
   }
 
   @Post('callcreate')
-  @Roles(2, 3)
+  @Roles(2, 4)
   callCreate(
     @Req() req: UserRequest,
     @UploadedFiles()
@@ -76,7 +76,7 @@ export class ConversationController {
   }
 
   @Get('edlappget')
-  @Roles(6)
+  @Roles(7)
   edlAppGet(
     @Query('externalUserId') externalUserId: number,
     @Query('topicId') topicId: number,
@@ -92,7 +92,7 @@ export class ConversationController {
   }
 
   @Get('callget')
-  @Roles(2, 3)
+  @Roles(2, 4)
   callGet(
     @Query('externalUserId') externalUserId: number,
     @Query('topicId') topicId: number,
@@ -116,7 +116,7 @@ export class ConversationController {
   }
 
   @Get('topic/:topicId')
-  @Roles(2, 3)
+  @Roles(2, 4)
   listByTopic(@Param('topicId') topicId: string) {
     return this.conversationService.listByTopic(+topicId);
   }

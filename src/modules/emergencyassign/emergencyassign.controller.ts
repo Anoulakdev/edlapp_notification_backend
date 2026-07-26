@@ -24,7 +24,7 @@ export class EmergencyassignController {
   ) {}
 
   @Get()
-  @Roles(6)
+  @Roles(7)
   findAll(
     @Query('userAppId') userAppId: number,
     @Query('page') page?: number,
@@ -34,13 +34,13 @@ export class EmergencyassignController {
   }
 
   @Get(':id')
-  @Roles(6)
+  @Roles(7)
   findOne(@Param('id') id: string) {
     return this.emergencyassignService.findOne(+id);
   }
 
   @Put(':id')
-  @Roles(6)
+  @Roles(7)
   update(
     @Param('id') id: string,
     @Body() updateEmergencyassignDto: UpdateEmergencyassignDto,

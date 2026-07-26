@@ -26,6 +26,8 @@ CREATE TABLE "User" (
     "roleId" INTEGER NOT NULL,
     "provinceId" INTEGER,
     "districtId" INTEGER,
+    "branchId" INTEGER,
+    "repairDistrictId" INTEGER,
     "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(0) NOT NULL,
 
@@ -48,6 +50,7 @@ CREATE TABLE "Role" (
     "id" SERIAL NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "description" VARCHAR(255),
+    "code" VARCHAR(50),
 
     CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
 );
@@ -182,6 +185,31 @@ CREATE TABLE "Village" (
 );
 
 -- CreateTable
+CREATE TABLE "Branch" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "code" VARCHAR(50),
+    "createdById" INTEGER NOT NULL,
+    "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(0) NOT NULL,
+
+    CONSTRAINT "Branch_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "RepairDistrict" (
+    "id" SERIAL NOT NULL,
+    "branchId" INTEGER NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "code" VARCHAR(50),
+    "createdById" INTEGER NOT NULL,
+    "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(0) NOT NULL,
+
+    CONSTRAINT "RepairDistrict_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "TurnoffDoc" (
     "id" SERIAL NOT NULL,
     "title" VARCHAR(255) NOT NULL,
@@ -226,14 +254,16 @@ CREATE TABLE "TurnoffAssign" (
 -- CreateTable
 CREATE TABLE "EmergencyDoc" (
     "id" SERIAL NOT NULL,
-    "title" VARCHAR(255) NOT NULL,
+    "title" VARCHAR(255),
     "description" TEXT,
     "emergencyDate" TIMESTAMPTZ(0) NOT NULL,
     "startTime" VARCHAR(50),
     "endTime" VARCHAR(50),
+    "useTime" INTEGER,
     "lat" DOUBLE PRECISION NOT NULL,
     "lng" DOUBLE PRECISION NOT NULL,
     "emergencyImg" VARCHAR(255),
+    "emergencyAudio" VARCHAR(255),
     "provinceId" INTEGER,
     "districtId" INTEGER,
     "createdById" INTEGER NOT NULL,
@@ -361,6 +391,7 @@ CREATE TABLE "UserAcceptMeter" (
 CREATE TABLE "Topic" (
     "id" SERIAL NOT NULL,
     "name" VARCHAR(255) NOT NULL,
+    "description" TEXT,
     "actived" BOOLEAN NOT NULL DEFAULT true,
     "createdById" INTEGER NOT NULL,
     "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -405,6 +436,83 @@ CREATE TABLE "Message" (
     CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "MessageAuto" (
+    "id" SERIAL NOT NULL,
+    "topicId" INTEGER NOT NULL,
+    "messageTopic" TEXT NOT NULL,
+    "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(0) NOT NULL,
+
+    CONSTRAINT "MessageAuto_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ProblemType" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "code" VARCHAR(255),
+    "actived" BOOLEAN NOT NULL DEFAULT true,
+    "createdById" INTEGER NOT NULL,
+    "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(0) NOT NULL,
+
+    CONSTRAINT "ProblemType_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ProblemStatus" (
+    "id" SERIAL NOT NULL,
+    "edlapp" VARCHAR(255) NOT NULL,
+    "callcenter" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "ProblemStatus_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ProblemDoc" (
+    "id" SERIAL NOT NULL,
+    "problemtypeId" INTEGER NOT NULL,
+    "fullName" VARCHAR(255) NOT NULL,
+    "description" VARCHAR(255),
+    "tel" VARCHAR(255) NOT NULL,
+    "lat" DOUBLE PRECISION NOT NULL,
+    "lng" DOUBLE PRECISION NOT NULL,
+    "problemImg" VARCHAR(255),
+    "provinceId" INTEGER NOT NULL,
+    "districtId" INTEGER NOT NULL,
+    "villageId" INTEGER NOT NULL,
+    "branchId" INTEGER,
+    "repairDistrictId" INTEGER,
+    "problemstatusId" INTEGER NOT NULL DEFAULT 1,
+    "sourcetypeId" INTEGER NOT NULL,
+    "createdById" INTEGER NOT NULL,
+    "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(0) NOT NULL,
+
+    CONSTRAINT "ProblemDoc_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ProblemAssign" (
+    "id" SERIAL NOT NULL,
+    "problemId" INTEGER NOT NULL,
+    "userSendId" INTEGER,
+    "sendAt" TIMESTAMPTZ(0),
+    "sendTime" INTEGER,
+    "userReceiverId" INTEGER,
+    "receiveAt" TIMESTAMPTZ(0),
+    "receiveTime" INTEGER,
+    "userActiveId" INTEGER,
+    "activeAt" TIMESTAMPTZ(0),
+    "activeTime" INTEGER,
+    "commentText" VARCHAR(255),
+    "commentAudio" VARCHAR(255),
+    "commentImg" VARCHAR(255),
+
+    CONSTRAINT "ProblemAssign_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
@@ -422,6 +530,9 @@ CREATE UNIQUE INDEX "Province_province_code_key" ON "Province"("province_code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "District_district_code_key" ON "District"("district_code");
+
+-- CreateIndex
+CREATE INDEX "RepairDistrict_branchId_idx" ON "RepairDistrict"("branchId");
 
 -- CreateIndex
 CREATE INDEX "TurnoffDoc_createdById_idx" ON "TurnoffDoc"("createdById");
@@ -478,16 +589,55 @@ CREATE INDEX "CutpowerAssign_cutpowerId_idx" ON "CutpowerAssign"("cutpowerId");
 CREATE INDEX "CutpowerAssign_userAppId_idx" ON "CutpowerAssign"("userAppId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserAcceptMeter_meterId_key" ON "UserAcceptMeter"("meterId");
+CREATE INDEX "RegisterMeter_meterStatusId_idx" ON "RegisterMeter"("meterStatusId");
 
 -- CreateIndex
-CREATE INDEX "Conversation_externalUserId_idx" ON "Conversation"("externalUserId");
+CREATE INDEX "RegisterMeter_provinceId_idx" ON "RegisterMeter"("provinceId");
+
+-- CreateIndex
+CREATE INDEX "RegisterMeter_districtId_idx" ON "RegisterMeter"("districtId");
+
+-- CreateIndex
+CREATE INDEX "RegisterMeter_createdById_idx" ON "RegisterMeter"("createdById");
+
+-- CreateIndex
+CREATE INDEX "RegisterMeter_sourcetypeId_idx" ON "RegisterMeter"("sourcetypeId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserAcceptMeter_meterId_key" ON "UserAcceptMeter"("meterId");
 
 -- CreateIndex
 CREATE INDEX "Conversation_topicId_idx" ON "Conversation"("topicId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Conversation_externalUserId_topicId_key" ON "Conversation"("externalUserId", "topicId");
+
+-- CreateIndex
 CREATE INDEX "Message_conversationId_createdAt_idx" ON "Message"("conversationId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "MessageAuto_topicId_idx" ON "MessageAuto"("topicId");
+
+-- CreateIndex
+CREATE INDEX "ProblemDoc_problemtypeId_idx" ON "ProblemDoc"("problemtypeId");
+
+-- CreateIndex
+CREATE INDEX "ProblemDoc_problemstatusId_idx" ON "ProblemDoc"("problemstatusId");
+
+-- CreateIndex
+CREATE INDEX "ProblemDoc_sourcetypeId_idx" ON "ProblemDoc"("sourcetypeId");
+
+-- CreateIndex
+CREATE INDEX "ProblemDoc_provinceId_idx" ON "ProblemDoc"("provinceId");
+
+-- CreateIndex
+CREATE INDEX "ProblemDoc_districtId_idx" ON "ProblemDoc"("districtId");
+
+-- CreateIndex
+CREATE INDEX "ProblemDoc_createdById_idx" ON "ProblemDoc"("createdById");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProblemAssign_problemId_key" ON "ProblemAssign"("problemId");
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_employeeId_fkey" FOREIGN KEY ("employeeId") REFERENCES "Employee"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -500,6 +650,12 @@ ALTER TABLE "User" ADD CONSTRAINT "User_provinceId_fkey" FOREIGN KEY ("provinceI
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_districtId_fkey" FOREIGN KEY ("districtId") REFERENCES "District"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_branchId_fkey" FOREIGN KEY ("branchId") REFERENCES "Branch"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_repairDistrictId_fkey" FOREIGN KEY ("repairDistrictId") REFERENCES "RepairDistrict"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "FcmToken" ADD CONSTRAINT "FcmToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -542,6 +698,15 @@ ALTER TABLE "District" ADD CONSTRAINT "District_provinceCode_fkey" FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE "Village" ADD CONSTRAINT "Village_districtCode_fkey" FOREIGN KEY ("districtCode") REFERENCES "District"("district_code") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Branch" ADD CONSTRAINT "Branch_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RepairDistrict" ADD CONSTRAINT "RepairDistrict_branchId_fkey" FOREIGN KEY ("branchId") REFERENCES "Branch"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RepairDistrict" ADD CONSTRAINT "RepairDistrict_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TurnoffDoc" ADD CONSTRAINT "TurnoffDoc_provinceId_fkey" FOREIGN KEY ("provinceId") REFERENCES "Province"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -638,3 +803,45 @@ ALTER TABLE "Message" ADD CONSTRAINT "Message_edlappId_fkey" FOREIGN KEY ("edlap
 
 -- AddForeignKey
 ALTER TABLE "Message" ADD CONSTRAINT "Message_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MessageAuto" ADD CONSTRAINT "MessageAuto_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "Topic"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemType" ADD CONSTRAINT "ProblemType_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemDoc" ADD CONSTRAINT "ProblemDoc_problemtypeId_fkey" FOREIGN KEY ("problemtypeId") REFERENCES "ProblemType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemDoc" ADD CONSTRAINT "ProblemDoc_provinceId_fkey" FOREIGN KEY ("provinceId") REFERENCES "Province"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemDoc" ADD CONSTRAINT "ProblemDoc_districtId_fkey" FOREIGN KEY ("districtId") REFERENCES "District"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemDoc" ADD CONSTRAINT "ProblemDoc_villageId_fkey" FOREIGN KEY ("villageId") REFERENCES "Village"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemDoc" ADD CONSTRAINT "ProblemDoc_branchId_fkey" FOREIGN KEY ("branchId") REFERENCES "Branch"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemDoc" ADD CONSTRAINT "ProblemDoc_repairDistrictId_fkey" FOREIGN KEY ("repairDistrictId") REFERENCES "RepairDistrict"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemDoc" ADD CONSTRAINT "ProblemDoc_problemstatusId_fkey" FOREIGN KEY ("problemstatusId") REFERENCES "ProblemStatus"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemDoc" ADD CONSTRAINT "ProblemDoc_sourcetypeId_fkey" FOREIGN KEY ("sourcetypeId") REFERENCES "SourceType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemAssign" ADD CONSTRAINT "ProblemAssign_problemId_fkey" FOREIGN KEY ("problemId") REFERENCES "ProblemDoc"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemAssign" ADD CONSTRAINT "ProblemAssign_userSendId_fkey" FOREIGN KEY ("userSendId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemAssign" ADD CONSTRAINT "ProblemAssign_userReceiverId_fkey" FOREIGN KEY ("userReceiverId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemAssign" ADD CONSTRAINT "ProblemAssign_userActiveId_fkey" FOREIGN KEY ("userActiveId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

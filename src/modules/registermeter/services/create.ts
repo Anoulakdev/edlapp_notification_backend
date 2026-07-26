@@ -33,13 +33,13 @@ export async function createRegistermeter(
     const roleId = user.roleId;
 
     // Determine IDs based on user roles
-    // Role 6: Customer, Role 2/3: Staff/Officer
-    const sourcetypeId = (roleId === 2 || roleId === 3) ? 2 : 1;
-    const meterStatusId = (roleId === 2 || roleId === 3) ? 2 : 1;
+    // Role 7: Customer, Role 2/4: Staff/Officer
+    const sourcetypeId = roleId === 2 || roleId === 4 ? 2 : 1;
+    const meterStatusId = roleId === 2 || roleId === 4 ? 2 : 1;
 
     // Resolve creator ID
     let createdById = user.id;
-    if (roleId !== 2 && roleId !== 3 && createRegistermeterDto.createdById) {
+    if (roleId !== 2 && roleId !== 4 && createRegistermeterDto.createdById) {
       const parsedId = Number(createRegistermeterDto.createdById);
       if (!isNaN(parsedId)) {
         createdById = parsedId;
@@ -47,12 +47,16 @@ export async function createRegistermeter(
     }
 
     // Resolve optional float coordinates safely to avoid NaN
-    const lat = createRegistermeterDto.lat !== undefined && createRegistermeterDto.lat !== null
-      ? Number(createRegistermeterDto.lat)
-      : null;
-    const lng = createRegistermeterDto.lng !== undefined && createRegistermeterDto.lng !== null
-      ? Number(createRegistermeterDto.lng)
-      : null;
+    const lat =
+      createRegistermeterDto.lat !== undefined &&
+      createRegistermeterDto.lat !== null
+        ? Number(createRegistermeterDto.lat)
+        : null;
+    const lng =
+      createRegistermeterDto.lng !== undefined &&
+      createRegistermeterDto.lng !== null
+        ? Number(createRegistermeterDto.lng)
+        : null;
 
     const parsedLat = lat !== null && !isNaN(lat) ? lat : null;
     const parsedLng = lng !== null && !isNaN(lng) ? lng : null;
@@ -74,7 +78,7 @@ export async function createRegistermeter(
         },
       });
 
-      if (roleId === 2 || roleId === 3) {
+      if (roleId === 2 || roleId === 4) {
         await tx.userAcceptMeter.create({
           data: {
             meterId: registerMeter.id,

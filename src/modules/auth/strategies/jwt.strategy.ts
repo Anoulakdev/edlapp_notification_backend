@@ -44,8 +44,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         roleId: true,
         status: true,
         provinceId: true,
-        province: true,
         districtId: true,
+        branchId: true,
+        repairDistrictId: true,
         employee: {
           include: {
             department: {

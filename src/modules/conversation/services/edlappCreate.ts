@@ -28,7 +28,7 @@ export async function edlAppCreate(
   prisma: PrismaService,
   createConversationDto: CreateConversationDto,
 ) {
-  let { externalUserId, topicId, content, fileImg, fileAudio, lat, lng } =
+  const { externalUserId, topicId, content, fileImg, fileAudio, lat, lng } =
     createConversationDto;
 
   try {

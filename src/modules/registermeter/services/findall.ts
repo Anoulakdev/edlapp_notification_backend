@@ -23,7 +23,7 @@ export async function FindAllRegistermeter(
   const where: Prisma.RegisterMeterWhereInput = {};
   const andFilters: Prisma.RegisterMeterWhereInput[] = [];
 
-  if (user.roleId === 4) {
+  if (user.roleId === 5 || user.roleId === 6) {
     if (options.meterStatusId) {
       const queriedStatus = Number(options.meterStatusId);
       if (queriedStatus === 2 || queriedStatus === 3) {
@@ -33,17 +33,6 @@ export async function FindAllRegistermeter(
       }
     } else {
       where.meterStatusId = { in: [2, 3] };
-    }
-  } else if (user.roleId === 5) {
-    if (options.meterStatusId) {
-      const queriedStatus = Number(options.meterStatusId);
-      if (queriedStatus === 3) {
-        where.meterStatusId = queriedStatus;
-      } else {
-        where.meterStatusId = -999;
-      }
-    } else {
-      where.meterStatusId = 3;
     }
   } else {
     if (options.meterStatusId) {
@@ -57,7 +46,7 @@ export async function FindAllRegistermeter(
   if (options.filterMyDocs) {
     where.createdById = user.id;
   } else {
-    if (user.roleId === 4) {
+    if (user.roleId === 5) {
       const provinceFilter: Prisma.RegisterMeterWhereInput = {
         provinceId: user.provinceId ? Number(user.provinceId) : undefined,
       };
@@ -94,14 +83,16 @@ export async function FindAllRegistermeter(
       andFilters.push({
         OR: [{ createdById: user.id }, provinceFilter],
       });
-    } else if (user.roleId === 5) {
+    } else if (user.roleId === 6) {
       andFilters.push({
         OR: [
           { createdById: user.id },
           {
             provinceId: user.provinceId ? Number(user.provinceId) : undefined,
             districtId: user.districtId ? Number(user.districtId) : undefined,
-            villageId: options.villageId ? Number(options.villageId) : undefined,
+            villageId: options.villageId
+              ? Number(options.villageId)
+              : undefined,
           },
         ],
       });

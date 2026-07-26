@@ -23,8 +23,14 @@ export async function FindAllCutpowerDoc(
 
   if (options.cutpowerDate) {
     where.cutpowerDate = {
-      gte: moment.tz(options.cutpowerDate, 'Asia/Vientiane').startOf('day').toDate(),
-      lte: moment.tz(options.cutpowerDate, 'Asia/Vientiane').endOf('day').toDate(),
+      gte: moment
+        .tz(options.cutpowerDate, 'Asia/Vientiane')
+        .startOf('day')
+        .toDate(),
+      lte: moment
+        .tz(options.cutpowerDate, 'Asia/Vientiane')
+        .endOf('day')
+        .toDate(),
     };
   }
 

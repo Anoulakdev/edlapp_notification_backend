@@ -11,20 +11,12 @@ export async function selectRole(prisma: PrismaService, user: AuthUser) {
   } else if (user.roleId === 2) {
     return prisma.role.findMany({
       where: {
-        id: { in: [2, 3] },
-      },
-      orderBy: {
-        id: 'asc',
-      },
-    });
-  } else if (user.roleId === 4) {
-    return prisma.role.findMany({
-      where: {
-        id: { in: [4, 5] },
+        id: { notIn: [1, 7] },
       },
       orderBy: {
         id: 'asc',
       },
     });
   }
+  return [];
 }

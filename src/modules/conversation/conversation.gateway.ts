@@ -80,16 +80,48 @@ export class ConversationGateway
   // Helper method to emit topic unread count updates globally
   emitTopicUnreadCountUpdate(topicId: number, unreadCount: number) {
     this.server.emit('topicUnreadCountUpdate', { topicId, unreadCount });
-    console.log(`Emitted topicUnreadCountUpdate to topic_${topicId} globally: ${unreadCount}`);
+    console.log(
+      `Emitted topicUnreadCountUpdate to topic_${topicId} globally: ${unreadCount}`,
+    );
   }
 
   // Helper method to emit message seen status
-  emitMessagesSeen(conversationId: number, topicId: number, senderType: 'edlapp' | 'callcenter') {
+  emitMessagesSeen(
+    conversationId: number,
+    topicId: number,
+    senderType: 'edlapp' | 'callcenter',
+  ) {
     const convRoom = `conversation_${conversationId}`;
     const topicRoom = `topic_${topicId}`;
     const payload = { conversationId, topicId, senderType };
     this.server.to(convRoom).emit('messagesSeen', payload);
     this.server.to(topicRoom).emit('messagesSeen', payload);
-    console.log(`Emitted messagesSeen to rooms ${convRoom} and ${topicRoom}: ${JSON.stringify(payload)}`);
+    console.log(
+      `Emitted messagesSeen to rooms ${convRoom} and ${topicRoom}: ${JSON.stringify(payload)}`,
+    );
+  }
+
+  // Helper method to emit updated message to both conversation room and topic room
+  emitUpdateMessage(conversationId: number, topicId: number, message: any) {
+    const convRoom = `conversation_${conversationId}`;
+    const topicRoom = `topic_${topicId}`;
+    const payload = { ...message, topicId };
+    this.server.to(convRoom).emit('updateMessage', payload);
+    this.server.to(topicRoom).emit('updateMessage', payload);
+    console.log(`Emitted updateMessage to rooms ${convRoom} and ${topicRoom}`);
+  }
+
+  // Helper method to emit deleted message to both conversation room and topic room
+  emitDeleteMessage(
+    conversationId: number,
+    topicId: number,
+    messageId: number,
+  ) {
+    const convRoom = `conversation_${conversationId}`;
+    const topicRoom = `topic_${topicId}`;
+    const payload = { messageId, conversationId, topicId };
+    this.server.to(convRoom).emit('deleteMessage', payload);
+    this.server.to(topicRoom).emit('deleteMessage', payload);
+    console.log(`Emitted deleteMessage to rooms ${convRoom} and ${topicRoom}`);
   }
 }

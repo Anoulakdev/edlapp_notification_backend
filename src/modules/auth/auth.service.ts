@@ -20,6 +20,8 @@ type User = {
   roleId: number;
   provinceId: number | null;
   districtId: number | null;
+  branchId: number | null;
+  repairDistrictId: number | null;
   employee: {
     id: number;
     first_name: string;
@@ -64,6 +66,8 @@ export class AuthService {
         roleId: true,
         provinceId: true,
         districtId: true,
+        branchId: true,
+        repairDistrictId: true,
         employee: {
           include: {
             division: {
@@ -139,14 +143,15 @@ export class AuthService {
       roleId: user.roleId,
       provinceId: user.provinceId,
       districtId: user.districtId,
+      branchId: user.branchId,
+      repairDistrictId: user.repairDistrictId,
       departmentId: user.employee.departmentId,
       divisionId: user.employee.divisionId,
       officeId: user.employee.officeId,
       unitId: user.employee.unitId,
-      // branch_id: user.employee.division?.branch_id,
     };
 
-    const expiresIn = user.roleId === 1 ? '1h' : '8h';
+    const expiresIn = user.roleId === 1 ? '1h' : '24h';
 
     return {
       token: this.jwtService.sign(payload, { expiresIn }),

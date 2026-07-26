@@ -19,28 +19,38 @@ model ExternalUser {
 }
 
 model User {
-  id            Int               @id @default(autoincrement())
-  username      String            @unique
-  password      String
-  status        String            @default("A") @db.VarChar(50)
-  employeeId    Int               @unique
-  employee      Employee          @relation(fields: [employeeId], references: [id])
-  roleId        Int
-  role          Role              @relation(fields: [roleId], references: [id])
-  provinceId    Int?
-  province      Province?         @relation(fields: [provinceId], references: [id])
-  districtId    Int?
-  district      District?         @relation(fields: [districtId], references: [id])
-  createdAt     DateTime          @default(now()) @db.Timestamptz(0)
-  updatedAt     DateTime          @updatedAt @db.Timestamptz(0)
-  fcmtokens     FcmToken[]
-  turnoffDocs   TurnoffDoc[]
-  emergencyDocs EmergencyDoc[]
-  cutpowerDocs  CutpowerDoc[]
-  topics        Topic[]
-  userCalls     UserAcceptMeter[] @relation("userCall")
-  userProvinces UserAcceptMeter[] @relation("userProvince")
-  messages      Message[]
+  id               Int               @id @default(autoincrement())
+  username         String            @unique
+  password         String
+  status           String            @default("A") @db.VarChar(50)
+  employeeId       Int               @unique
+  employee         Employee          @relation(fields: [employeeId], references: [id])
+  roleId           Int
+  role             Role              @relation(fields: [roleId], references: [id])
+  provinceId       Int?
+  province         Province?         @relation(fields: [provinceId], references: [id])
+  districtId       Int?
+  district         District?         @relation(fields: [districtId], references: [id])
+  branchId         Int?
+  branch           Branch?           @relation(fields: [branchId], references: [id])
+  repairDistrictId Int?
+  repairDistrict   RepairDistrict?   @relation(fields: [repairDistrictId], references: [id])
+  createdAt        DateTime          @default(now()) @db.Timestamptz(0)
+  updatedAt        DateTime          @updatedAt @db.Timestamptz(0)
+  fcmtokens        FcmToken[]
+  turnoffDocs      TurnoffDoc[]
+  emergencyDocs    EmergencyDoc[]
+  cutpowerDocs     CutpowerDoc[]
+  topics           Topic[]
+  userCalls        UserAcceptMeter[] @relation("userCall")
+  userProvinces    UserAcceptMeter[] @relation("userProvince")
+  messages         Message[]
+  problemTypes     ProblemType[]
+  userSends        ProblemAssign[]   @relation("userSend")
+  userReceivers    ProblemAssign[]   @relation("UserReceiver")
+  userActives      ProblemAssign[]   @relation("UserActive")
+  branchs          Branch[]          @relation("userBranch")
+  repairDistricts  RepairDistrict[]  @relation("userRepairDistrict")
 }
 
 model FcmToken {
@@ -58,6 +68,7 @@ model Role {
   id          Int     @id @default(autoincrement())
   name        String  @db.VarChar(255)
   description String? @db.VarChar(255)
+  code        String? @db.VarChar(50)
   users       User[]
 }
 
@@ -170,6 +181,7 @@ model Province {
   emergencyDocs  EmergencyDoc[]
   cutpowerDocs   CutpowerDoc[]
   registerMeters RegisterMeter[]
+  problemDocs    ProblemDoc[]
 }
 
 model District {
@@ -184,6 +196,7 @@ model District {
   emergencyDocs  EmergencyDoc[]
   cutpowerDocs   CutpowerDoc[]
   registerMeters RegisterMeter[]
+  problemDocs    ProblemDoc[]
 }
 
 model Village {
@@ -196,6 +209,36 @@ model Village {
   emergencyAddresses EmergencyAddress[]
   cutpowerAddresses  CutpowerAddress[]
   registerMeters     RegisterMeter[]
+  problemDocs        ProblemDoc[]
+}
+
+model Branch {
+  id              Int              @id @default(autoincrement())
+  name            String           @db.VarChar(255)
+  code            String?          @db.VarChar(50)
+  createdById     Int
+  createdBy       User             @relation("userBranch", fields: [createdById], references: [id])
+  createdAt       DateTime         @default(now()) @db.Timestamptz(0)
+  updatedAt       DateTime         @updatedAt @db.Timestamptz(0)
+  repairDistricts RepairDistrict[]
+  users           User[]
+  problemDocs     ProblemDoc[]
+}
+
+model RepairDistrict {
+  id          Int          @id @default(autoincrement())
+  branchId    Int
+  branch      Branch       @relation(fields: [branchId], references: [id])
+  name        String       @db.VarChar(255)
+  code        String?      @db.VarChar(50)
+  createdById Int
+  createdBy   User         @relation("userRepairDistrict", fields: [createdById], references: [id])
+  createdAt   DateTime     @default(now()) @db.Timestamptz(0)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(0)
+  users       User[]
+  problemDocs ProblemDoc[]
+
+  @@index([branchId])
 }
 
 model TurnoffDoc {
@@ -250,14 +293,16 @@ model TurnoffAssign {
 
 model EmergencyDoc {
   id                 Int                @id @default(autoincrement())
-  title              String             @db.VarChar(255)
+  title              String?            @db.VarChar(255)
   description        String?            @db.Text
   emergencyDate      DateTime           @db.Timestamptz(0)
   startTime          String?            @db.VarChar(50)
   endTime            String?            @db.VarChar(50)
+  useTime            Int?
   lat                Float
   lng                Float
   emergencyImg       String?            @db.VarChar(255)
+  emergencyAudio     String?            @db.VarChar(255)
   provinceId         Int?
   province           Province?          @relation(fields: [provinceId], references: [id])
   districtId         Int?
@@ -351,6 +396,7 @@ model SourceType {
   name           String          @db.VarChar(255)
   description    String?         @db.VarChar(255)
   registerMeters RegisterMeter[]
+  problemDocs    ProblemDoc[]
 }
 
 model MeterStatus {
@@ -383,6 +429,12 @@ model RegisterMeter {
   createdAt        DateTime         @default(now()) @db.Timestamptz(0)
   updatedAt        DateTime         @updatedAt @db.Timestamptz(0)
   userAcceptMeters UserAcceptMeter?
+
+  @@index([meterStatusId])
+  @@index([provinceId])
+  @@index([districtId])
+  @@index([createdById])
+  @@index([sourcetypeId])
 }
 
 model UserAcceptMeter {
@@ -407,6 +459,7 @@ model Topic {
   createdAt     DateTime       @default(now()) @db.Timestamptz(0)
   updatedAt     DateTime       @updatedAt @db.Timestamptz(0)
   conversations Conversation[]
+  messageAutos  MessageAuto[]
 }
 
 model Conversation {
@@ -424,7 +477,6 @@ model Conversation {
   messages            Message[]
 
   @@unique([externalUserId, topicId])
-  @@index([externalUserId])
   @@index([topicId])
 }
 
@@ -467,4 +519,92 @@ model Message {
   updatedAt      DateTime      @updatedAt @db.Timestamptz(0)
 
   @@index([conversationId, createdAt])
+}
+
+model MessageAuto {
+  id           Int      @id @default(autoincrement())
+  topicId      Int
+  topic        Topic    @relation(fields: [topicId], references: [id])
+  messageTopic String   @db.Text
+  createdAt    DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(0)
+
+  @@index([topicId])
+}
+
+model ProblemType {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(255)
+  code        String?      @db.VarChar(255)
+  actived     Boolean      @default(true)
+  createdById Int
+  createdBy   User         @relation(fields: [createdById], references: [id])
+  createdAt   DateTime     @default(now()) @db.Timestamptz(0)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(0)
+  problemdocs ProblemDoc[]
+}
+
+model ProblemStatus {
+  id          Int          @id @default(autoincrement())
+  edlapp      String       @db.VarChar(255)
+  callcenter  String       @db.VarChar(255)
+  problemdocs ProblemDoc[]
+}
+
+model ProblemDoc {
+  id               Int             @id @default(autoincrement())
+  problemtypeId    Int
+  problemtype      ProblemType     @relation(fields: [problemtypeId], references: [id])
+  fullName         String          @db.VarChar(255)
+  description      String?         @db.VarChar(255)
+  tel              String          @db.VarChar(255)
+  lat              Float
+  lng              Float
+  problemImg       String?         @db.VarChar(255)
+  provinceId       Int
+  province         Province        @relation(fields: [provinceId], references: [id])
+  districtId       Int
+  district         District        @relation(fields: [districtId], references: [id])
+  villageId        Int
+  village          Village         @relation(fields: [villageId], references: [id])
+  branchId         Int?
+  branch           Branch?         @relation(fields: [branchId], references: [id])
+  repairDistrictId Int?
+  repairDistrict   RepairDistrict? @relation(fields: [repairDistrictId], references: [id])
+  problemstatusId  Int             @default(1)
+  problemstatus    ProblemStatus   @relation(fields: [problemstatusId], references: [id])
+  sourcetypeId     Int
+  sourcetype       SourceType      @relation(fields: [sourcetypeId], references: [id])
+  createdById      Int
+  createdAt        DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt        DateTime        @updatedAt @db.Timestamptz(0)
+  problemAssigns   ProblemAssign?
+
+  @@index([problemtypeId])
+  @@index([problemstatusId])
+  @@index([sourcetypeId])
+  @@index([provinceId])
+  @@index([districtId])
+  @@index([createdById])
+}
+
+model ProblemAssign {
+  id             Int        @id @default(autoincrement())
+  problemId      Int        @unique
+  problem        ProblemDoc @relation(fields: [problemId], references: [id])
+  userSendId     Int?
+  userSend       User?      @relation("userSend", fields: [userSendId], references: [id])
+  sendAt         DateTime?  @db.Timestamptz(0)
+  sendTime       Int?
+  userReceiverId Int?
+  userReceiver   User?      @relation("UserReceiver", fields: [userReceiverId], references: [id])
+  receiveAt      DateTime?  @db.Timestamptz(0)
+  receiveTime    Int?
+  userActiveId   Int?
+  userActive     User?      @relation("UserActive", fields: [userActiveId], references: [id])
+  activeAt       DateTime?  @db.Timestamptz(0)
+  activeTime     Int?
+  commentText    String?    @db.VarChar(255)
+  commentAudio   String?    @db.VarChar(255)
+  commentImg     String?    @db.VarChar(255)
 }

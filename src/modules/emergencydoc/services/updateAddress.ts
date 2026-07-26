@@ -135,12 +135,13 @@ export async function updateAddress(
 
   // ✅ Send FCM notifications in the background (WITHOUT await to optimize API response time/performance)
   if (fcmTokens.length) {
-    const timeStr = result.startTime && result.endTime
-      ? ` ເວລາ: ${result.startTime} - ${result.endTime} ໂມງ`
-      : '';
+    const timeStr =
+      result.startTime && result.endTime
+        ? ` ເວລາ: ${result.startTime} - ${result.endTime} ໂມງ`
+        : '';
     sendFCM(
       fcmTokens,
-      result.title,
+      result.title || 'ແຈ້ງມອດໄຟສຸກເສີນ',
       `ວັນທີ: ${moment(result.emergencyDate).format('DD/MM/YYYY')}${timeStr}`,
       {
         emergencyId: String(id),

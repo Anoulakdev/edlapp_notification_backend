@@ -34,7 +34,7 @@ export class CutpowerdocController {
   constructor(private readonly cutpowerdocService: CutpowerdocService) {}
 
   @Post()
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 4, 5, 6)
   create(
     @UploadedFile() cutpowerFile: Express.Multer.File,
     @Req() req: UserRequest,
@@ -58,13 +58,13 @@ export class CutpowerdocController {
   @Header('X-Accel-Buffering', 'no')
   @Header('Cache-Control', 'no-cache, no-transform')
   @Sse('sse')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 3, 4, 5, 6)
   sse(): Observable<MessageEvent> {
     return this.cutpowerdocService.getEventsObservable();
   }
 
   @Get()
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 3, 4, 5, 6)
   findAll(
     @Req() req: UserRequest,
     @Query('page') page?: number,
@@ -87,13 +87,13 @@ export class CutpowerdocController {
   }
 
   @Get(':id')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 3, 4, 5, 6)
   findOne(@Param('id') id: string) {
     return this.cutpowerdocService.findOne(+id);
   }
 
   @Put(':id')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 4, 5, 6)
   update(
     @Param('id') id: string,
     @UploadedFile() cutpowerFile: Express.Multer.File,
@@ -106,7 +106,7 @@ export class CutpowerdocController {
   }
 
   @Put('updateaddress/:id')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 4, 5, 6)
   updateAddress(
     @Param('id') id: string,
     @Body() updateCutpowerdocDto: UpdateCutpowerdocDto,
@@ -115,7 +115,7 @@ export class CutpowerdocController {
   }
 
   @Delete(':id')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 4, 5, 6)
   remove(@Param('id') id: string) {
     return this.cutpowerdocService.remove(+id);
   }

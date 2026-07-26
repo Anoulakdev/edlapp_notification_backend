@@ -27,52 +27,20 @@ export async function findAllUser(
       where.roleId = Number(options.roleId);
     }
   } else if (user.roleId === 2) {
-    const allowedRoles = [2, 3];
+    const hiddenRoles = [1, 7];
     if (options.roleId !== undefined && options.roleId !== null) {
       const targetRoleId = Number(options.roleId);
-      if (allowedRoles.includes(targetRoleId)) {
+      if (!hiddenRoles.includes(targetRoleId)) {
         where.roleId = targetRoleId;
       } else {
         where.roleId = { in: [] };
       }
     } else {
-      where.roleId = { in: allowedRoles };
+      where.roleId = { notIn: hiddenRoles };
     }
-  } else if (user.roleId === 4) {
-    where.provinceId = user.provinceId;
-    if (user.provinceId === 1) {
-      if (user.employee?.divisionId === 185) {
-        andFilters.push({
-          OR: [
-            { districtId: { in: [1, 2, 3, 4] } },
-            {
-              roleId: 4,
-              employee: { divisionId: 185 },
-            },
-          ],
-        });
-      } else if (user.employee?.divisionId === 188) {
-        andFilters.push({
-          OR: [
-            { districtId: { in: [5, 6, 7, 8, 9] } },
-            {
-              roleId: 4,
-              employee: { divisionId: 188 },
-            },
-          ],
-        });
-      }
-    }
-    const allowedRoles = [4, 5];
+  } else {
     if (options.roleId !== undefined && options.roleId !== null) {
-      const targetRoleId = Number(options.roleId);
-      if (allowedRoles.includes(targetRoleId)) {
-        where.roleId = targetRoleId;
-      } else {
-        where.roleId = { in: [] };
-      }
-    } else {
-      where.roleId = { in: allowedRoles };
+      where.roleId = Number(options.roleId);
     }
   }
 
@@ -144,6 +112,10 @@ export async function findAllUser(
     province: true,
     districtId: true,
     district: true,
+    branch: true,
+    branchId: true,
+    repairDistrict: true,
+    repairDistrictId: true,
     employee: {
       include: {
         department: true,

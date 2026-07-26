@@ -23,15 +23,21 @@ export async function FindAllEmergencyDoc(
 
   if (options.emergencyDate) {
     where.emergencyDate = {
-      gte: moment.tz(options.emergencyDate, 'Asia/Vientiane').startOf('day').toDate(),
-      lte: moment.tz(options.emergencyDate, 'Asia/Vientiane').endOf('day').toDate(),
+      gte: moment
+        .tz(options.emergencyDate, 'Asia/Vientiane')
+        .startOf('day')
+        .toDate(),
+      lte: moment
+        .tz(options.emergencyDate, 'Asia/Vientiane')
+        .endOf('day')
+        .toDate(),
     };
   }
 
   if (options.filterMyDocs) {
     where.createdById = user.id;
   } else {
-    if (user.roleId === 4) {
+    if (user.roleId === 5) {
       const provinceFilter: Prisma.EmergencyDocWhereInput = {
         provinceId: user.provinceId ? Number(user.provinceId) : undefined,
       };
@@ -65,7 +71,7 @@ export async function FindAllEmergencyDoc(
       andFilters.push({
         OR: [{ createdById: user.id }, provinceFilter],
       });
-    } else if (user.roleId === 5) {
+    } else if (user.roleId === 6) {
       andFilters.push({
         OR: [
           { createdById: user.id },

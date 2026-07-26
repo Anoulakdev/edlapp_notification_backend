@@ -9,7 +9,7 @@ import {
   Req,
   UseInterceptors,
   UploadedFile,
-  BadRequestException,
+  UploadedFiles,
   UseGuards,
   Query,
   Sse,
@@ -20,7 +20,7 @@ import { EmergencydocService } from './emergencydoc.service';
 import { CreateEmergencydocDto } from './dto/create-emergencydoc.dto';
 import { UpdateEmergencydocDto } from './dto/update-emergencydoc.dto';
 import type { UserRequest } from '../../interfaces/user-request.interface';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../../config/multer.config';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -28,43 +28,49 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Observable } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(FileInterceptor('emergencyImg', multerConfig('emergency')))
+@UseInterceptors(
+  FileFieldsInterceptor(
+    [
+      { name: 'emergencyImg', maxCount: 1 },
+      { name: 'emergencyAudio', maxCount: 1 },
+    ],
+    multerConfig('emergency'),
+  ),
+)
 @Controller('emergencydocs')
 export class EmergencydocController {
   constructor(private readonly emergencydocService: EmergencydocService) {}
 
   @Post()
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 4, 5, 6)
   create(
-    @UploadedFile() emergencyImg: Express.Multer.File,
+    @UploadedFiles()
+    files: {
+      emergencyImg?: Express.Multer.File[];
+      emergencyAudio?: Express.Multer.File[];
+    },
     @Req() req: UserRequest,
     @Body() createEmergencydocDto: CreateEmergencydocDto,
   ) {
-    if (!emergencyImg) {
-      throw new BadRequestException('emergencyImg is required');
+    if (files?.emergencyImg?.[0]) {
+      createEmergencydocDto.emergencyImg = files.emergencyImg[0].filename;
     }
-
-    const Docfilename = emergencyImg.filename;
-    if (Docfilename) {
-      createEmergencydocDto.emergencyImg = Docfilename;
+    if (files?.emergencyAudio?.[0]) {
+      createEmergencydocDto.emergencyAudio = files.emergencyAudio[0].filename;
     }
-    return this.emergencydocService.create(
-      createEmergencydocDto,
-      req.user,
-      Docfilename,
-    );
+    return this.emergencydocService.create(createEmergencydocDto, req.user);
   }
 
   @Header('X-Accel-Buffering', 'no')
   @Header('Cache-Control', 'no-cache, no-transform')
   @Sse('sse')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 3, 4, 5, 6, 7)
   sse(): Observable<MessageEvent> {
     return this.emergencydocService.getEventsObservable();
   }
 
   @Get()
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 3, 4, 5, 6, 7)
   findAll(
     @Req() req: UserRequest,
     @Query('page') page?: number,
@@ -87,26 +93,33 @@ export class EmergencydocController {
   }
 
   @Get(':id')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 3, 4, 5, 6, 7)
   findOne(@Param('id') id: string) {
     return this.emergencydocService.findOne(+id);
   }
 
   @Put(':id')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 4, 5, 6)
   update(
     @Param('id') id: string,
-    @UploadedFile() emergencyImg: Express.Multer.File,
+    @UploadedFiles()
+    files: {
+      emergencyImg?: Express.Multer.File[];
+      emergencyAudio?: Express.Multer.File[];
+    },
     @Body() updateEmergencydocDto: UpdateEmergencydocDto,
   ) {
-    if (emergencyImg) {
-      updateEmergencydocDto.emergencyImg = emergencyImg.filename;
+    if (files?.emergencyImg?.[0]) {
+      updateEmergencydocDto.emergencyImg = files.emergencyImg[0].filename;
+    }
+    if (files?.emergencyAudio?.[0]) {
+      updateEmergencydocDto.emergencyAudio = files.emergencyAudio[0].filename;
     }
     return this.emergencydocService.update(+id, updateEmergencydocDto);
   }
 
   @Put('updateaddress/:id')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 4, 5, 6)
   updateAddress(
     @Param('id') id: string,
     @Body() updateEmergencydocDto: UpdateEmergencydocDto,
@@ -115,7 +128,7 @@ export class EmergencydocController {
   }
 
   @Delete(':id')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 4, 5, 6)
   remove(@Param('id') id: string) {
     return this.emergencydocService.remove(+id);
   }

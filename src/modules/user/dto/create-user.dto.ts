@@ -16,4 +16,12 @@ export class CreateUserDto {
   @IsInt()
   @IsOptional()
   districtId?: number;
+
+  @IsInt()
+  @IsOptional()
+  branchId?: number;
+
+  @IsInt()
+  @IsOptional()
+  repairDistrictId?: number;
 }

@@ -5,6 +5,23 @@ import { NotFoundException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 
+function calculateUseTime(startTime?: string, endTime?: string): number {
+  if (!startTime || !endTime) return 0;
+
+  const [startH, startM] = startTime.split(':').map(Number);
+  const [endH, endM] = endTime.split(':').map(Number);
+
+  if (isNaN(startH) || isNaN(startM) || isNaN(endH) || isNaN(endM)) {
+    return 0;
+  }
+
+  let diff = endH * 60 + endM - (startH * 60 + startM);
+  if (diff < 0) {
+    diff += 24 * 60;
+  }
+  return diff;
+}
+
 export async function updateEmergencyDoc(
   prisma: PrismaService,
   id: number,
@@ -15,19 +32,18 @@ export async function updateEmergencyDoc(
   });
   if (!emergencydoc) throw new NotFoundException('emergencydoc not found');
 
-  const oldFile = emergencydoc.emergencyImg || '';
+  const oldEmergencyImg = emergencydoc.emergencyImg || '';
 
   if (
     updateEmergencydocDto.emergencyImg &&
-    updateEmergencydocDto.emergencyImg !== oldFile
+    updateEmergencydocDto.emergencyImg !== oldEmergencyImg
   ) {
     const oldFilePath = path.resolve(
       process.env.UPLOAD_BASE_PATH || '',
       'emergency',
-      oldFile,
+      oldEmergencyImg,
     );
 
-    // ตรวจสอบว่าไฟล์มีอยู่หรือไม่ก่อนจะลบ
     fs.access(oldFilePath, fs.constants.F_OK, (err) => {
       if (!err) {
         fs.unlink(oldFilePath, (err) => {
@@ -38,9 +54,46 @@ export async function updateEmergencyDoc(
       }
     });
   } else {
-    // ✅ ถ้าไม่มีรูปใหม่ ให้ใช้รูปเก่า
-    updateEmergencydocDto.emergencyImg = oldFile;
+    updateEmergencydocDto.emergencyImg = oldEmergencyImg || undefined;
   }
+
+  const oldEmergencyAudio = emergencydoc.emergencyAudio || '';
+
+  if (
+    updateEmergencydocDto.emergencyAudio &&
+    updateEmergencydocDto.emergencyAudio !== oldEmergencyAudio
+  ) {
+    const oldFilePath = path.resolve(
+      process.env.UPLOAD_BASE_PATH || '',
+      'emergency',
+      oldEmergencyAudio,
+    );
+
+    fs.access(oldFilePath, fs.constants.F_OK, (err) => {
+      if (!err) {
+        fs.unlink(oldFilePath, (err) => {
+          if (err) {
+            console.error('Error deleting old icon:', err);
+          }
+        });
+      }
+    });
+  } else {
+    updateEmergencydocDto.emergencyAudio = oldEmergencyAudio || undefined;
+  }
+
+  const startTime =
+    updateEmergencydocDto.startTime !== undefined
+      ? updateEmergencydocDto.startTime
+      : emergencydoc.startTime;
+  const endTime =
+    updateEmergencydocDto.endTime !== undefined
+      ? updateEmergencydocDto.endTime
+      : emergencydoc.endTime;
+  const useTime = calculateUseTime(
+    startTime || undefined,
+    endTime || undefined,
+  );
 
   return await prisma.emergencyDoc.update({
     where: { id },
@@ -51,9 +104,11 @@ export async function updateEmergencyDoc(
         : undefined,
       startTime: updateEmergencydocDto.startTime,
       endTime: updateEmergencydocDto.endTime,
+      useTime,
       lat: Number(updateEmergencydocDto.lat),
       lng: Number(updateEmergencydocDto.lng),
-      emergencyImg: updateEmergencydocDto.emergencyImg,
+      emergencyImg: updateEmergencydocDto.emergencyImg || null,
+      emergencyAudio: updateEmergencydocDto.emergencyAudio || null,
     },
   });
 }

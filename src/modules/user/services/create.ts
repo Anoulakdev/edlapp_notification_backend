@@ -132,6 +132,8 @@ export async function createUser(
         roleId: createUserDto.roleId,
         provinceId: createUserDto.provinceId || null,
         districtId: createUserDto.districtId || null,
+        branchId: createUserDto.branchId || null,
+        repairDistrictId: createUserDto.repairDistrictId || null,
       },
       select: {
         id: true,
@@ -139,6 +141,8 @@ export async function createUser(
         roleId: true,
         provinceId: true,
         districtId: true,
+        branchId: true,
+        repairDistrictId: true,
         employee: true,
         createdAt: true,
       },

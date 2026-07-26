@@ -26,11 +26,12 @@ async function main() {
     console.log('Seeding roles...');
     const roles = [
       { id: 1, name: 'Super Admin', description: '' },
-      { id: 2, name: 'Admin Call Center', description: '' },
-      { id: 3, name: 'Staff Call Center', description: '' },
-      { id: 4, name: 'Admin Branch', description: '' },
-      { id: 5, name: 'Staff District', description: '' },
-      { id: 6, name: 'EDL APP', description: '' },
+      { id: 2, name: 'Admin', description: '' },
+      { id: 3, name: 'Supervisor', description: '' },
+      { id: 4, name: 'Agent', description: '' },
+      { id: 5, name: 'Branch', description: '' },
+      { id: 6, name: 'District', description: '' },
+      { id: 7, name: 'EDL APP', description: '' },
     ];
     for (const r of roles) {
       await prisma.role.upsert({
@@ -44,12 +45,12 @@ async function main() {
     const meterStatus = [
       {
         id: 1,
-        edlapp: 'ລໍຖ້າຮັບເລື່ອງຈາກ Call Center',
+        edlapp: 'ລໍຖ້າຮັບເລື່ອງ',
         callcenter: 'ລໍຖ້າຮັບເລື່ອງ',
       },
       {
         id: 2,
-        edlapp: 'ລໍຖ້າຮັບເອກະສານຈາກສາຂາແຂວງ',
+        edlapp: 'ລໍຖ້າຮັບເອກະສານ',
         callcenter: 'ລໍຖ້າຮັບເອກະສານ',
       },
       { id: 3, edlapp: 'ຮັບເອກະສານສຳເລັດ', callcenter: 'ຮັບເອກະສານສຳເລັດ' },
@@ -62,10 +63,34 @@ async function main() {
       });
     }
 
+    console.log('Seeding problem status...');
+    const problemStatus = [
+      {
+        id: 1,
+        edlapp: 'ລໍຖ້າສົ່ງຕໍ່ວຽກ',
+        callcenter: 'ລໍຖ້າສົ່ງຕໍ່ວຽກ',
+      },
+      {
+        id: 2,
+        edlapp: 'ລໍຖ້າຮັບວຽກ',
+        callcenter: 'ລໍຖ້າຮັບວຽກ',
+      },
+      { id: 3, edlapp: 'ກຳລັງແກ້ໄຂ', callcenter: 'ກຳລັງແກ້ໄຂ' },
+      { id: 4, edlapp: 'ແກ້ໄຂສຳເລັດ', callcenter: 'ແກ້ໄຂສຳເລັດ' },
+    ];
+    for (const r of problemStatus) {
+      await prisma.problemStatus.upsert({
+        where: { id: r.id },
+        update: { edlapp: r.edlapp, callcenter: r.callcenter },
+        create: { id: r.id, edlapp: r.edlapp, callcenter: r.callcenter },
+      });
+    }
+
     console.log('Seeding source type...');
     const sourceType = [
       { id: 1, name: 'EDLAPP', description: '' },
-      { id: 2, name: 'Call Center', description: '' },
+      { id: 2, name: 'Contact Center', description: '' },
+      { id: 3, name: 'Agent', description: '' },
     ];
     for (const r of sourceType) {
       await prisma.sourceType.upsert({
@@ -111,7 +136,7 @@ async function main() {
     const usersToSeed = [
       { username: '40607', roleId: 1 },
       { username: '39853', roleId: 2 },
-      { username: '44653', roleId: 6 },
+      { username: '44653', roleId: 7 },
     ];
 
     const results: any[] = [];

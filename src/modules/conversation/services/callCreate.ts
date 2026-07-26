@@ -31,7 +31,7 @@ export async function callCreate(
   user: AuthUser,
   createConversationDto: CreateConversationDto,
 ) {
-  let { externalUserId, topicId, content, fileImg, fileAudio, lat, lng } =
+  const { externalUserId, topicId, content, fileImg, fileAudio, lat, lng } =
     createConversationDto;
 
   let fcmTokens: string[] = [];

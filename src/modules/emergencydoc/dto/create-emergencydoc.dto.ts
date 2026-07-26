@@ -10,8 +10,8 @@ import { Type } from 'class-transformer';
 
 export class CreateEmergencydocDto {
   @IsString()
-  @IsNotEmpty()
-  title: string;
+  @IsOptional()
+  title?: string;
 
   @IsString()
   @IsOptional()
@@ -42,6 +42,10 @@ export class CreateEmergencydocDto {
   @IsString()
   @IsOptional()
   emergencyImg?: string;
+
+  @IsString()
+  @IsOptional()
+  emergencyAudio?: string;
 
   @Type(() => Number)
   @IsInt()

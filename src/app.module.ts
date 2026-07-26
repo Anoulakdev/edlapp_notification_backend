@@ -29,6 +29,12 @@ import { CutpowerassignModule } from './modules/cutpowerassign/cutpowerassign.mo
 import { RegistermeterModule } from './modules/registermeter/registermeter.module';
 import { TopicModule } from './modules/topic/topic.module';
 import { ConversationModule } from './modules/conversation/conversation.module';
+import { BranchModule } from './modules/branch/branch.module';
+import { RepairdistrictModule } from './modules/repairdistrict/repairdistrict.module';
+import { MessageautoModule } from './modules/messageauto/messageauto.module';
+import { ProblemtypeModule } from './modules/problemtype/problemtype.module';
+import { ProblemstatusModule } from './modules/problemstatus/problemstatus.module';
+import { ProblemdocModule } from './modules/problemdoc/problemdoc.module';
 
 @Module({
   imports: [
@@ -60,6 +66,12 @@ import { ConversationModule } from './modules/conversation/conversation.module';
     RegistermeterModule,
     TopicModule,
     ConversationModule,
+    BranchModule,
+    RepairdistrictModule,
+    MessageautoModule,
+    ProblemtypeModule,
+    ProblemstatusModule,
+    ProblemdocModule,
   ],
   controllers: [AppController],
   providers: [AppService],

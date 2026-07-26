@@ -17,7 +17,7 @@ export async function callGet(
   const skip = (page - 1) * limit;
   const take = limit;
 
-  let conversation = await prisma.conversation.findUnique({
+  const conversation = await prisma.conversation.findUnique({
     where: {
       externalUserId_topicId: {
         externalUserId,

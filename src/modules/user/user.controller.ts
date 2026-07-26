@@ -25,13 +25,13 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  @Roles(1, 2, 4)
+  @Roles(1, 2)
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
   @Get()
-  @Roles(1, 2, 4)
+  @Roles(1, 2)
   findAll(
     @Req() req: UserRequest,
     @Query('page') page?: number,
@@ -61,13 +61,13 @@ export class UserController {
   }
 
   @Put(':id')
-  @Roles(1, 2, 4)
+  @Roles(1, 2)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   }
 
   @Put('updatestatus/:id')
-  @Roles(1, 2, 4)
+  @Roles(1, 2)
   updateStatus(@Param('id') id: string, @Query('actived') actived: string) {
     return this.userService.updateStatus(+id, actived);
   }
@@ -78,7 +78,7 @@ export class UserController {
   }
 
   @Put('resetpassword/:id')
-  @Roles(1, 2, 4)
+  @Roles(1, 2)
   resetPassword(@Param('id') id: string) {
     return this.userService.resetPassword(+id);
   }

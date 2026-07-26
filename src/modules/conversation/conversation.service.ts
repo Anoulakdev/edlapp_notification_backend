@@ -26,8 +26,15 @@ export class ConversationService {
     return conversation;
   }
 
-  async callCreate(user: AuthUser, createConversationDto: CreateConversationDto) {
-    const conversation = await callCreate(this.prisma, user, createConversationDto);
+  async callCreate(
+    user: AuthUser,
+    createConversationDto: CreateConversationDto,
+  ) {
+    const conversation = await callCreate(
+      this.prisma,
+      user,
+      createConversationDto,
+    );
     await this.broadcastNewMessage(conversation.id);
     return conversation;
   }
@@ -38,10 +45,15 @@ export class ConversationService {
     page?: number,
     limit?: number,
   ) {
-    const messages = await edlAppGet(this.prisma, Number(externalUserId), Number(topicId), {
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-    });
+    const messages = await edlAppGet(
+      this.prisma,
+      Number(externalUserId),
+      Number(topicId),
+      {
+        page: page ? Number(page) : undefined,
+        limit: limit ? Number(limit) : undefined,
+      },
+    );
 
     try {
       const conversation = await this.prisma.conversation.findUnique({
@@ -72,10 +84,15 @@ export class ConversationService {
     page?: number,
     limit?: number,
   ) {
-    const messages = await callGet(this.prisma, Number(externalUserId), Number(topicId), {
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-    });
+    const messages = await callGet(
+      this.prisma,
+      Number(externalUserId),
+      Number(topicId),
+      {
+        page: page ? Number(page) : undefined,
+        limit: limit ? Number(limit) : undefined,
+      },
+    );
 
     try {
       const conversation = await this.prisma.conversation.findUnique({
@@ -98,10 +115,19 @@ export class ConversationService {
         where: { topicId: Number(topicId) },
         select: { unreadAgentCount: true },
       });
-      const unreadCount = conversations.reduce((sum, c) => sum + (c.unreadAgentCount || 0), 0);
-      this.conversationGateway.emitTopicUnreadCountUpdate(Number(topicId), unreadCount);
+      const unreadCount = conversations.reduce(
+        (sum, c) => sum + (c.unreadAgentCount || 0),
+        0,
+      );
+      this.conversationGateway.emitTopicUnreadCountUpdate(
+        Number(topicId),
+        unreadCount,
+      );
     } catch (e) {
-      console.error('Failed to emit messagesSeen or topic unread count inside callGet:', e);
+      console.error(
+        'Failed to emit messagesSeen or topic unread count inside callGet:',
+        e,
+      );
     }
 
     return messages;
@@ -111,12 +137,77 @@ export class ConversationService {
     return listByTopic(this.prisma, topicId);
   }
 
-  updateMessage(id: number, updateConversationDto: UpdateConversationDto) {
-    return updateMessage(this.prisma, id, updateConversationDto);
+  async updateMessage(
+    id: number,
+    updateConversationDto: UpdateConversationDto,
+  ) {
+    const updated = await updateMessage(this.prisma, id, updateConversationDto);
+    await this.broadcastUpdateMessage(updated.id);
+    return updated;
   }
 
-  remove(id: number) {
-    return removeMessage(this.prisma, id);
+  async remove(id: number) {
+    const result = await removeMessage(this.prisma, id);
+    try {
+      this.conversationGateway.emitDeleteMessage(
+        result.deletedMessage.conversationId,
+        result.deletedMessage.topicId,
+        result.deletedMessage.id,
+      );
+    } catch (e) {
+      console.error('Failed to emit deleteMessage via websocket:', e);
+    }
+    return {
+      statusCode: result.statusCode,
+      message: result.message,
+    };
+  }
+
+  private async broadcastUpdateMessage(messageId: number) {
+    try {
+      const message = await this.prisma.message.findUnique({
+        where: { id: messageId },
+        include: {
+          conversation: {
+            select: { topicId: true },
+          },
+          edlappUser: {
+            select: { id: true, name: true },
+          },
+          agentUser: {
+            select: {
+              id: true,
+              employee: {
+                select: { first_name: true, last_name: true },
+              },
+            },
+          },
+        },
+      });
+
+      if (message) {
+        const formattedMessage = {
+          ...message,
+          createdAt: moment(message.createdAt).tz('Asia/Vientiane').format(),
+          updatedAt: moment(message.updatedAt).tz('Asia/Vientiane').format(),
+        };
+        const topicId = message.conversation.topicId;
+
+        // Remove conversation field from payload
+        const { conversation, ...messagePayload } = formattedMessage;
+
+        this.conversationGateway.emitUpdateMessage(
+          message.conversationId,
+          topicId,
+          messagePayload,
+        );
+      }
+    } catch (error) {
+      console.error(
+        'Failed to broadcast updated message via websocket:',
+        error,
+      );
+    }
   }
 
   private async broadcastNewMessage(conversationId: number) {
@@ -169,10 +260,19 @@ export class ConversationService {
             where: { topicId },
             select: { unreadAgentCount: true },
           });
-          const unreadCount = conversations.reduce((sum, c) => sum + (c.unreadAgentCount || 0), 0);
-          this.conversationGateway.emitTopicUnreadCountUpdate(topicId, unreadCount);
+          const unreadCount = conversations.reduce(
+            (sum, c) => sum + (c.unreadAgentCount || 0),
+            0,
+          );
+          this.conversationGateway.emitTopicUnreadCountUpdate(
+            topicId,
+            unreadCount,
+          );
         } catch (e) {
-          console.error('Failed to emit topic unread count inside broadcastNewMessage:', e);
+          console.error(
+            'Failed to emit topic unread count inside broadcastNewMessage:',
+            e,
+          );
         }
       }
     } catch (error) {
