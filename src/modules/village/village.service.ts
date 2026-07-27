@@ -2,10 +2,12 @@ import { Injectable } from '@nestjs/common';
 // import { CreateVillageDto } from './dto/create-village.dto';
 // import { UpdateVillageDto } from './dto/update-village.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuthUser } from '../../interfaces/auth-user.interface';
 import { createVillage } from './services/create';
 import { findAllVillage } from './services/findall';
 import { findOneVillage } from './services/findone';
 import { selectVillage } from './services/selectVillage';
+import { edlWorkerVillage } from './services/edlWorkerVillage';
 
 @Injectable()
 export class VillageService {
@@ -21,6 +23,10 @@ export class VillageService {
 
   selectVillage(districtCode?: string) {
     return selectVillage(this.prisma, districtCode);
+  }
+
+  edlWorkerVillage(user: AuthUser) {
+    return edlWorkerVillage(this.prisma, user);
   }
 
   findOne(id: number) {

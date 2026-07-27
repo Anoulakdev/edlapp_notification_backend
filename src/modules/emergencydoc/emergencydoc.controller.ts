@@ -61,6 +61,29 @@ export class EmergencydocController {
     return this.emergencydocService.create(createEmergencydocDto, req.user);
   }
 
+  @Post('edlworkercreate')
+  @Roles(6)
+  edlWorkerCreate(
+    @UploadedFiles()
+    files: {
+      emergencyImg?: Express.Multer.File[];
+      emergencyAudio?: Express.Multer.File[];
+    },
+    @Req() req: UserRequest,
+    @Body() createEmergencydocDto: CreateEmergencydocDto,
+  ) {
+    if (files?.emergencyImg?.[0]) {
+      createEmergencydocDto.emergencyImg = files.emergencyImg[0].filename;
+    }
+    if (files?.emergencyAudio?.[0]) {
+      createEmergencydocDto.emergencyAudio = files.emergencyAudio[0].filename;
+    }
+    return this.emergencydocService.edlWorkerCreate(
+      createEmergencydocDto,
+      req.user,
+    );
+  }
+
   @Header('X-Accel-Buffering', 'no')
   @Header('Cache-Control', 'no-cache, no-transform')
   @Sse('sse')
@@ -125,6 +148,31 @@ export class EmergencydocController {
     @Body() updateEmergencydocDto: UpdateEmergencydocDto,
   ) {
     return this.emergencydocService.updateAddress(+id, updateEmergencydocDto);
+  }
+
+  @Put('edlworkerupdate/:id')
+  @Roles(6)
+  edlWorkerUpdate(
+    @Param('id') id: string,
+    @UploadedFiles()
+    files: {
+      emergencyImg?: Express.Multer.File[];
+      emergencyAudio?: Express.Multer.File[];
+    },
+    @Req() req: UserRequest,
+    @Body() updateEmergencydocDto: UpdateEmergencydocDto,
+  ) {
+    if (files?.emergencyImg?.[0]) {
+      updateEmergencydocDto.emergencyImg = files.emergencyImg[0].filename;
+    }
+    if (files?.emergencyAudio?.[0]) {
+      updateEmergencydocDto.emergencyAudio = files.emergencyAudio[0].filename;
+    }
+    return this.emergencydocService.edlWorkerUpdate(
+      +id,
+      updateEmergencydocDto,
+      req.user,
+    );
   }
 
   @Delete(':id')

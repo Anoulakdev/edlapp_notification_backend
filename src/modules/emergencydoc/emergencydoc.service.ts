@@ -12,6 +12,8 @@ import { findOneEmergencyDoc } from './services/findone';
 import { updateEmergencyDoc } from './services/update';
 import { removeEmergencyDoc } from './services/remove';
 import { updateAddress } from './services/updateAddress';
+import { edlWorkerCreate } from './services/edlworkercreate';
+import { edlWorkerUpdate } from './services/edlworkerupdate';
 import { Subject, Observable } from 'rxjs';
 
 @Injectable()
@@ -33,6 +35,34 @@ export class EmergencydocService {
       this.prisma,
       user,
       createEmergencydocDto,
+    );
+    this.triggerRefresh();
+    return result;
+  }
+
+  async edlWorkerCreate(
+    createEmergencydocDto: CreateEmergencydocDto,
+    user: AuthUser,
+  ) {
+    const result = await edlWorkerCreate(
+      this.prisma,
+      user,
+      createEmergencydocDto,
+    );
+    this.triggerRefresh();
+    return result;
+  }
+
+  async edlWorkerUpdate(
+    id: number,
+    updateEmergencydocDto: UpdateEmergencydocDto,
+    user: AuthUser,
+  ) {
+    const result = await edlWorkerUpdate(
+      this.prisma,
+      id,
+      user,
+      updateEmergencydocDto,
     );
     this.triggerRefresh();
     return result;
