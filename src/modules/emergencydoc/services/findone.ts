@@ -25,7 +25,9 @@ export async function findOneEmergencyDoc(prisma: PrismaService, id: number) {
       emergencyAddresses: {
         select: {
           id: true,
+          villageId: true,
           village: true,
+          userCount: true,
         },
       },
       emergencyAssigns: true,

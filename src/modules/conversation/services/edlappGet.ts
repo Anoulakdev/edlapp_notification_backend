@@ -52,10 +52,17 @@ export async function edlAppGet(
     });
   });
 
+  const messageWhere: any = {
+    conversationId: conversation.id,
+    deletedAt: null,
+  };
+
+  if (conversation.clearedExternalAt) {
+    messageWhere.createdAt = { gt: conversation.clearedExternalAt };
+  }
+
   const messages = await prisma.message.findMany({
-    where: {
-      conversationId: conversation.id,
-    },
+    where: messageWhere,
     orderBy: {
       createdAt: 'desc',
     },

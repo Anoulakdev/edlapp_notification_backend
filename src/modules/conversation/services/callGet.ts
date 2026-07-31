@@ -52,10 +52,17 @@ export async function callGet(
     });
   });
 
+  const messageWhere: any = {
+    conversationId: conversation.id,
+    deletedAt: null,
+  };
+
+  if (conversation.clearedAgentAt) {
+    messageWhere.createdAt = { gt: conversation.clearedAgentAt };
+  }
+
   const messages = await prisma.message.findMany({
-    where: {
-      conversationId: conversation.id,
-    },
+    where: messageWhere,
     orderBy: {
       createdAt: 'desc',
     },

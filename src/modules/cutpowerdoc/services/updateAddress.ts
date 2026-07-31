@@ -22,6 +22,8 @@ export async function updateAddress(
   // ✅ Fetch users residing in the updated villages from external API
   let assignData: any[] = [];
   let fcmTokens: string[] = [];
+  const villageUserMap: Record<number, number> = {};
+
   if (villageId?.length) {
     try {
       const response = await axios.get(
@@ -39,10 +41,21 @@ export async function updateAddress(
       const apiUsers = response.data?.data || [];
       const uniqueUserIds = new Set<number>();
       const tokenSet = new Set<string>();
+      const userSetByVillage: Record<number, Set<number>> = {};
 
       apiUsers.forEach((user: any) => {
-        if (user.user_id) {
-          uniqueUserIds.add(Number(user.user_id));
+        const uId = user.user_id ? Number(user.user_id) : null;
+        const vId = Number(user.village_id ?? user.villageId ?? user.village?.id);
+
+        if (uId) {
+          uniqueUserIds.add(uId);
+        }
+
+        if (vId && uId) {
+          if (!userSetByVillage[vId]) {
+            userSetByVillage[vId] = new Set<number>();
+          }
+          userSetByVillage[vId].add(uId);
         }
 
         // Ensure the token is a valid string, and not empty, 'null', 'undefined', or 'demo'
@@ -55,6 +68,12 @@ export async function updateAddress(
         ) {
           tokenSet.add(token);
         }
+      });
+
+      // Calculate userCount per villageId
+      villageId.forEach((vId) => {
+        const idNum = Number(vId);
+        villageUserMap[idNum] = userSetByVillage[idNum] ? userSetByVillage[idNum].size : 0;
       });
 
       assignData = Array.from(uniqueUserIds).map((userId) => ({
@@ -72,7 +91,7 @@ export async function updateAddress(
 
   // Run database update in a transaction
   const result = await prisma.$transaction(async (tx) => {
-    // ✅ check turnoffdoc
+    // ✅ check cutpowerdoc
     const cutpowerdoc = await tx.cutpowerDoc.findUnique({
       where: { id: Number(id) },
     });
@@ -92,11 +111,12 @@ export async function updateAddress(
 
     let data: any[] = [];
 
-    // ✅ กรณี village
+    // ✅ กรณี village (บันทึก userCount ลงใน CutpowerAddress ของแต่ละหมู่บ้าน)
     if (villageId?.length) {
       data = villageId.map((villId: number) => ({
         cutpowerId: Number(id),
         villageId: Number(villId),
+        userCount: villageUserMap[Number(villId)] || 0,
       }));
     }
 
@@ -114,7 +134,7 @@ export async function updateAddress(
       });
     }
 
-    // ✅ อัปเดต provinceId และ districtId ใน turnoffDoc
+    // ✅ อัปเดต provinceId และ districtId ใน cutpowerDoc
     await tx.cutpowerDoc.update({
       where: { id: Number(id) },
       data: {

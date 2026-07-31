@@ -8,13 +8,9 @@ import {
   Delete,
   Req,
   UseInterceptors,
-  UploadedFile,
   UploadedFiles,
   UseGuards,
   Query,
-  Sse,
-  MessageEvent,
-  Header,
 } from '@nestjs/common';
 import { EmergencydocService } from './emergencydoc.service';
 import { CreateEmergencydocDto } from './dto/create-emergencydoc.dto';
@@ -25,7 +21,6 @@ import { multerConfig } from '../../config/multer.config';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Observable } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(
@@ -42,7 +37,7 @@ export class EmergencydocController {
   constructor(private readonly emergencydocService: EmergencydocService) {}
 
   @Post()
-  @Roles(2, 4, 5, 6)
+  @Roles(2, 3, 4, 5, 6)
   create(
     @UploadedFiles()
     files: {
@@ -84,14 +79,6 @@ export class EmergencydocController {
     );
   }
 
-  @Header('X-Accel-Buffering', 'no')
-  @Header('Cache-Control', 'no-cache, no-transform')
-  @Sse('sse')
-  @Roles(2, 3, 4, 5, 6, 7)
-  sse(): Observable<MessageEvent> {
-    return this.emergencydocService.getEventsObservable();
-  }
-
   @Get()
   @Roles(2, 3, 4, 5, 6, 7)
   findAll(
@@ -122,7 +109,7 @@ export class EmergencydocController {
   }
 
   @Put(':id')
-  @Roles(2, 4, 5, 6)
+  @Roles(2, 3, 4, 5, 6)
   update(
     @Param('id') id: string,
     @UploadedFiles()
@@ -142,7 +129,7 @@ export class EmergencydocController {
   }
 
   @Put('updateaddress/:id')
-  @Roles(2, 4, 5, 6)
+  @Roles(2, 3, 4, 5, 6)
   updateAddress(
     @Param('id') id: string,
     @Body() updateEmergencydocDto: UpdateEmergencydocDto,
@@ -176,7 +163,7 @@ export class EmergencydocController {
   }
 
   @Delete(':id')
-  @Roles(2, 4, 5, 6)
+  @Roles(2, 3, 4, 5, 6)
   remove(@Param('id') id: string) {
     return this.emergencydocService.remove(+id);
   }

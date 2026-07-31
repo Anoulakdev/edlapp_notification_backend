@@ -108,13 +108,14 @@ export async function edlAppCreate(
       });
 
       if (conversation) {
-        // If conversation already exists, update preview fields and increment agent unread count
+        // If conversation already exists, update preview fields, increment agent unread count, and restore deletedAt = null
         conversation = await tx.conversation.update({
           where: { id: conversation.id },
           data: {
             lastMessage,
             lastMessageAt: new Date(),
             unreadAgentCount: { increment: 1 },
+            deletedAt: null,
           },
         });
       } else {

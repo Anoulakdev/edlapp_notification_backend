@@ -12,9 +12,6 @@ import {
   BadRequestException,
   UseGuards,
   Query,
-  Sse,
-  MessageEvent,
-  Header,
 } from '@nestjs/common';
 import { CutpowerdocService } from './cutpowerdoc.service';
 import { CreateCutpowerdocDto } from './dto/create-cutpowerdoc.dto';
@@ -25,7 +22,6 @@ import { multerConfig } from '../../config/multer.config';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Observable } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(FileInterceptor('cutpowerFile', multerConfig('cutpower')))
@@ -34,7 +30,7 @@ export class CutpowerdocController {
   constructor(private readonly cutpowerdocService: CutpowerdocService) {}
 
   @Post()
-  @Roles(2, 4, 5, 6)
+  @Roles(2, 3, 4, 5, 6)
   create(
     @UploadedFile() cutpowerFile: Express.Multer.File,
     @Req() req: UserRequest,
@@ -53,14 +49,6 @@ export class CutpowerdocController {
       req.user,
       Docfilename,
     );
-  }
-
-  @Header('X-Accel-Buffering', 'no')
-  @Header('Cache-Control', 'no-cache, no-transform')
-  @Sse('sse')
-  @Roles(2, 3, 4, 5, 6)
-  sse(): Observable<MessageEvent> {
-    return this.cutpowerdocService.getEventsObservable();
   }
 
   @Get()
@@ -93,7 +81,7 @@ export class CutpowerdocController {
   }
 
   @Put(':id')
-  @Roles(2, 4, 5, 6)
+  @Roles(2, 3, 4, 5, 6)
   update(
     @Param('id') id: string,
     @UploadedFile() cutpowerFile: Express.Multer.File,
@@ -106,7 +94,7 @@ export class CutpowerdocController {
   }
 
   @Put('updateaddress/:id')
-  @Roles(2, 4, 5, 6)
+  @Roles(2, 3, 4, 5, 6)
   updateAddress(
     @Param('id') id: string,
     @Body() updateCutpowerdocDto: UpdateCutpowerdocDto,
@@ -115,7 +103,7 @@ export class CutpowerdocController {
   }
 
   @Delete(':id')
-  @Roles(2, 4, 5, 6)
+  @Roles(2, 3, 4, 5, 6)
   remove(@Param('id') id: string) {
     return this.cutpowerdocService.remove(+id);
   }

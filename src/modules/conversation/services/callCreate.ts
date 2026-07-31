@@ -129,6 +129,7 @@ export async function callCreate(
             lastMessage,
             lastMessageAt: new Date(),
             unreadExternalCount: { increment: 1 },
+            deletedAt: null,
           },
         });
       } else {

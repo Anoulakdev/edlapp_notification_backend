@@ -1,4 +1,4 @@
-import { Injectable, MessageEvent } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateEmergencydocDto } from './dto/create-emergencydoc.dto';
 import { UpdateEmergencydocDto } from './dto/update-emergencydoc.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -14,20 +14,17 @@ import { removeEmergencyDoc } from './services/remove';
 import { updateAddress } from './services/updateAddress';
 import { edlWorkerCreate } from './services/edlworkercreate';
 import { edlWorkerUpdate } from './services/edlworkerupdate';
-import { Subject, Observable } from 'rxjs';
+import { EmergencydocGateway } from './emergencydoc.gateway';
 
 @Injectable()
 export class EmergencydocService {
-  private readonly events$ = new Subject<MessageEvent>();
-
-  constructor(private prisma: PrismaService) {}
-
-  getEventsObservable(): Observable<MessageEvent> {
-    return this.events$.asObservable();
-  }
+  constructor(
+    private prisma: PrismaService,
+    private emergencydocGateway: EmergencydocGateway,
+  ) {}
 
   triggerRefresh() {
-    this.events$.next({ data: { action: 'refresh' } });
+    this.emergencydocGateway.emitRefresh();
   }
 
   async create(createEmergencydocDto: CreateEmergencydocDto, user: AuthUser) {

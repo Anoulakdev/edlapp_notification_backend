@@ -43,7 +43,6 @@ export class ProblemtypeController {
   }
 
   @Get(':id')
-  @Roles(2, 3, 4)
   findOne(@Param('id') id: string) {
     return this.problemtypeService.findOne(+id);
   }

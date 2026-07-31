@@ -37,7 +37,7 @@ export async function FindAllTurnoffDoc(
   if (options.filterMyDocs) {
     where.createdById = user.id;
   } else {
-    if (user.roleId === 4) {
+    if (user.roleId === 5) {
       const provinceFilter: Prisma.TurnoffDocWhereInput = {
         provinceId: user.provinceId ? Number(user.provinceId) : undefined,
       };
@@ -71,7 +71,7 @@ export async function FindAllTurnoffDoc(
       andFilters.push({
         OR: [{ createdById: user.id }, provinceFilter],
       });
-    } else if (user.roleId === 5) {
+    } else if (user.roleId === 6) {
       andFilters.push({
         OR: [
           { createdById: user.id },
@@ -132,6 +132,9 @@ export async function FindAllTurnoffDoc(
     district: true,
     turnoffAddresses: {
       select: {
+        id: true,
+        villageId: true,
+        userCount: true,
         village: {
           select: {
             id: true,

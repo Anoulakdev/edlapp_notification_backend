@@ -124,4 +124,28 @@ export class ConversationGateway
     this.server.to(topicRoom).emit('deleteMessage', payload);
     console.log(`Emitted deleteMessage to rooms ${convRoom} and ${topicRoom}`);
   }
+
+  // Helper method to emit rating request to conversation room
+  emitRequestRating(conversationId: number, topicId: number, data: any) {
+    const convRoom = `conversation_${conversationId}`;
+    const topicRoom = `topic_${topicId}`;
+    const payload = { ...data, conversationId, topicId };
+    this.server.to(convRoom).emit('ratingRequested', payload);
+    this.server.to(topicRoom).emit('ratingRequested', payload);
+    console.log(`Emitted ratingRequested to rooms ${convRoom} and ${topicRoom}`);
+  }
+
+  // Helper method to emit submitted rating to conversation room & topic room
+  emitAgentRatingSubmitted(
+    conversationId: number,
+    topicId: number,
+    ratingData: any,
+  ) {
+    const convRoom = `conversation_${conversationId}`;
+    const topicRoom = `topic_${topicId}`;
+    const payload = { ...ratingData, conversationId, topicId };
+    this.server.to(convRoom).emit('ratingSubmitted', payload);
+    this.server.to(topicRoom).emit('ratingSubmitted', payload);
+    console.log(`Emitted ratingSubmitted to rooms ${convRoom} and ${topicRoom}`);
+  }
 }

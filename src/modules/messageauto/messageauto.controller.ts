@@ -42,7 +42,6 @@ export class MessageautoController {
   }
 
   @Get(':id')
-  @Roles(2, 4)
   findOne(@Param('id') id: string) {
     return this.messageautoService.findOne(+id);
   }

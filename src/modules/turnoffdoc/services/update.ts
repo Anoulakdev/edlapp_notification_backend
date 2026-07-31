@@ -5,6 +5,52 @@ import { NotFoundException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 
+function calculateTurnoffUseTime(
+  startDate?: string | Date | null,
+  endDate?: string | Date | null,
+  startTime?: string | null,
+  endTime?: string | null,
+): number {
+  if (!startDate || !endDate || !startTime || !endTime) return 0;
+
+  const [startH, startM] = startTime.split(':').map(Number);
+  const [endH, endM] = endTime.split(':').map(Number);
+
+  if (isNaN(startH) || isNaN(startM) || isNaN(endH) || isNaN(endM)) {
+    return 0;
+  }
+
+  let dailyMinutes = endH * 60 + endM - (startH * 60 + startM);
+  if (dailyMinutes < 0) {
+    dailyMinutes += 24 * 60;
+  }
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    return dailyMinutes;
+  }
+
+  const startMs = Date.UTC(
+    start.getUTCFullYear(),
+    start.getUTCMonth(),
+    start.getUTCDate(),
+  );
+  const endMs = Date.UTC(
+    end.getUTCFullYear(),
+    end.getUTCMonth(),
+    end.getUTCDate(),
+  );
+
+  const dayDiff = Math.max(
+    1,
+    Math.round((endMs - startMs) / (1000 * 60 * 60 * 24)) + 1,
+  );
+
+  return dailyMinutes * dayDiff;
+}
+
 export async function updateTurnoffDoc(
   prisma: PrismaService,
   id: number,
@@ -42,6 +88,18 @@ export async function updateTurnoffDoc(
     updateTurnoffdocDto.turnoffFile = oldFile;
   }
 
+  const finalStartDate = updateTurnoffdocDto.startDate || turnoff.startDate;
+  const finalEndDate = updateTurnoffdocDto.endDate || turnoff.endDate;
+  const finalStartTime = updateTurnoffdocDto.startTime || turnoff.startTime;
+  const finalEndTime = updateTurnoffdocDto.endTime || turnoff.endTime;
+
+  const useTime = calculateTurnoffUseTime(
+    finalStartDate,
+    finalEndDate,
+    finalStartTime,
+    finalEndTime,
+  );
+
   return await prisma.turnoffDoc.update({
     where: { id },
     data: {
@@ -54,6 +112,7 @@ export async function updateTurnoffDoc(
         : undefined,
       startTime: updateTurnoffdocDto.startTime,
       endTime: updateTurnoffdocDto.endTime,
+      useTime,
       turnoffFile: updateTurnoffdocDto.turnoffFile,
     },
   });

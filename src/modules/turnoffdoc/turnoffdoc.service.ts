@@ -1,4 +1,4 @@
-import { Injectable, MessageEvent } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateTurnoffdocDto } from './dto/create-turnoffdoc.dto';
 import { UpdateTurnoffdocDto } from './dto/update-turnoffdoc.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -12,20 +12,17 @@ import { findOneTurnoffDoc } from './services/findone';
 import { updateTurnoffDoc } from './services/update';
 import { removeTurnoffDoc } from './services/remove';
 import { updateAddress } from './services/updateAddress';
-import { Subject, Observable } from 'rxjs';
+import { TurnoffdocGateway } from './turnoffdoc.gateway';
 
 @Injectable()
 export class TurnoffdocService {
-  private readonly events$ = new Subject<MessageEvent>();
-
-  constructor(private prisma: PrismaService) {}
-
-  getEventsObservable(): Observable<MessageEvent> {
-    return this.events$.asObservable();
-  }
+  constructor(
+    private prisma: PrismaService,
+    private turnoffdocGateway: TurnoffdocGateway,
+  ) {}
 
   triggerRefresh() {
-    this.events$.next({ data: { action: 'refresh' } });
+    this.turnoffdocGateway.emitRefresh();
   }
 
   async create(

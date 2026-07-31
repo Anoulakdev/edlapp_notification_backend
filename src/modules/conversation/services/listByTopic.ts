@@ -5,6 +5,7 @@ export async function listByTopic(prisma: PrismaService, topicId: number) {
   const conversations = await prisma.conversation.findMany({
     where: {
       topicId,
+      deletedAt: null,
     },
     include: {
       externalUser: {

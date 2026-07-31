@@ -1,4 +1,4 @@
-import { Injectable, MessageEvent } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateCutpowerdocDto } from './dto/create-cutpowerdoc.dto';
 import { UpdateCutpowerdocDto } from './dto/update-cutpowerdoc.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -12,20 +12,17 @@ import { findOneCutpowerDoc } from './services/findone';
 import { updateCutpowerDoc } from './services/update';
 import { removeCutpowerDoc } from './services/remove';
 import { updateAddress } from './services/updateAddress';
-import { Subject, Observable } from 'rxjs';
+import { CutpowerdocGateway } from './cutpowerdoc.gateway';
 
 @Injectable()
 export class CutpowerdocService {
-  private readonly events$ = new Subject<MessageEvent>();
-
-  constructor(private prisma: PrismaService) {}
-
-  getEventsObservable(): Observable<MessageEvent> {
-    return this.events$.asObservable();
-  }
+  constructor(
+    private prisma: PrismaService,
+    private cutpowerdocGateway: CutpowerdocGateway,
+  ) {}
 
   triggerRefresh() {
-    this.events$.next({ data: { action: 'refresh' } });
+    this.cutpowerdocGateway.emitRefresh();
   }
 
   async create(

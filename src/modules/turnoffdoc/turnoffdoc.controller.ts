@@ -12,9 +12,6 @@ import {
   BadRequestException,
   UseGuards,
   Query,
-  Sse,
-  MessageEvent,
-  Header,
 } from '@nestjs/common';
 import { TurnoffdocService } from './turnoffdoc.service';
 import { CreateTurnoffdocDto } from './dto/create-turnoffdoc.dto';
@@ -25,7 +22,6 @@ import { multerConfig } from '../../config/multer.config';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Observable } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(FileInterceptor('turnoffFile', multerConfig('turnoff')))
@@ -34,7 +30,7 @@ export class TurnoffdocController {
   constructor(private readonly turnoffdocService: TurnoffdocService) {}
 
   @Post()
-  @Roles(2, 4, 5, 6)
+  @Roles(2, 3, 4, 5, 6)
   create(
     @UploadedFile() turnoffFile: Express.Multer.File,
     @Req() req: UserRequest,
@@ -53,14 +49,6 @@ export class TurnoffdocController {
       req.user,
       Docfilename,
     );
-  }
-
-  @Header('X-Accel-Buffering', 'no')
-  @Header('Cache-Control', 'no-cache, no-transform')
-  @Sse('sse')
-  @Roles(2, 3, 4, 5, 6)
-  sse(): Observable<MessageEvent> {
-    return this.turnoffdocService.getEventsObservable();
   }
 
   @Get()
@@ -95,7 +83,7 @@ export class TurnoffdocController {
   }
 
   @Put(':id')
-  @Roles(2, 4, 5, 6)
+  @Roles(2, 3, 4, 5, 6)
   update(
     @Param('id') id: string,
     @UploadedFile() turnoffFile: Express.Multer.File,
@@ -108,7 +96,7 @@ export class TurnoffdocController {
   }
 
   @Put('updateaddress/:id')
-  @Roles(2, 4, 5, 6)
+  @Roles(2, 3, 4, 5, 6)
   updateAddress(
     @Param('id') id: string,
     @Body() updateTurnoffdocDto: UpdateTurnoffdocDto,
@@ -117,7 +105,7 @@ export class TurnoffdocController {
   }
 
   @Delete(':id')
-  @Roles(2, 3, 4, 5)
+  @Roles(2, 3, 4, 5, 6)
   remove(@Param('id') id: string) {
     return this.turnoffdocService.remove(+id);
   }

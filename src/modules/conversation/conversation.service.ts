@@ -9,9 +9,18 @@ import { callCreate } from './services/callCreate';
 import { callGet } from './services/callGet';
 import { updateMessage } from './services/updateMessage';
 import { removeMessage } from './services/removeMessage';
+import { clearChat } from './services/clearChat';
 import { listByTopic } from './services/listByTopic';
 import { ConversationGateway } from './conversation.gateway';
 import moment from 'moment-timezone';
+
+import { RequestRatingDto } from './dto/request-rating.dto';
+import { CreateAgentRatingDto } from './dto/create-agent-rating.dto';
+import { requestRating } from './services/requestRating';
+import {
+  createAgentRating,
+  getAgentRatingByConversation,
+} from './services/createAgentRating';
 
 @Injectable()
 export class ConversationService {
@@ -112,7 +121,7 @@ export class ConversationService {
       }
 
       const conversations = await this.prisma.conversation.findMany({
-        where: { topicId: Number(topicId) },
+        where: { topicId: Number(topicId), deletedAt: null },
         select: { unreadAgentCount: true },
       });
       const unreadCount = conversations.reduce(
@@ -161,6 +170,50 @@ export class ConversationService {
       statusCode: result.statusCode,
       message: result.message,
     };
+  }
+
+  async clearChat(conversationId: number, userRole?: number) {
+    return clearChat(this.prisma, conversationId, userRole);
+  }
+
+  async requestRating(user: AuthUser, dto: RequestRatingDto) {
+    const result = await requestRating(this.prisma, user, dto);
+    try {
+      this.conversationGateway.emitRequestRating(
+        result.conversation.id,
+        result.conversation.topicId,
+        {
+          message: result.message,
+          agent: result.agent,
+        },
+      );
+      await this.broadcastNewMessage(result.conversation.id);
+    } catch (e) {
+      console.error('Failed to emit rating request via websocket:', e);
+    }
+    return {
+      statusCode: 200,
+      message: 'Sent rating request successfully',
+      data: result,
+    };
+  }
+
+  async createAgentRating(dto: CreateAgentRatingDto) {
+    const rating = await createAgentRating(this.prisma, dto);
+    try {
+      this.conversationGateway.emitAgentRatingSubmitted(
+        dto.conversationId,
+        rating.topicId || 0,
+        rating,
+      );
+    } catch (e) {
+      console.error('Failed to emit agent rating via websocket:', e);
+    }
+    return rating;
+  }
+
+  async getAgentRatingByConversation(conversationId: number) {
+    return getAgentRatingByConversation(this.prisma, conversationId);
   }
 
   private async broadcastUpdateMessage(messageId: number) {
@@ -257,7 +310,7 @@ export class ConversationService {
         // Fetch and broadcast updated topic unread count
         try {
           const conversations = await this.prisma.conversation.findMany({
-            where: { topicId },
+            where: { topicId, deletedAt: null },
             select: { unreadAgentCount: true },
           });
           const unreadCount = conversations.reduce(

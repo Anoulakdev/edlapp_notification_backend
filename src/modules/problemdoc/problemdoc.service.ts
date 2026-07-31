@@ -1,11 +1,10 @@
-import { Injectable, MessageEvent } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateProblemdocDto } from './dto/create-problemdoc.dto';
 import { UpdateProblemdocDto } from './dto/update-problemdoc.dto';
 import { CreateReceiverDto } from './dto/create-receiver.dto';
 import { UpdateReceiverDto } from './dto/update-receiver.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthUser } from '../../interfaces/auth-user.interface';
-import { Subject, Observable } from 'rxjs';
 import { createProblemDoc } from './services/create';
 import { createAssign } from './services/assign';
 import { updateAssign } from './services/updateassign';
@@ -19,19 +18,17 @@ import { removeProblemDoc } from './services/remove';
 import { problemDocEdlApp, ProblemDocEdlAppOptions } from './services/edlapp';
 import { updateReceiver } from './services/updatereceive';
 import { updateRepair } from './services/repair';
+import { ProblemdocGateway } from './problemdoc.gateway';
 
 @Injectable()
 export class ProblemdocService {
-  private readonly events$ = new Subject<MessageEvent>();
-
-  constructor(private prisma: PrismaService) {}
-
-  getEventsObservable(): Observable<MessageEvent> {
-    return this.events$.asObservable();
-  }
+  constructor(
+    private prisma: PrismaService,
+    private problemdocGateway: ProblemdocGateway,
+  ) {}
 
   triggerRefresh() {
-    this.events$.next({ data: { action: 'refresh' } });
+    this.problemdocGateway.emitRefresh();
   }
 
   async create(

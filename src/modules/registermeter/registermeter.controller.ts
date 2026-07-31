@@ -8,13 +8,9 @@ import {
   Delete,
   Req,
   UseInterceptors,
-  UploadedFile,
   UploadedFiles,
   UseGuards,
   Query,
-  Sse,
-  MessageEvent,
-  Header,
 } from '@nestjs/common';
 import { RegistermeterService } from './registermeter.service';
 import { CreateRegistermeterDto } from './dto/create-registermeter.dto';
@@ -22,15 +18,11 @@ import { CreateForwardDto } from './dto/create-forward.dto';
 import { UpdateRegistermeterDto } from './dto/update-registermeter.dto';
 import { UpdateForwardDto } from './dto/update-forward.dto';
 import type { UserRequest } from '../../interfaces/user-request.interface';
-import {
-  FileInterceptor,
-  FileFieldsInterceptor,
-} from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../../config/multer.config';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Observable } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(
@@ -67,7 +59,7 @@ export class RegistermeterController {
   }
 
   @Post('createforward')
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   createForward(
     @Req() req: UserRequest,
     @Body() createForwardDto: CreateForwardDto,
@@ -75,16 +67,8 @@ export class RegistermeterController {
     return this.registermeterService.createForward(req.user, createForwardDto);
   }
 
-  @Header('X-Accel-Buffering', 'no')
-  @Header('Cache-Control', 'no-cache, no-transform')
-  @Sse('sse')
-  @Roles(2, 4, 5, 6)
-  sse(): Observable<MessageEvent> {
-    return this.registermeterService.getEventsObservable();
-  }
-
   @Get()
-  @Roles(2, 4, 5, 6)
+  @Roles(2, 3, 4, 5, 6)
   findAll(
     @Req() req: UserRequest,
     @Query('page') page?: number,

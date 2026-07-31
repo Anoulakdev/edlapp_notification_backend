@@ -25,13 +25,17 @@ export async function findOneTurnoffDoc(prisma: PrismaService, id: number) {
       turnoffAddresses: {
         select: {
           id: true,
+          villageId: true,
           village: true,
+          userCount: true,
         },
       },
       turnoffAssigns: true,
     },
   });
+
   if (!turnoff) throw new NotFoundException('turnoff not found');
+
   return {
     ...turnoff,
     startDate: moment(turnoff.startDate).format('YYYY-MM-DD'),

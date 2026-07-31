@@ -15,6 +15,8 @@ import {
 import { ConversationService } from './conversation.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { UpdateConversationDto } from './dto/update-conversation.dto';
+import { RequestRatingDto } from './dto/request-rating.dto';
+import { CreateAgentRatingDto } from './dto/create-agent-rating.dto';
 import type { UserRequest } from '../../interfaces/user-request.interface';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../../config/multer.config';
@@ -121,8 +123,40 @@ export class ConversationController {
     return this.conversationService.listByTopic(+topicId);
   }
 
+  @Delete('clear/:conversationId')
+  @Roles(2, 4, 7)
+  clearChat(
+    @Req() req: UserRequest,
+    @Param('conversationId') conversationId: string,
+  ) {
+    return this.conversationService.clearChat(
+      +conversationId,
+      req.user?.roleId,
+    );
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.conversationService.remove(+id);
+  }
+
+  @Post('request-rating')
+  @Roles(2, 4)
+  requestRating(@Req() req: UserRequest, @Body() dto: RequestRatingDto) {
+    return this.conversationService.requestRating(req.user, dto);
+  }
+
+  @Post('rate-agent')
+  @Roles(7)
+  createAgentRating(@Body() dto: CreateAgentRatingDto) {
+    return this.conversationService.createAgentRating(dto);
+  }
+
+  @Get('rating/:conversationId')
+  @Roles(2, 4, 7)
+  getAgentRating(@Param('conversationId') conversationId: string) {
+    return this.conversationService.getAgentRatingByConversation(
+      +conversationId,
+    );
   }
 }

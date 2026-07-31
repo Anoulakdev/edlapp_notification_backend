@@ -132,6 +132,9 @@ export async function FindAllEmergencyDoc(
     district: true,
     emergencyAddresses: {
       select: {
+        id: true,
+        villageId: true,
+        userCount: true,
         village: {
           select: {
             id: true,

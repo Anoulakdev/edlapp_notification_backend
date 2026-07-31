@@ -12,8 +12,6 @@ import {
   UploadedFiles,
   UseGuards,
   Query,
-  Sse,
-  MessageEvent,
 } from '@nestjs/common';
 import { ProblemdocService } from './problemdoc.service';
 import { CreateProblemdocDto } from './dto/create-problemdoc.dto';
@@ -29,7 +27,6 @@ import { multerConfig } from '../../config/multer.config';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Observable } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('problemdocs')
@@ -62,12 +59,6 @@ export class ProblemdocController {
     @Body() createReceiverDto: CreateReceiverDto,
   ) {
     return this.problemdocService.createAssign(req.user, createReceiverDto);
-  }
-
-  @Sse('sse')
-  @Roles(2, 3, 4, 5, 6)
-  sse(): Observable<MessageEvent> {
-    return this.problemdocService.getEventsObservable();
   }
 
   @Get()

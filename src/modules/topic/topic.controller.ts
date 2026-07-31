@@ -36,7 +36,6 @@ export class TopicController {
   }
 
   @Get('selecttopic')
-  @Roles(2, 4)
   selectTopic() {
     return this.topicService.selectTopic();
   }

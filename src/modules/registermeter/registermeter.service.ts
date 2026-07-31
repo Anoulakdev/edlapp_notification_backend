@@ -1,4 +1,4 @@
-import { Injectable, MessageEvent } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateRegistermeterDto } from './dto/create-registermeter.dto';
 import { CreateForwardDto } from './dto/create-forward.dto';
 import { UpdateRegistermeterDto } from './dto/update-registermeter.dto';
@@ -20,20 +20,17 @@ import {
   registerMeterEdlApp,
   RegisterMeterEdlAppOptions,
 } from './services/edlapp';
-import { Subject, Observable } from 'rxjs';
+import { RegistermeterGateway } from './registermeter.gateway';
 
 @Injectable()
 export class RegistermeterService {
-  private readonly events$ = new Subject<MessageEvent>();
-
-  constructor(private readonly prisma: PrismaService) {}
-
-  getEventsObservable(): Observable<MessageEvent> {
-    return this.events$.asObservable();
-  }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly registermeterGateway: RegistermeterGateway,
+  ) {}
 
   triggerRefresh() {
-    this.events$.next({ data: { action: 'refresh' } });
+    this.registermeterGateway.emitRefresh();
   }
 
   async create(user: AuthUser, createRegistermeterDto: CreateRegistermeterDto) {

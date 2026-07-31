@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "clearedAgentAt" TIMESTAMPTZ(0),
+ADD COLUMN IF NOT EXISTS "clearedExternalAt" TIMESTAMPTZ(0);
