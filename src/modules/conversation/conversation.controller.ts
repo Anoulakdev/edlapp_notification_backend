@@ -100,12 +100,14 @@ export class ConversationController {
     @Query('topicId') topicId: number,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
+    @Query('isHistory') isHistory?: boolean,
   ) {
     return this.conversationService.callGet(
       externalUserId,
       topicId,
       page,
       limit,
+      isHistory,
     );
   }
 
@@ -119,8 +121,14 @@ export class ConversationController {
 
   @Get('topic/:topicId')
   @Roles(2, 4)
-  listByTopic(@Param('topicId') topicId: string) {
-    return this.conversationService.listByTopic(+topicId);
+  listByTopic(
+    @Param('topicId') topicId: string,
+    @Query('isHistory') isHistory?: boolean,
+  ) {
+    return this.conversationService.listByTopic(
+      +topicId,
+      isHistory === true || String(isHistory) === 'true',
+    );
   }
 
   @Delete('clear/:conversationId')

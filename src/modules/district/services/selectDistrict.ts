@@ -13,7 +13,7 @@ export async function selectDistrict(
     where.provinceCode = provinceCode;
   }
 
-  if (user && user.roleId === 4 && provinceCode === '1') {
+  if (user && user.roleId === 5 && provinceCode === '1') {
     if (user.employee?.divisionId === 185) {
       where.id = { in: [1, 2, 3, 4] };
     } else if (user.employee?.divisionId === 188) {

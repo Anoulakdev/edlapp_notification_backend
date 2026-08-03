@@ -35,6 +35,7 @@ import { MessageautoModule } from './modules/messageauto/messageauto.module';
 import { ProblemtypeModule } from './modules/problemtype/problemtype.module';
 import { ProblemstatusModule } from './modules/problemstatus/problemstatus.module';
 import { ProblemdocModule } from './modules/problemdoc/problemdoc.module';
+import { ReportModule } from './modules/report/report.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { ProblemdocModule } from './modules/problemdoc/problemdoc.module';
     ProblemtypeModule,
     ProblemstatusModule,
     ProblemdocModule,
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [AppService],

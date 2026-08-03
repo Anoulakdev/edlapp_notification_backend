@@ -4,6 +4,7 @@ import moment from 'moment-timezone';
 export interface CallGetOptions {
   page?: number;
   limit?: number;
+  isHistory?: boolean;
 }
 
 export async function callGet(
@@ -54,11 +55,13 @@ export async function callGet(
 
   const messageWhere: any = {
     conversationId: conversation.id,
-    deletedAt: null,
   };
 
-  if (conversation.clearedAgentAt) {
-    messageWhere.createdAt = { gt: conversation.clearedAgentAt };
+  if (!options.isHistory) {
+    messageWhere.deletedAt = null;
+    if (conversation.clearedAgentAt) {
+      messageWhere.createdAt = { gt: conversation.clearedAgentAt };
+    }
   }
 
   const messages = await prisma.message.findMany({

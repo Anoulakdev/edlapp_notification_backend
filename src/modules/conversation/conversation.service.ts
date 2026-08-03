@@ -92,6 +92,7 @@ export class ConversationService {
     topicId: number,
     page?: number,
     limit?: number,
+    isHistory?: boolean,
   ) {
     const messages = await callGet(
       this.prisma,
@@ -100,6 +101,7 @@ export class ConversationService {
       {
         page: page ? Number(page) : undefined,
         limit: limit ? Number(limit) : undefined,
+        isHistory: isHistory === true || String(isHistory) === 'true',
       },
     );
 
@@ -142,8 +144,8 @@ export class ConversationService {
     return messages;
   }
 
-  listByTopic(topicId: number) {
-    return listByTopic(this.prisma, topicId);
+  listByTopic(topicId: number, isHistory?: boolean) {
+    return listByTopic(this.prisma, topicId, isHistory);
   }
 
   async updateMessage(

@@ -1,12 +1,21 @@
 import { PrismaService } from '../../../prisma/prisma.service';
 import moment from 'moment-timezone';
 
-export async function listByTopic(prisma: PrismaService, topicId: number) {
+export async function listByTopic(
+  prisma: PrismaService,
+  topicId: number,
+  isHistory?: boolean,
+) {
+  const where: any = {
+    topicId,
+  };
+
+  if (!isHistory) {
+    where.deletedAt = null;
+  }
+
   const conversations = await prisma.conversation.findMany({
-    where: {
-      topicId,
-      deletedAt: null,
-    },
+    where,
     include: {
       externalUser: {
         select: {
