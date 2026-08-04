@@ -99,4 +99,34 @@ export class ReportController {
       villageId,
     });
   }
+
+  @Get('ratingdata')
+  @Roles(2)
+  ratingDataReport(
+    @Req() req: UserRequest,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.reportService.ratingDataReport(req.user, {
+      page,
+      limit,
+      startDate,
+      endDate,
+    });
+  }
+
+  @Get('ratingcount')
+  @Roles(2)
+  ratingCountReport(
+    @Req() req: UserRequest,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.reportService.ratingCountReport(req.user, {
+      startDate,
+      endDate,
+    });
+  }
 }

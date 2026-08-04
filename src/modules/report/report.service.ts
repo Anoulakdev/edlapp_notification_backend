@@ -8,6 +8,8 @@ import {
   registermeterReport,
   RegistermeterOptions,
 } from './services/registermeter';
+import { ratingCountReport, RatingCountOptions } from './services/ratingcount';
+import { ratingDataReport, RatingDataOptions } from './services/ratingdata';
 
 @Injectable()
 export class ReportService {
@@ -27,5 +29,13 @@ export class ReportService {
 
   registermeterReport(user: AuthUser, options?: RegistermeterOptions) {
     return registermeterReport(this.prisma, user, options);
+  }
+
+  ratingDataReport(user: AuthUser, options?: RatingDataOptions) {
+    return ratingDataReport(this.prisma, user, options);
+  }
+
+  ratingCountReport(user: AuthUser, options?: RatingCountOptions) {
+    return ratingCountReport(this.prisma, user, options);
   }
 }
