@@ -73,6 +73,35 @@ export class ReportController {
     });
   }
 
+  @Get('problem')
+  @Roles(2, 3, 4, 5, 6)
+  problemReport(
+    @Req() req: UserRequest,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('problemstatusId') problemstatusId?: number,
+    @Query('problemtypeId') problemtypeId?: number,
+    @Query('sourcetypeId') sourcetypeId?: number,
+    @Query('provinceId') provinceId?: number,
+    @Query('districtId') districtId?: number,
+    @Query('villageId') villageId?: number,
+  ) {
+    return this.reportService.problemReport(req.user, {
+      page,
+      limit,
+      startDate,
+      endDate,
+      problemstatusId,
+      problemtypeId,
+      sourcetypeId,
+      provinceId,
+      districtId,
+      villageId,
+    });
+  }
+
   @Get('registermeter')
   @Roles(2, 3, 4, 5, 6)
   registermeterReport(

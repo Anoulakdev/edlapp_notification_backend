@@ -32,6 +32,11 @@ export class ProblemstatusController {
     return this.problemstatusService.findAll();
   }
 
+  @Get('selectstatus')
+  selectStatus() {
+    return this.problemstatusService.findAll();
+  }
+
   @Get(':id')
   @Roles(1)
   findOne(@Param('id') id: string) {

@@ -3,6 +3,7 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import compression from 'compression';
 import { AppModule } from './app.module';
 import express from 'express';
 import path from 'path';
@@ -19,6 +20,7 @@ async function bootstrap() {
   );
 
   app.use(cookieParser());
+  app.use(compression());
 
   const allowedOrigins = [
     'http://localhost:4600',

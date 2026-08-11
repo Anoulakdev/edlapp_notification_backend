@@ -4,6 +4,7 @@ import { AuthUser } from '../../interfaces/auth-user.interface';
 import { turnoffReport, TurnoffOptions } from './services/turnoff';
 import { emergencyReport, EmergencyOptions } from './services/emergency';
 import { cutpowerReport, CutpowerDocOptions } from './services/cutpower';
+import { problemReport, ProblemOptions } from './services/problem';
 import {
   registermeterReport,
   RegistermeterOptions,
@@ -25,6 +26,10 @@ export class ReportService {
 
   cutpowerReport(user: AuthUser, options?: CutpowerDocOptions) {
     return cutpowerReport(this.prisma, user, options);
+  }
+
+  problemReport(user: AuthUser, options?: ProblemOptions) {
+    return problemReport(this.prisma, user, options);
   }
 
   registermeterReport(user: AuthUser, options?: RegistermeterOptions) {

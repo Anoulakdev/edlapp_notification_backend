@@ -267,6 +267,8 @@ model TurnoffDoc {
   @@index([createdById])
   @@index([provinceId])
   @@index([districtId])
+  @@index([startDate])
+  @@index([createdAt])
 }
 
 model TurnoffAddress {
@@ -321,6 +323,8 @@ model EmergencyDoc {
   @@index([createdById])
   @@index([provinceId])
   @@index([districtId])
+  @@index([emergencyDate])
+  @@index([createdAt])
 }
 
 model EmergencyAddress {
@@ -369,6 +373,8 @@ model CutpowerDoc {
   @@index([createdById])
   @@index([provinceId])
   @@index([districtId])
+  @@index([cutpowerDate])
+  @@index([createdAt])
 }
 
 model CutpowerAddress {
@@ -441,6 +447,7 @@ model RegisterMeter {
   @@index([districtId])
   @@index([createdById])
   @@index([sourcetypeId])
+  @@index([createdAt])
 }
 
 model UserAcceptMeter {
@@ -489,6 +496,7 @@ model Conversation {
 
   @@unique([externalUserId, topicId])
   @@index([topicId])
+  @@index([topicId, deletedAt, lastMessageAt(sort: Desc)])
 }
 
 model AgentRating {
@@ -621,6 +629,7 @@ model ProblemDoc {
   @@index([provinceId])
   @@index([districtId])
   @@index([createdById])
+  @@index([createdAt])
 }
 
 model ProblemAssign {
