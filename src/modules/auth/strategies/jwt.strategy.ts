@@ -71,6 +71,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             division: true,
             office: true,
             unit: true,
+            position: true,
           },
         },
       },
