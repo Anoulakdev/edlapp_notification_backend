@@ -77,6 +77,11 @@ async function main() {
       },
       { id: 3, edlapp: 'ກຳລັງແກ້ໄຂ', callcenter: 'ກຳລັງແກ້ໄຂ' },
       { id: 4, edlapp: 'ແກ້ໄຂສຳເລັດ', callcenter: 'ແກ້ໄຂສຳເລັດ' },
+      {
+        id: 5,
+        edlapp: 'ຈຸດນີ້ໄດ້ຖືກແຈ້ງແລ້ວ',
+        callcenter: 'ຈຸດນີ້ໄດ້ຖືກແຈ້ງແລ້ວ',
+      },
     ];
     for (const r of problemStatus) {
       await prisma.problemStatus.upsert({

@@ -18,6 +18,7 @@ import { removeProblemDoc } from './services/remove';
 import { problemDocEdlApp, ProblemDocEdlAppOptions } from './services/edlapp';
 import { updateReceiver } from './services/updatereceive';
 import { updateRepair } from './services/repair';
+import { updateStatus } from './services/updateStatus';
 import { ProblemdocGateway } from './problemdoc.gateway';
 
 @Injectable()
@@ -91,6 +92,12 @@ export class ProblemdocService {
       id,
       updateReceiverDto,
     );
+    this.triggerRefresh();
+    return result;
+  }
+
+  async updateStatus(id: number, updateReceiverDto: UpdateReceiverDto) {
+    const result = await updateStatus(this.prisma, id, updateReceiverDto);
     this.triggerRefresh();
     return result;
   }

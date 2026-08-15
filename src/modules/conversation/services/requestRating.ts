@@ -29,6 +29,7 @@ export async function requestRating(
           headers: {
             'x-api-key': process.env.API_KEY,
           },
+          timeout: 5000,
         },
       );
 

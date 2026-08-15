@@ -111,6 +111,7 @@ export async function edlWorkerUpdate(
             headers: {
               'x-api-key': process.env.API_KEY,
             },
+            timeout: 30000,
           },
         );
 

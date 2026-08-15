@@ -95,6 +95,12 @@ export async function findOneProblemDoc(prisma: PrismaService, id: number) {
     try {
       const response = await axios.get(
         `${process.env.EDLAPP_URL_API}/getUserById/${problemdoc.createdById}`,
+        {
+          headers: {
+            'x-api-key': process.env.API_KEY,
+          },
+          timeout: 5000,
+        },
       );
       createdName = response.data?.data?.username || '';
       createdTel = response.data?.data?.phone_no || '';

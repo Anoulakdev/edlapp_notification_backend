@@ -43,6 +43,7 @@ export async function edlAppCreate(
           headers: {
             'x-api-key': process.env.API_KEY,
           },
+          timeout: 5000,
         },
       );
       if (response.data?.data) {

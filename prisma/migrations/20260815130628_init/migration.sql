@@ -218,6 +218,7 @@ CREATE TABLE "TurnoffDoc" (
     "endDate" TIMESTAMPTZ(0) NOT NULL,
     "startTime" VARCHAR(50),
     "endTime" VARCHAR(50),
+    "useTime" INTEGER,
     "turnoffFile" VARCHAR(255) NOT NULL,
     "provinceId" INTEGER,
     "districtId" INTEGER,
@@ -233,6 +234,7 @@ CREATE TABLE "TurnoffAddress" (
     "id" SERIAL NOT NULL,
     "turnoffId" INTEGER NOT NULL,
     "villageId" INTEGER NOT NULL,
+    "userCount" INTEGER,
     "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(0) NOT NULL,
 
@@ -278,6 +280,7 @@ CREATE TABLE "EmergencyAddress" (
     "id" SERIAL NOT NULL,
     "emergencyId" INTEGER NOT NULL,
     "villageId" INTEGER NOT NULL,
+    "userCount" INTEGER,
     "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(0) NOT NULL,
 
@@ -317,6 +320,7 @@ CREATE TABLE "CutpowerAddress" (
     "id" SERIAL NOT NULL,
     "cutpowerId" INTEGER NOT NULL,
     "villageId" INTEGER NOT NULL,
+    "userCount" INTEGER,
     "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(0) NOT NULL,
 
@@ -409,10 +413,28 @@ CREATE TABLE "Conversation" (
     "lastMessageAt" TIMESTAMPTZ(0),
     "unreadExternalCount" INTEGER NOT NULL DEFAULT 0,
     "unreadAgentCount" INTEGER NOT NULL DEFAULT 0,
+    "clearedAgentAt" TIMESTAMPTZ(0),
+    "clearedExternalAt" TIMESTAMPTZ(0),
+    "deletedAt" TIMESTAMPTZ(0),
     "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(0) NOT NULL,
 
     CONSTRAINT "Conversation_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AgentRating" (
+    "id" SERIAL NOT NULL,
+    "agentId" INTEGER NOT NULL,
+    "externalUserId" INTEGER NOT NULL,
+    "topicId" INTEGER,
+    "conversationId" INTEGER,
+    "messageId" INTEGER,
+    "rating" INTEGER NOT NULL,
+    "comment" TEXT,
+    "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AgentRating_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -430,6 +452,7 @@ CREATE TABLE "Message" (
     "lng" DOUBLE PRECISION,
     "status" "MessageStatus" NOT NULL DEFAULT 'sent',
     "seenAt" TIMESTAMPTZ(0),
+    "deletedAt" TIMESTAMPTZ(0),
     "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(0) NOT NULL,
 
@@ -526,6 +549,21 @@ CREATE UNIQUE INDEX "FcmToken_userId_platform_model_key" ON "FcmToken"("userId",
 CREATE UNIQUE INDEX "Employee_emp_code_key" ON "Employee"("emp_code");
 
 -- CreateIndex
+CREATE INDEX "Employee_departmentId_idx" ON "Employee"("departmentId");
+
+-- CreateIndex
+CREATE INDEX "Employee_divisionId_idx" ON "Employee"("divisionId");
+
+-- CreateIndex
+CREATE INDEX "Employee_officeId_idx" ON "Employee"("officeId");
+
+-- CreateIndex
+CREATE INDEX "Employee_unitId_idx" ON "Employee"("unitId");
+
+-- CreateIndex
+CREATE INDEX "Employee_posId_idx" ON "Employee"("posId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Province_province_code_key" ON "Province"("province_code");
 
 -- CreateIndex
@@ -544,6 +582,12 @@ CREATE INDEX "TurnoffDoc_provinceId_idx" ON "TurnoffDoc"("provinceId");
 CREATE INDEX "TurnoffDoc_districtId_idx" ON "TurnoffDoc"("districtId");
 
 -- CreateIndex
+CREATE INDEX "TurnoffDoc_startDate_idx" ON "TurnoffDoc"("startDate");
+
+-- CreateIndex
+CREATE INDEX "TurnoffDoc_createdAt_idx" ON "TurnoffDoc"("createdAt");
+
+-- CreateIndex
 CREATE INDEX "TurnoffAddress_turnoffId_idx" ON "TurnoffAddress"("turnoffId");
 
 -- CreateIndex
@@ -551,6 +595,9 @@ CREATE INDEX "TurnoffAssign_turnoffId_idx" ON "TurnoffAssign"("turnoffId");
 
 -- CreateIndex
 CREATE INDEX "TurnoffAssign_userAppId_idx" ON "TurnoffAssign"("userAppId");
+
+-- CreateIndex
+CREATE INDEX "TurnoffAssign_docview_idx" ON "TurnoffAssign"("docview");
 
 -- CreateIndex
 CREATE INDEX "EmergencyDoc_createdById_idx" ON "EmergencyDoc"("createdById");
@@ -562,6 +609,12 @@ CREATE INDEX "EmergencyDoc_provinceId_idx" ON "EmergencyDoc"("provinceId");
 CREATE INDEX "EmergencyDoc_districtId_idx" ON "EmergencyDoc"("districtId");
 
 -- CreateIndex
+CREATE INDEX "EmergencyDoc_emergencyDate_idx" ON "EmergencyDoc"("emergencyDate");
+
+-- CreateIndex
+CREATE INDEX "EmergencyDoc_createdAt_idx" ON "EmergencyDoc"("createdAt");
+
+-- CreateIndex
 CREATE INDEX "EmergencyAddress_emergencyId_idx" ON "EmergencyAddress"("emergencyId");
 
 -- CreateIndex
@@ -569,6 +622,9 @@ CREATE INDEX "EmergencyAssign_emergencyId_idx" ON "EmergencyAssign"("emergencyId
 
 -- CreateIndex
 CREATE INDEX "EmergencyAssign_userAppId_idx" ON "EmergencyAssign"("userAppId");
+
+-- CreateIndex
+CREATE INDEX "EmergencyAssign_docview_idx" ON "EmergencyAssign"("docview");
 
 -- CreateIndex
 CREATE INDEX "CutpowerDoc_createdById_idx" ON "CutpowerDoc"("createdById");
@@ -580,6 +636,12 @@ CREATE INDEX "CutpowerDoc_provinceId_idx" ON "CutpowerDoc"("provinceId");
 CREATE INDEX "CutpowerDoc_districtId_idx" ON "CutpowerDoc"("districtId");
 
 -- CreateIndex
+CREATE INDEX "CutpowerDoc_cutpowerDate_idx" ON "CutpowerDoc"("cutpowerDate");
+
+-- CreateIndex
+CREATE INDEX "CutpowerDoc_createdAt_idx" ON "CutpowerDoc"("createdAt");
+
+-- CreateIndex
 CREATE INDEX "CutpowerAddress_cutpowerId_idx" ON "CutpowerAddress"("cutpowerId");
 
 -- CreateIndex
@@ -587,6 +649,9 @@ CREATE INDEX "CutpowerAssign_cutpowerId_idx" ON "CutpowerAssign"("cutpowerId");
 
 -- CreateIndex
 CREATE INDEX "CutpowerAssign_userAppId_idx" ON "CutpowerAssign"("userAppId");
+
+-- CreateIndex
+CREATE INDEX "CutpowerAssign_docview_idx" ON "CutpowerAssign"("docview");
 
 -- CreateIndex
 CREATE INDEX "RegisterMeter_meterStatusId_idx" ON "RegisterMeter"("meterStatusId");
@@ -598,22 +663,55 @@ CREATE INDEX "RegisterMeter_provinceId_idx" ON "RegisterMeter"("provinceId");
 CREATE INDEX "RegisterMeter_districtId_idx" ON "RegisterMeter"("districtId");
 
 -- CreateIndex
+CREATE INDEX "RegisterMeter_villageId_idx" ON "RegisterMeter"("villageId");
+
+-- CreateIndex
 CREATE INDEX "RegisterMeter_createdById_idx" ON "RegisterMeter"("createdById");
 
 -- CreateIndex
 CREATE INDEX "RegisterMeter_sourcetypeId_idx" ON "RegisterMeter"("sourcetypeId");
 
 -- CreateIndex
+CREATE INDEX "RegisterMeter_createdAt_idx" ON "RegisterMeter"("createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "UserAcceptMeter_meterId_key" ON "UserAcceptMeter"("meterId");
+
+-- CreateIndex
+CREATE INDEX "UserAcceptMeter_userCallId_idx" ON "UserAcceptMeter"("userCallId");
+
+-- CreateIndex
+CREATE INDEX "UserAcceptMeter_userProvinceId_idx" ON "UserAcceptMeter"("userProvinceId");
 
 -- CreateIndex
 CREATE INDEX "Conversation_topicId_idx" ON "Conversation"("topicId");
 
 -- CreateIndex
+CREATE INDEX "Conversation_topicId_deletedAt_lastMessageAt_idx" ON "Conversation"("topicId", "deletedAt", "lastMessageAt" DESC);
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Conversation_externalUserId_topicId_key" ON "Conversation"("externalUserId", "topicId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "AgentRating_messageId_key" ON "AgentRating"("messageId");
+
+-- CreateIndex
+CREATE INDEX "AgentRating_agentId_idx" ON "AgentRating"("agentId");
+
+-- CreateIndex
+CREATE INDEX "AgentRating_externalUserId_idx" ON "AgentRating"("externalUserId");
+
+-- CreateIndex
+CREATE INDEX "AgentRating_topicId_idx" ON "AgentRating"("topicId");
+
+-- CreateIndex
+CREATE INDEX "AgentRating_createdAt_idx" ON "AgentRating"("createdAt");
+
+-- CreateIndex
 CREATE INDEX "Message_conversationId_createdAt_idx" ON "Message"("conversationId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "Message_conversationId_deletedAt_createdAt_idx" ON "Message"("conversationId", "deletedAt", "createdAt");
 
 -- CreateIndex
 CREATE INDEX "MessageAuto_topicId_idx" ON "MessageAuto"("topicId");
@@ -634,10 +732,28 @@ CREATE INDEX "ProblemDoc_provinceId_idx" ON "ProblemDoc"("provinceId");
 CREATE INDEX "ProblemDoc_districtId_idx" ON "ProblemDoc"("districtId");
 
 -- CreateIndex
+CREATE INDEX "ProblemDoc_branchId_idx" ON "ProblemDoc"("branchId");
+
+-- CreateIndex
+CREATE INDEX "ProblemDoc_repairDistrictId_idx" ON "ProblemDoc"("repairDistrictId");
+
+-- CreateIndex
 CREATE INDEX "ProblemDoc_createdById_idx" ON "ProblemDoc"("createdById");
 
 -- CreateIndex
+CREATE INDEX "ProblemDoc_createdAt_idx" ON "ProblemDoc"("createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "ProblemAssign_problemId_key" ON "ProblemAssign"("problemId");
+
+-- CreateIndex
+CREATE INDEX "ProblemAssign_userSendId_idx" ON "ProblemAssign"("userSendId");
+
+-- CreateIndex
+CREATE INDEX "ProblemAssign_userReceiverId_idx" ON "ProblemAssign"("userReceiverId");
+
+-- CreateIndex
+CREATE INDEX "ProblemAssign_userActiveId_idx" ON "ProblemAssign"("userActiveId");
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_employeeId_fkey" FOREIGN KEY ("employeeId") REFERENCES "Employee"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -794,6 +910,21 @@ ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_externalUserId_fkey" FOR
 
 -- AddForeignKey
 ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "Topic"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AgentRating" ADD CONSTRAINT "AgentRating_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AgentRating" ADD CONSTRAINT "AgentRating_externalUserId_fkey" FOREIGN KEY ("externalUserId") REFERENCES "ExternalUser"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AgentRating" ADD CONSTRAINT "AgentRating_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "Topic"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AgentRating" ADD CONSTRAINT "AgentRating_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AgentRating" ADD CONSTRAINT "AgentRating_messageId_fkey" FOREIGN KEY ("messageId") REFERENCES "Message"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Message" ADD CONSTRAINT "Message_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -25,8 +25,7 @@ async function bootstrap() {
   const allowedOrigins = [
     'http://localhost:4600',
     'http://192.168.20.233:4600',
-    'https://notification.edl.com.la',
-    'https://notification-api.edl.com.la',
+    'https://app-portal.edl.com.la',
   ];
 
   app.enableCors({
@@ -39,7 +38,13 @@ async function bootstrap() {
     throw new Error('UPLOAD_BASE_PATH is not defined');
   }
 
-  app.use('/upload', express.static(path.resolve(uploadBasePath)));
+  app.use(
+    '/upload',
+    express.static(path.resolve(uploadBasePath), {
+      maxAge: '7d',
+      etag: true,
+    }),
+  );
 
   const port = process.env.PORT || 4500;
   await app.listen(port);

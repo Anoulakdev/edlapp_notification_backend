@@ -97,6 +97,12 @@ model Employee {
   createdAt    DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt    DateTime    @updatedAt @db.Timestamptz(0)
   user         User?
+
+  @@index([departmentId])
+  @@index([divisionId])
+  @@index([officeId])
+  @@index([unitId])
+  @@index([posId])
 }
 
 model Department {
@@ -295,6 +301,7 @@ model TurnoffAssign {
 
   @@index([turnoffId])
   @@index([userAppId])
+  @@index([docview])
 }
 
 model EmergencyDoc {
@@ -351,6 +358,7 @@ model EmergencyAssign {
 
   @@index([emergencyId])
   @@index([userAppId])
+  @@index([docview])
 }
 
 model CutpowerDoc {
@@ -401,6 +409,7 @@ model CutpowerAssign {
 
   @@index([cutpowerId])
   @@index([userAppId])
+  @@index([docview])
 }
 
 model SourceType {
@@ -445,6 +454,7 @@ model RegisterMeter {
   @@index([meterStatusId])
   @@index([provinceId])
   @@index([districtId])
+  @@index([villageId])
   @@index([createdById])
   @@index([sourcetypeId])
   @@index([createdAt])
@@ -460,6 +470,9 @@ model UserAcceptMeter {
   userProvince   User?         @relation("userProvince", fields: [userProvinceId], references: [id])
   createdAt      DateTime      @default(now()) @db.Timestamptz(0)
   updatedAt      DateTime      @updatedAt @db.Timestamptz(0)
+
+  @@index([userCallId])
+  @@index([userProvinceId])
 }
 
 model Topic {
@@ -562,6 +575,7 @@ model Message {
   agentRating    AgentRating?
 
   @@index([conversationId, createdAt])
+  @@index([conversationId, deletedAt, createdAt])
 }
 
 model MessageAuto {
@@ -628,6 +642,8 @@ model ProblemDoc {
   @@index([sourcetypeId])
   @@index([provinceId])
   @@index([districtId])
+  @@index([branchId])
+  @@index([repairDistrictId])
   @@index([createdById])
   @@index([createdAt])
 }
@@ -651,4 +667,8 @@ model ProblemAssign {
   commentText    String?    @db.VarChar(255)
   commentAudio   String?    @db.VarChar(255)
   commentImg     String?    @db.VarChar(255)
+
+  @@index([userSendId])
+  @@index([userReceiverId])
+  @@index([userActiveId])
 }

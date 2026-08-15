@@ -68,6 +68,7 @@ export class ProblemdocController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('search') search?: string,
+    @Query('problemstatusId') problemstatusId?: number,
     @Query('problemtypeId') problemtypeId?: number,
     @Query('sourcetypeId') sourcetypeId?: number,
     @Query('problemDate') problemDate?: string,
@@ -80,6 +81,7 @@ export class ProblemdocController {
       page,
       limit,
       search,
+      problemstatusId,
       problemtypeId,
       sourcetypeId,
       problemDate,
@@ -150,6 +152,15 @@ export class ProblemdocController {
       +id,
       updateReceiverDto,
     );
+  }
+
+  @Put('updatestatus/:id')
+  @Roles(3)
+  updateStatus(
+    @Param('id') id: string,
+    @Body() updateReceiverDto: UpdateReceiverDto,
+  ) {
+    return this.problemdocService.updateStatus(+id, updateReceiverDto);
   }
 
   @Put('repair/:id')

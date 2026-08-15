@@ -32,28 +32,37 @@ export async function ratingCountReport(
     where.createdAt = dateFilter;
   }
 
-  const agentRatings = await prisma.agentRating.findMany({
+  // Optimize: Use Database-level Group By Aggregation instead of loading all rows into Node.js memory
+  const groupedRatings = await prisma.agentRating.groupBy({
+    by: ['agentId', 'rating'],
     where,
-    include: {
-      agent: {
+    _count: {
+      _all: true,
+    },
+  });
+
+  if (!groupedRatings.length) {
+    return [];
+  }
+
+  const agentIds = Array.from(new Set(groupedRatings.map((g) => g.agentId)));
+  const agents = await prisma.user.findMany({
+    where: { id: { in: agentIds } },
+    select: {
+      id: true,
+      employee: {
         select: {
           id: true,
-          employee: {
-            select: {
-              id: true,
-              first_name: true,
-              last_name: true,
-              gender: true,
-              emp_code: true,
-            },
-          },
+          first_name: true,
+          last_name: true,
+          gender: true,
+          emp_code: true,
         },
       },
     },
-    orderBy: {
-      agentId: 'asc',
-    },
   });
+
+  const agentMap = new Map(agents.map((a) => [a.id, a]));
 
   const agentStatsMap = new Map<
     number,
@@ -70,12 +79,12 @@ export async function ratingCountReport(
     }
   >();
 
-  for (const item of agentRatings) {
-    let stats = agentStatsMap.get(item.agentId);
+  for (const group of groupedRatings) {
+    let stats = agentStatsMap.get(group.agentId);
     if (!stats) {
       stats = {
-        agentId: item.agentId,
-        agent: item.agent,
+        agentId: group.agentId,
+        agent: agentMap.get(group.agentId) || null,
         rating1: 0,
         rating2: 0,
         rating3: 0,
@@ -84,18 +93,19 @@ export async function ratingCountReport(
         totalRatings: 0,
         sumRatings: 0,
       };
-      agentStatsMap.set(item.agentId, stats);
+      agentStatsMap.set(group.agentId, stats);
     }
 
-    const rating = item.rating;
-    if (rating === 1) stats.rating1 += 1;
-    else if (rating === 2) stats.rating2 += 1;
-    else if (rating === 3) stats.rating3 += 1;
-    else if (rating === 4) stats.rating4 += 1;
-    else if (rating === 5) stats.rating5 += 1;
+    const count = group._count._all || 0;
+    const rating = group.rating;
+    if (rating === 1) stats.rating1 += count;
+    else if (rating === 2) stats.rating2 += count;
+    else if (rating === 3) stats.rating3 += count;
+    else if (rating === 4) stats.rating4 += count;
+    else if (rating === 5) stats.rating5 += count;
 
-    stats.totalRatings += 1;
-    stats.sumRatings += rating;
+    stats.totalRatings += count;
+    stats.sumRatings += rating * count;
   }
 
   const resultList = Array.from(agentStatsMap.values()).map((stats) => {

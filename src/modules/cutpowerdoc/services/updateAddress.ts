@@ -35,6 +35,7 @@ export async function updateAddress(
           headers: {
             'x-api-key': process.env.API_KEY,
           },
+          timeout: 30000,
         },
       );
 
@@ -45,7 +46,9 @@ export async function updateAddress(
 
       apiUsers.forEach((user: any) => {
         const uId = user.user_id ? Number(user.user_id) : null;
-        const vId = Number(user.village_id ?? user.villageId ?? user.village?.id);
+        const vId = Number(
+          user.village_id ?? user.villageId ?? user.village?.id,
+        );
 
         if (uId) {
           uniqueUserIds.add(uId);
@@ -73,7 +76,9 @@ export async function updateAddress(
       // Calculate userCount per villageId
       villageId.forEach((vId) => {
         const idNum = Number(vId);
-        villageUserMap[idNum] = userSetByVillage[idNum] ? userSetByVillage[idNum].size : 0;
+        villageUserMap[idNum] = userSetByVillage[idNum]
+          ? userSetByVillage[idNum].size
+          : 0;
       });
 
       assignData = Array.from(uniqueUserIds).map((userId) => ({

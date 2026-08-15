@@ -5,6 +5,14 @@ import { Request } from 'express';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 
+interface CachedUser {
+  user: any;
+  cachedAt: number;
+}
+
+const USER_CACHE_TTL_MS = 60 * 1000; // 60 seconds
+const userCache = new Map<number, CachedUser>();
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -35,6 +43,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: { sub: number }) {
+    const now = Date.now();
+    const cached = userCache.get(payload.sub);
+
+    if (cached && now - cached.cachedAt < USER_CACHE_TTL_MS) {
+      if (cached.user.status !== 'A') {
+        userCache.delete(payload.sub);
+        throw new UnauthorizedException('User is not active');
+      }
+      return cached.user;
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
       select: {
@@ -78,7 +97,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     if (!user) {
+      userCache.delete(payload.sub);
       throw new UnauthorizedException('User not found');
+    }
+
+    if (user.status !== 'A') {
+      userCache.delete(payload.sub);
+      throw new UnauthorizedException('User is not active');
+    }
+
+    userCache.set(payload.sub, { user, cachedAt: now });
+
+    // Periodic cleanup if cache grows
+    if (userCache.size > 2000) {
+      for (const [id, item] of userCache.entries()) {
+        if (now - item.cachedAt > USER_CACHE_TTL_MS) {
+          userCache.delete(id);
+        }
+      }
     }
 
     return user;

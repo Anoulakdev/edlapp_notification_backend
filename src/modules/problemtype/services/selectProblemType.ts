@@ -1,7 +1,12 @@
 import { PrismaService } from '../../../prisma/prisma.service';
+import { MemoryCache } from '../../../utils/cache.util';
 
 export async function selectProblemType(prisma: PrismaService) {
-  return prisma.problemType.findMany({
+  const cacheKey = 'select:problemtypes';
+  const cached = MemoryCache.get<any[]>(cacheKey);
+  if (cached) return cached;
+
+  const data = await prisma.problemType.findMany({
     where: {
       actived: true,
     },
@@ -14,4 +19,8 @@ export async function selectProblemType(prisma: PrismaService) {
       code: true,
     },
   });
+
+  MemoryCache.set(cacheKey, data, 5 * 60 * 1000);
+  return data;
 }
+

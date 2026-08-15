@@ -7,6 +7,7 @@ export class FindAllProblemDocOptions {
   page?: number;
   limit?: number;
   search?: string;
+  problemstatusId?: number;
   problemtypeId?: number;
   sourcetypeId?: number;
   problemDate?: string;
@@ -31,6 +32,10 @@ export async function FindAllProblemDoc(
     where.createdAt = {
       gte: moment(options.problemDate).startOf('day').toDate(),
     };
+  }
+
+  if (options.problemstatusId) {
+    where.problemstatusId = Number(options.problemstatusId);
   }
 
   if (options.problemtypeId) {

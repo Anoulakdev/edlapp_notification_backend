@@ -62,6 +62,7 @@ export async function findOneRegisterMeter(prisma: PrismaService, id: number) {
           headers: {
             'x-api-key': process.env.API_KEY,
           },
+          timeout: 5000,
         },
       );
       createdName = response.data?.data?.username || '';
