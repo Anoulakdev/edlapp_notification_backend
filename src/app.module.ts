@@ -36,6 +36,7 @@ import { ProblemtypeModule } from './modules/problemtype/problemtype.module';
 import { ProblemstatusModule } from './modules/problemstatus/problemstatus.module';
 import { ProblemdocModule } from './modules/problemdoc/problemdoc.module';
 import { ReportModule } from './modules/report/report.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { ReportModule } from './modules/report/report.module';
     ProblemstatusModule,
     ProblemdocModule,
     ReportModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

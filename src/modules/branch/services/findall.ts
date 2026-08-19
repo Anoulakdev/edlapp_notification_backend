@@ -4,7 +4,7 @@ import moment from 'moment-timezone';
 export async function findAllBranch(prisma: PrismaService) {
   const branchs = await prisma.branch.findMany({
     orderBy: {
-      id: 'asc',
+      code: 'asc',
     },
     include: {
       createdBy: {

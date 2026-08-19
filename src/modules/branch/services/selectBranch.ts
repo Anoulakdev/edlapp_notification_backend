@@ -3,7 +3,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 export async function selectBranch(prisma: PrismaService) {
   const branches = await prisma.branch.findMany({
     orderBy: {
-      id: 'asc',
+      code: 'asc',
     },
     select: {
       id: true,
