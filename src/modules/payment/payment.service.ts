@@ -57,11 +57,19 @@ export class PaymentService {
         timeout: 30000,
       });
 
+      const parseAmount = (val: any): number => {
+        if (val === null || val === undefined) return 0;
+        const clean =
+          typeof val === 'string' ? val.replace(/,/g, '').trim() : val;
+        const num = Number(clean);
+        return isNaN(num) ? 0 : num;
+      };
+
       let totalAmount = 0;
       if (response.data && Array.isArray(response.data.items)) {
         if (response.data.totalPages <= 1) {
           totalAmount = response.data.items.reduce(
-            (sum: number, item: any) => sum + (Number(item.paid_amount) || 0),
+            (sum: number, item: any) => sum + parseAmount(item.paid_amount),
             0,
           );
         } else {
@@ -75,13 +83,13 @@ export class PaymentService {
             if (summaryRes.data && Array.isArray(summaryRes.data.items)) {
               totalAmount = summaryRes.data.items.reduce(
                 (sum: number, item: any) =>
-                  sum + (Number(item.paid_amount) || 0),
+                  sum + parseAmount(item.paid_amount),
                 0,
               );
             }
           } catch {
             totalAmount = response.data.items.reduce(
-              (sum: number, item: any) => sum + (Number(item.paid_amount) || 0),
+              (sum: number, item: any) => sum + parseAmount(item.paid_amount),
               0,
             );
           }
