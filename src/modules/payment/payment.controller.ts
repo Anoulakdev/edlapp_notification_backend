@@ -30,6 +30,7 @@ export class PaymentController {
     @Query('accountNo') accountNo?: string,
     @Query('paymentDateFrom') paymentDateFrom?: string,
     @Query('paymentDateTo') paymentDateTo?: string,
+    @Query('status') status?: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
   ) {
@@ -37,6 +38,7 @@ export class PaymentController {
       accountNo,
       paymentDateFrom,
       paymentDateTo,
+      status,
       page,
       pageSize,
     });

@@ -13,6 +13,7 @@ export class PaymentService {
       accountNo?: string;
       paymentDateFrom?: string;
       paymentDateTo?: string;
+      status?: string;
       page?: number;
       pageSize?: number;
     },
@@ -27,10 +28,13 @@ export class PaymentService {
       }
 
       const params: Record<string, any> = {
-        status: 'SUCCESS',
         page: Number(query.page) || 1,
         pageSize: Number(query.pageSize) || 10,
       };
+
+      if (query.status) {
+        params.status = query.status;
+      }
 
       if (user.branchId) {
         params.provinceId = Number(user.branchId);
