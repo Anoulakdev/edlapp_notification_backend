@@ -10,6 +10,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -72,11 +73,13 @@ export class UserController {
     return this.userService.updateStatus(+id, actived);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Put('changepassword/:id')
   changePassword(@Param('id') id: string, @Body() dto: ChangePasswordDto) {
     return this.userService.changePassword(+id, dto);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Put('resetpassword/:id')
   @Roles(1, 2)
   resetPassword(@Param('id') id: string) {
