@@ -20,9 +20,18 @@ export class PaymentService {
   ) {
     try {
       const url = process.env.URL_PAYMENT_API;
+      const token = process.env.PAYMENT_TOKEN;
+
       if (!url) {
         throw new HttpException(
           'URL_PAYMENT_API is not configured in .env',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      if (!token) {
+        throw new HttpException(
+          'PAYMENT_TOKEN is not configured in .env',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
@@ -52,9 +61,14 @@ export class PaymentService {
         params.accountNo = query.accountNo;
       }
 
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
       const response = await axios.get(url, {
         params,
         timeout: 30000,
+        headers,
       });
 
       const parseAmount = (val: any): number => {
@@ -66,8 +80,12 @@ export class PaymentService {
       };
 
       let totalAmount = 0;
-      if (response.data && Array.isArray(response.data.items)) {
-        if (response.data.totalPages <= 1) {
+      if (response.data?.totalAmount !== undefined && response.data?.totalAmount !== null) {
+        totalAmount = parseAmount(response.data.totalAmount);
+      } else if (response.data?.total_amount !== undefined && response.data?.total_amount !== null) {
+        totalAmount = parseAmount(response.data.total_amount);
+      } else if (response.data && Array.isArray(response.data.items)) {
+        if (response.data.totalPages <= 1 && Number(params.page) === 1) {
           totalAmount = response.data.items.reduce(
             (sum: number, item: any) => sum + parseAmount(item.paid_amount),
             0,
@@ -75,19 +93,32 @@ export class PaymentService {
         } else {
           try {
             // Calculate total amount across all records matching current query
-            const summaryParams = { ...params, page: 1, pageSize: 10000 };
+            const summaryParams = {
+              ...params,
+              page: 1,
+              pageSize: Math.max(10000, Number(response.data.totalCount) || 10000),
+            };
             const summaryRes = await axios.get(url, {
               params: summaryParams,
-              timeout: 10000,
+              timeout: 20000,
+              headers,
             });
             if (summaryRes.data && Array.isArray(summaryRes.data.items)) {
               totalAmount = summaryRes.data.items.reduce(
-                (sum: number, item: any) =>
-                  sum + parseAmount(item.paid_amount),
+                (sum: number, item: any) => sum + parseAmount(item.paid_amount),
+                0,
+              );
+            } else {
+              totalAmount = response.data.items.reduce(
+                (sum: number, item: any) => sum + parseAmount(item.paid_amount),
                 0,
               );
             }
-          } catch {
+          } catch (err: any) {
+            console.error(
+              'Failed to fetch summary total amount:',
+              err?.response?.data || err?.message,
+            );
             totalAmount = response.data.items.reduce(
               (sum: number, item: any) => sum + parseAmount(item.paid_amount),
               0,
