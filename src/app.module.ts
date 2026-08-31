@@ -86,7 +86,7 @@ import { PaymentModule } from './modules/payment/payment.module';
         {
           name: 'default',
           ttl: Number(config.get('THROTTLE_TTL')) || 60000,
-          limit: Number(config.get('THROTTLE_LIMIT')) || 100,
+          limit: Number(config.get('THROTTLE_LIMIT')) || 600,
         },
       ],
     }),

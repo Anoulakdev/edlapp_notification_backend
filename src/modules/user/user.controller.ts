@@ -73,13 +73,13 @@ export class UserController {
     return this.userService.updateStatus(+id, actived);
   }
 
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Put('changepassword/:id')
   changePassword(@Param('id') id: string, @Body() dto: ChangePasswordDto) {
     return this.userService.changePassword(+id, dto);
   }
 
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Put('resetpassword/:id')
   @Roles(1, 2)
   resetPassword(@Param('id') id: string) {
