@@ -29,9 +29,13 @@ export async function FindAllProblemDoc(
   }
 
   if (options.problemDate) {
-    where.createdAt = {
-      gte: moment(options.problemDate).startOf('day').toDate(),
-    };
+    const parsedDate = moment.tz(options.problemDate, 'Asia/Vientiane');
+    if (parsedDate.isValid()) {
+      where.createdAt = {
+        gte: parsedDate.clone().startOf('day').toDate(),
+        lte: parsedDate.clone().endOf('day').toDate(),
+      };
+    }
   }
 
   if (options.problemstatusId) {
