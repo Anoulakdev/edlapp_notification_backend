@@ -107,24 +107,39 @@ export class AuthService {
     }
 
     if (platform && model && fcmtoken) {
-      await this.prisma.fcmToken.upsert({
-        where: {
-          userId_platform_model: {
+      const existingToken = await this.prisma.fcmToken.findFirst({
+        where: { userId: user.id },
+      });
+
+      if (existingToken) {
+        await this.prisma.$transaction([
+          // ลบ token อื่นๆ ของ user คนนี้ (กรณีมีหลายเครื่องจากระบบเก่า) เพื่อให้เหลือเครื่องเดียว
+          this.prisma.fcmToken.deleteMany({
+            where: {
+              userId: user.id,
+              id: { not: existingToken.id },
+            },
+          }),
+          // อัปเดต platform, model และ fcmtoken ของเครื่องล่าสุด
+          this.prisma.fcmToken.update({
+            where: { id: existingToken.id },
+            data: {
+              platform,
+              model,
+              fcmtoken,
+            },
+          }),
+        ]);
+      } else {
+        await this.prisma.fcmToken.create({
+          data: {
             userId: user.id,
             platform,
             model,
+            fcmtoken,
           },
-        },
-        update: {
-          fcmtoken,
-        },
-        create: {
-          userId: user.id,
-          platform,
-          model,
-          fcmtoken,
-        },
-      });
+        });
+      }
     }
 
     const payload = {

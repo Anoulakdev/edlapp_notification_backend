@@ -1,13 +1,14 @@
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuthUser } from '../../../interfaces/auth-user.interface';
 import { CreateReceiverDto } from '../dto/create-receiver.dto';
+import { sendFCM } from '../../../fcm/fcm.service';
 
 export async function createAssign(
   prisma: PrismaService,
   user: AuthUser,
   createReceiverDto: CreateReceiverDto,
 ) {
-  return await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const findProblemDoc = await tx.problemDoc.findUnique({
       where: { id: Number(createReceiverDto.problemId) },
       select: {
@@ -25,7 +26,7 @@ export async function createAssign(
     const sendTime = Math.floor(diffMs / (1000 * 60));
 
     // 1. Update the problemstatusId in the ProblemDoc table
-    await tx.problemDoc.update({
+    const updatedProblemDoc = await tx.problemDoc.update({
       where: { id: Number(createReceiverDto.problemId) },
       data: {
         problemstatusId: Number(createReceiverDto.problemstatusId),
@@ -36,10 +37,14 @@ export async function createAssign(
           ? Number(createReceiverDto.repairDistrictId)
           : undefined,
       },
+      include: {
+        problemtype: true,
+        village: true,
+      },
     });
 
     // 2. Create the ProblemAssign record
-    return await tx.problemAssign.create({
+    const assign = await tx.problemAssign.create({
       data: {
         problemId: Number(createReceiverDto.problemId),
         userSendId: user.id,
@@ -47,5 +52,58 @@ export async function createAssign(
         sendTime: sendTime > 0 ? sendTime : 0,
       },
     });
+
+    return { assign, updatedProblemDoc };
   });
+
+  // Query FCM tokens of users in repairDistrictId and send notification
+  const targetRepairDistrictId = result.updatedProblemDoc.repairDistrictId;
+
+  if (targetRepairDistrictId) {
+    const fcmRecords = await prisma.fcmToken.findMany({
+      where: {
+        user: {
+          repairDistrictId: targetRepairDistrictId,
+          status: 'A',
+        },
+      },
+      select: {
+        fcmtoken: true,
+      },
+    });
+
+    const fcmTokens = Array.from(
+      new Set(
+        fcmRecords
+          .map((r) => r.fcmtoken?.trim())
+          .filter(
+            (t): t is string =>
+              Boolean(t) &&
+              t.toLowerCase() !== 'demo' &&
+              t.toLowerCase() !== 'null' &&
+              t.toLowerCase() !== 'undefined',
+          ),
+      ),
+    );
+
+    if (fcmTokens.length) {
+      const typeName = result.updatedProblemDoc.problemtype?.name;
+      const title = 'ມີການມອບໝາຍວຽກສ້ອມແປງໃໝ່';
+      const villageName = result.updatedProblemDoc.village?.village_name;
+      const body = villageName
+        ? `ປະເພດ: ${typeName} ບ້ານ: ${villageName}`
+        : `ປະເພດ: ${typeName} ບ້ານ: .....`;
+
+      sendFCM(fcmTokens, title, body, {
+        problemId: String(result.assign.problemId),
+      }).catch((fcmError) => {
+        console.error(
+          'Failed to send FCM notifications in background:',
+          fcmError,
+        );
+      });
+    }
+  }
+
+  return result.assign;
 }
