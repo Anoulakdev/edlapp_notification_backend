@@ -64,9 +64,12 @@ export async function createTurnoffDoc(
       createTurnoffdocDto.endTime,
     );
 
+    const restDto = { ...createTurnoffdocDto };
+    delete restDto.villageId;
+
     return await prisma.turnoffDoc.create({
       data: {
-        ...createTurnoffdocDto,
+        ...restDto,
         startDate: new Date(createTurnoffdocDto.startDate),
         endDate: new Date(createTurnoffdocDto.endDate),
         startTime: createTurnoffdocDto.startTime,
@@ -75,6 +78,9 @@ export async function createTurnoffDoc(
         turnoffFile: Docfilename,
         provinceId: user.provinceId ? Number(user.provinceId) : null,
         districtId: user.districtId ? Number(user.districtId) : null,
+        voltageId: createTurnoffdocDto.voltageId
+          ? Number(createTurnoffdocDto.voltageId)
+          : null,
         createdById: user.id,
       },
     });

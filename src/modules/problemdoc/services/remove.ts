@@ -33,6 +33,9 @@ export async function removeProblemDoc(prisma: PrismaService, id: number) {
 
     const assign = problemdoc.problemAssigns;
     if (assign) {
+      await tx.problemEquipment.deleteMany({
+        where: { problemAssignId: assign.id },
+      });
       await deleteFileIfExists('audio', assign.commentAudio);
       await deleteFileIfExists('comment', assign.commentImg);
     }

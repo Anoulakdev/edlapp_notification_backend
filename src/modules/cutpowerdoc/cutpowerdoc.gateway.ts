@@ -28,7 +28,7 @@ export class CutpowerdocGateway
 
   // Broadcast refresh event to all connected clients in cutpowerdoc namespace
   emitRefresh() {
-    this.server.emit('cutpowerdocUpdated', { action: 'refresh' });
+    this.server?.emit('cutpowerdocUpdated', { action: 'refresh' });
     console.log('[CutpowerdocGateway] Emitted cutpowerdocUpdated event');
   }
 }

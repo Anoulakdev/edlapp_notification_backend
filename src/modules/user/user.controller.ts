@@ -40,6 +40,8 @@ export class UserController {
     @Query('search') search?: string,
     @Query('roleId') roleId?: number,
     @Query('status') status?: string,
+    @Query('isOnline') isOnline?: string,
+    @Query('onlineStatus') onlineStatus?: string,
     @Query('departmentId') departmentId?: number,
     @Query('divisionId') divisionId?: number,
     @Query('posId') posId?: number,
@@ -50,6 +52,8 @@ export class UserController {
       search,
       roleId,
       status,
+      isOnline,
+      onlineStatus,
       departmentId,
       divisionId,
       posId,
@@ -71,6 +75,14 @@ export class UserController {
   @Roles(1, 2)
   updateStatus(@Param('id') id: string, @Query('actived') actived: string) {
     return this.userService.updateStatus(+id, actived);
+  }
+
+  @Put(':id/online-status')
+  updateOnlineStatus(
+    @Param('id') id: string,
+    @Body('isOnline') isOnline: boolean,
+  ) {
+    return this.userService.updateOnlineStatus(+id, isOnline);
   }
 
   @Throttle({ default: { limit: 10, ttl: 60000 } })

@@ -81,6 +81,28 @@ export async function findOneProblemDoc(prisma: PrismaService, id: number) {
               },
             },
           },
+          problemEquipments: {
+            include: {
+              typeEquipment: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              equipment: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              typeUnit: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
         },
       },
     },

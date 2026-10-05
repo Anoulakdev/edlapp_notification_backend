@@ -28,7 +28,7 @@ export class TurnoffdocGateway
 
   // Broadcast refresh event to all connected clients in turnoffdoc namespace
   emitRefresh() {
-    this.server.emit('turnoffdocUpdated', { action: 'refresh' });
+    this.server?.emit('turnoffdocUpdated', { action: 'refresh' });
     console.log('[TurnoffdocGateway] Emitted turnoffdocUpdated event');
   }
 }

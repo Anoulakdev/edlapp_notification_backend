@@ -94,6 +94,12 @@ export class RegistermeterController {
     });
   }
 
+  @Get('countmeter')
+  @Roles(1, 2, 3, 4, 5, 6)
+  countMeter(@Req() req: UserRequest) {
+    return this.registermeterService.countMeter(req.user);
+  }
+
   @Get('edlapp')
   @Roles(7)
   EDLAPP(
@@ -117,6 +123,7 @@ export class RegistermeterController {
   @Put(':id')
   @Roles(2, 4, 7)
   update(
+    @Req() req: UserRequest,
     @Param('id') id: string,
     @UploadedFiles()
     files: {
@@ -131,7 +138,20 @@ export class RegistermeterController {
     if (files?.idcardImg?.[0]) {
       updateRegistermeterDto.idcardImg = files.idcardImg[0].filename;
     }
-    return this.registermeterService.update(+id, updateRegistermeterDto);
+    return this.registermeterService.update(
+      req.user,
+      +id,
+      updateRegistermeterDto,
+    );
+  }
+
+  @Put('updatereject/:id')
+  @Roles(2, 3)
+  updateReject(
+    @Param('id') id: string,
+    @Body() updateRegistermeterDto: UpdateRegistermeterDto,
+  ) {
+    return this.registermeterService.updateReject(+id, updateRegistermeterDto);
   }
 
   @Put('updateforward/:id')

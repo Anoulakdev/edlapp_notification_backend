@@ -51,4 +51,9 @@ export class CreateTurnoffdocDto {
   @IsInt({ each: true })
   @IsOptional()
   villageId?: number[];
+
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  voltageId?: number;
 }

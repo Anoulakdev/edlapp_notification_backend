@@ -20,6 +20,7 @@ export class ReportController {
     @Query('endDate') endDate?: string,
     @Query('provinceId') provinceId?: number,
     @Query('districtId') districtId?: number,
+    @Query('voltageId') voltageId?: number,
   ) {
     return this.reportService.turnoffReport(req.user, {
       page,
@@ -28,6 +29,7 @@ export class ReportController {
       endDate,
       provinceId,
       districtId,
+      voltageId,
     });
   }
 
@@ -41,6 +43,7 @@ export class ReportController {
     @Query('endDate') endDate?: string,
     @Query('provinceId') provinceId?: number,
     @Query('districtId') districtId?: number,
+    @Query('voltageId') voltageId?: number,
   ) {
     return this.reportService.emergencyReport(req.user, {
       page,
@@ -49,6 +52,7 @@ export class ReportController {
       endDate,
       provinceId,
       districtId,
+      voltageId,
     });
   }
 
@@ -62,6 +66,7 @@ export class ReportController {
     @Query('endDate') endDate?: string,
     @Query('provinceId') provinceId?: number,
     @Query('districtId') districtId?: number,
+    @Query('voltageId') voltageId?: number,
   ) {
     return this.reportService.cutpowerReport(req.user, {
       page,
@@ -70,6 +75,7 @@ export class ReportController {
       endDate,
       provinceId,
       districtId,
+      voltageId,
     });
   }
 

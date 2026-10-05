@@ -11,12 +11,13 @@ import { updateMessage } from './services/updateMessage';
 import { removeMessage } from './services/removeMessage';
 import { clearChat } from './services/clearChat';
 import { listByTopic } from './services/listByTopic';
+import { unreadCount } from './services/unreadCount';
 import { ConversationGateway } from './conversation.gateway';
 import moment from 'moment-timezone';
 
 import { RequestRatingDto } from './dto/request-rating.dto';
 import { CreateAgentRatingDto } from './dto/create-agent-rating.dto';
-import { requestRating } from './services/requestRating';
+import { requestRating, getRatingStatus } from './services/requestRating';
 import {
   createAgentRating,
   getAgentRatingByConversation,
@@ -46,6 +47,19 @@ export class ConversationService {
     );
     await this.broadcastNewMessage(conversation.id);
     return conversation;
+  }
+
+  async unreadCount() {
+    return await unreadCount(this.prisma);
+  }
+
+  async broadcastTotalUnreadCount() {
+    try {
+      const data = await unreadCount(this.prisma);
+      this.conversationGateway.emitTotalUnreadCountUpdate(data.total);
+    } catch (e) {
+      console.error('Failed to emit total unread count via websocket:', e);
+    }
   }
 
   async edlAppGet(
@@ -134,6 +148,7 @@ export class ConversationService {
         Number(topicId),
         unreadCount,
       );
+      await this.broadcastTotalUnreadCount();
     } catch (e) {
       console.error(
         'Failed to emit messagesSeen or topic unread count inside callGet:',
@@ -165,6 +180,7 @@ export class ConversationService {
         result.deletedMessage.topicId,
         result.deletedMessage.id,
       );
+      await this.broadcastTotalUnreadCount();
     } catch (e) {
       console.error('Failed to emit deleteMessage via websocket:', e);
     }
@@ -175,7 +191,27 @@ export class ConversationService {
   }
 
   async clearChat(conversationId: number, userRole?: number) {
-    return clearChat(this.prisma, conversationId, userRole);
+    const result = await clearChat(this.prisma, conversationId, userRole);
+    if (result.conversation) {
+      try {
+        const conversations = await this.prisma.conversation.findMany({
+          where: { topicId: result.conversation.topicId, deletedAt: null },
+          select: { unreadAgentCount: true },
+        });
+        const unreadCount = conversations.reduce(
+          (sum, c) => sum + (c.unreadAgentCount || 0),
+          0,
+        );
+        this.conversationGateway.emitTopicUnreadCountUpdate(
+          result.conversation.topicId,
+          unreadCount,
+        );
+        await this.broadcastTotalUnreadCount();
+      } catch (e) {
+        console.error('Failed to emit unread count after clearChat:', e);
+      }
+    }
+    return result;
   }
 
   async requestRating(user: AuthUser, dto: RequestRatingDto) {
@@ -216,6 +252,10 @@ export class ConversationService {
 
   async getAgentRatingByConversation(conversationId: number) {
     return getAgentRatingByConversation(this.prisma, conversationId);
+  }
+
+  async getRatingStatus(user: AuthUser, conversationId: number) {
+    return getRatingStatus(this.prisma, user, conversationId);
   }
 
   private async broadcastUpdateMessage(messageId: number) {
@@ -323,6 +363,7 @@ export class ConversationService {
             topicId,
             unreadCount,
           );
+          await this.broadcastTotalUnreadCount();
         } catch (e) {
           console.error(
             'Failed to emit topic unread count inside broadcastNewMessage:',

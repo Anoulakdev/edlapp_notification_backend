@@ -142,6 +142,24 @@ export class AuthService {
       }
     }
 
+    const now = new Date();
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isOnline: true,
+        lastLoginAt: now,
+        lastActiveAt: now,
+      },
+    });
+
+    const userWithStatus = {
+      ...user,
+      isOnline: true,
+      onlineStatus: 'online',
+      lastLoginAt: now,
+      lastActiveAt: now,
+    };
+
     const payload = {
       sub: user.id,
       username: user.username,
@@ -161,7 +179,24 @@ export class AuthService {
 
     return {
       token: this.jwtService.sign(payload, { expiresIn }),
-      user,
+      user: userWithStatus,
     };
+  }
+
+  async logout(userId: number) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        isOnline: false,
+        lastActiveAt: new Date(),
+      },
+      select: {
+        id: true,
+        username: true,
+        isOnline: true,
+        lastLoginAt: true,
+        lastActiveAt: true,
+      },
+    });
   }
 }

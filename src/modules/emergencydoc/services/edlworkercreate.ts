@@ -122,6 +122,9 @@ export async function edlWorkerCreate(
           emergencyAudio: createEmergencydocDto.emergencyAudio || '',
           provinceId: user.provinceId ? Number(user.provinceId) : null,
           districtId: user.districtId ? Number(user.districtId) : null,
+          voltageId: createEmergencydocDto.voltageId
+            ? Number(createEmergencydocDto.voltageId)
+            : null,
           createdById: user.id,
         },
       });

@@ -1,17 +1,44 @@
 import * as admin from 'firebase-admin';
 import * as path from 'path';
+import * as fs from 'fs';
 
 export function initFirebase() {
   if (admin.apps.length > 0) return;
 
-  const serviceAccount = require(
+  const candidatePaths = [
+    process.env.FIREBASE_SERVICE_ACCOUNT_PATH,
     path.join(process.cwd(), 'src/config/firebase.service-account.json'),
-  );
+    path.join(process.cwd(), 'dist/src/config/firebase.service-account.json'),
+    path.join(__dirname, '../config/firebase.service-account.json'),
+  ].filter(Boolean) as string[];
 
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    projectId: serviceAccount.project_id,
-  });
+  let serviceAccountPath: string | null = null;
+  for (const candidate of candidatePaths) {
+    if (fs.existsSync(candidate)) {
+      serviceAccountPath = candidate;
+      break;
+    }
+  }
+
+  if (!serviceAccountPath) {
+    console.warn(
+      '[FCM] Warning: firebase.service-account.json not found in candidate paths. Push notifications may fail.',
+    );
+    return;
+  }
+
+  try {
+    const serviceAccount = JSON.parse(
+      fs.readFileSync(serviceAccountPath, 'utf8'),
+    );
+
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      projectId: serviceAccount.project_id,
+    });
+  } catch (err) {
+    console.error('[FCM] Failed to initialize Firebase:', err);
+  }
 }
 
 // ===============================

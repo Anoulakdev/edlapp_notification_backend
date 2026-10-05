@@ -3,6 +3,14 @@ import axios from 'axios';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthUser } from '../../interfaces/auth-user.interface';
 
+interface CachedTotal {
+  totalAmount: number;
+  cachedAt: number;
+}
+
+const summaryCache = new Map<string, CachedTotal>();
+const SUMMARY_CACHE_TTL = 60 * 1000; // 60 seconds
+
 @Injectable()
 export class PaymentService {
   constructor(private prisma: PrismaService) {}
@@ -91,38 +99,76 @@ export class PaymentService {
             0,
           );
         } else {
-          try {
-            // Calculate total amount across all records matching current query
-            const summaryParams = {
-              ...params,
-              page: 1,
-              pageSize: Math.max(10000, Number(response.data.totalCount) || 10000),
-            };
-            const summaryRes = await axios.get(url, {
-              params: summaryParams,
-              timeout: 20000,
-              headers,
-            });
-            if (summaryRes.data && Array.isArray(summaryRes.data.items)) {
-              totalAmount = summaryRes.data.items.reduce(
-                (sum: number, item: any) => sum + parseAmount(item.paid_amount),
-                0,
+          const cacheKey = `${params.provinceId || ''}_${params.status || ''}_${params.paymentDateFrom || ''}_${params.paymentDateTo || ''}_${params.accountNo || ''}`;
+          const now = Date.now();
+          const cached = summaryCache.get(cacheKey);
+
+          if (cached && now - cached.cachedAt < SUMMARY_CACHE_TTL) {
+            totalAmount = cached.totalAmount;
+          } else {
+            try {
+              // The external BCEL API strictly caps pageSize to 100.
+              // To accurately sum paid_amount across all items, fetch pages in parallel batches of 10.
+              const totalCount = Number(response.data.totalCount) || 0;
+              const totalPages = Math.ceil(totalCount / 100);
+
+              const baseFilterParams: Record<string, any> = {};
+              if (params.status) baseFilterParams.status = params.status;
+              if (params.provinceId) baseFilterParams.provinceId = params.provinceId;
+              if (params.paymentDateFrom) baseFilterParams.paymentDateFrom = params.paymentDateFrom;
+              if (params.paymentDateTo) baseFilterParams.paymentDateTo = params.paymentDateTo;
+              if (params.accountNo) baseFilterParams.accountNo = params.accountNo;
+
+              let calculatedTotal = 0;
+              const BATCH_SIZE = 10;
+              const maxPagesToFetch = Math.min(totalPages, 50);
+
+              for (let startPage = 1; startPage <= maxPagesToFetch; startPage += BATCH_SIZE) {
+                const endPage = Math.min(startPage + BATCH_SIZE - 1, maxPagesToFetch);
+                const pagePromises: Promise<any[]>[] = [];
+
+                for (let p = startPage; p <= endPage; p++) {
+                  pagePromises.push(
+                    axios
+                      .get(url, {
+                        params: { ...baseFilterParams, page: p, pageSize: 100 },
+                        headers,
+                        timeout: 15000,
+                      })
+                      .then((r) => r.data?.items || [])
+                      .catch(() => []),
+                  );
+                }
+
+                const batchResults = await Promise.all(pagePromises);
+                for (const items of batchResults) {
+                  for (const item of items) {
+                    calculatedTotal += parseAmount(item.paid_amount);
+                  }
+                }
+              }
+
+              totalAmount = calculatedTotal;
+              summaryCache.set(cacheKey, { totalAmount, cachedAt: now });
+
+              // Periodic cleanup
+              if (summaryCache.size > 200) {
+                for (const [key, val] of summaryCache.entries()) {
+                  if (now - val.cachedAt > SUMMARY_CACHE_TTL) {
+                    summaryCache.delete(key);
+                  }
+                }
+              }
+            } catch (err: any) {
+              console.error(
+                'Failed to fetch summary total amount:',
+                err?.response?.data || err?.message,
               );
-            } else {
               totalAmount = response.data.items.reduce(
                 (sum: number, item: any) => sum + parseAmount(item.paid_amount),
                 0,
               );
             }
-          } catch (err: any) {
-            console.error(
-              'Failed to fetch summary total amount:',
-              err?.response?.data || err?.message,
-            );
-            totalAmount = response.data.items.reduce(
-              (sum: number, item: any) => sum + parseAmount(item.paid_amount),
-              0,
-            );
           }
         }
       }

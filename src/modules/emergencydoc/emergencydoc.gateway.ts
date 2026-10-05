@@ -28,7 +28,7 @@ export class EmergencydocGateway
 
   // Broadcast refresh event to all connected clients in emergencydoc namespace
   emitRefresh() {
-    this.server.emit('emergencydocUpdated', { action: 'refresh' });
+    this.server?.emit('emergencydocUpdated', { action: 'refresh' });
     console.log('[EmergencydocGateway] Emitted emergencydocUpdated event');
   }
 }

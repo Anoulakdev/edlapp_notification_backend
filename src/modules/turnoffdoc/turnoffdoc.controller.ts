@@ -62,6 +62,7 @@ export class TurnoffdocController {
     @Query('endDate') endDate?: string,
     @Query('provinceId') provinceId?: number,
     @Query('districtId') districtId?: number,
+    @Query('voltageId') voltageId?: number,
     @Query('filterMyDocs') filterMyDocs?: string,
   ) {
     return this.turnoffdocService.findAll(req.user, {
@@ -72,6 +73,7 @@ export class TurnoffdocController {
       endDate,
       provinceId,
       districtId,
+      voltageId,
       filterMyDocs: filterMyDocs === 'true' || filterMyDocs === '1',
     });
   }

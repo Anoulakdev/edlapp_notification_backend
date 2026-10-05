@@ -22,6 +22,7 @@ export async function findOneTurnoffDoc(prisma: PrismaService, id: number) {
       },
       province: true,
       district: true,
+      voltage: true,
       turnoffAddresses: {
         select: {
           id: true,

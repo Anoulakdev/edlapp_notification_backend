@@ -22,6 +22,7 @@ export async function findOneCutpowerDoc(prisma: PrismaService, id: number) {
       },
       province: true,
       district: true,
+      voltage: true,
       cutpowerAddresses: {
         select: {
           id: true,

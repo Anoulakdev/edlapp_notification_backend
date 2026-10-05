@@ -10,6 +10,7 @@ export class TurnoffOptions {
   endDate?: string;
   provinceId?: number;
   districtId?: number;
+  voltageId?: number;
 }
 
 export async function turnoffReport(
@@ -23,10 +24,16 @@ export async function turnoffReport(
   if (options.startDate || options.endDate) {
     const dateFilter: Prisma.DateTimeFilter = {};
     if (options.startDate) {
-      dateFilter.gte = moment(options.startDate).startOf('day').toDate();
+      dateFilter.gte = moment
+        .tz(options.startDate, 'Asia/Vientiane')
+        .startOf('day')
+        .toDate();
     }
     if (options.endDate) {
-      dateFilter.lte = moment(options.endDate).endOf('day').toDate();
+      dateFilter.lte = moment
+        .tz(options.endDate, 'Asia/Vientiane')
+        .endOf('day')
+        .toDate();
     }
     where.startDate = dateFilter;
   }
@@ -88,6 +95,10 @@ export async function turnoffReport(
     }
   }
 
+  if (options.voltageId) {
+    where.voltageId = Number(options.voltageId);
+  }
+
   if (andFilters.length > 0) {
     where.AND = andFilters;
   }
@@ -112,6 +123,7 @@ export async function turnoffReport(
     // },
     province: true,
     district: true,
+    voltage: true,
     turnoffAddresses: {
       select: {
         id: true,

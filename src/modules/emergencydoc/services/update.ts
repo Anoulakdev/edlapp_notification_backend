@@ -107,6 +107,9 @@ export async function updateEmergencyDoc(
       useTime,
       lat: Number(updateEmergencydocDto.lat),
       lng: Number(updateEmergencydocDto.lng),
+      voltageId: updateEmergencydocDto.voltageId
+        ? Number(updateEmergencydocDto.voltageId)
+        : null,
       emergencyImg: updateEmergencydocDto.emergencyImg || null,
       emergencyAudio: updateEmergencydocDto.emergencyAudio || null,
     },

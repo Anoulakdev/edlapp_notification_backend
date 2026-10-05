@@ -24,13 +24,13 @@ export class TopicController {
   constructor(private readonly topicService: TopicService) {}
 
   @Post()
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   create(@Req() req: UserRequest, @Body() createTopicDto: CreateTopicDto) {
     return this.topicService.create(req.user, createTopicDto);
   }
 
   @Get()
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   findAll() {
     return this.topicService.findAll();
   }
@@ -52,7 +52,7 @@ export class TopicController {
   }
 
   @Put(':id')
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   update(
     @Req() req: UserRequest,
     @Param('id') id: string,
@@ -62,13 +62,13 @@ export class TopicController {
   }
 
   @Put('updatestatus/:id')
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   updateStatus(@Param('id') id: string, @Query('actived') actived: string) {
     return this.topicService.updateStatus(+id, actived);
   }
 
   @Delete(':id')
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   remove(@Param('id') id: string) {
     return this.topicService.remove(+id);
   }

@@ -22,13 +22,13 @@ export class MessageautoController {
   constructor(private readonly messageautoService: MessageautoService) {}
 
   @Post()
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   create(@Body() createMessageautoDto: CreateMessageautoDto) {
     return this.messageautoService.create(createMessageautoDto);
   }
 
   @Get()
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
     return this.messageautoService.findAll(page, limit);
   }
@@ -47,7 +47,7 @@ export class MessageautoController {
   }
 
   @Put(':id')
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   update(
     @Param('id') id: string,
     @Body() updateMessageautoDto: UpdateMessageautoDto,
@@ -56,7 +56,7 @@ export class MessageautoController {
   }
 
   @Delete(':id')
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   remove(@Param('id') id: string) {
     return this.messageautoService.remove(+id);
   }

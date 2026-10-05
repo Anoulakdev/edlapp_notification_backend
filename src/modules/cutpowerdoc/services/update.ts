@@ -49,6 +49,9 @@ export async function updateCutpowerDoc(
       cutpowerDate: updateCutpowerdocDto.cutpowerDate
         ? new Date(updateCutpowerdocDto.cutpowerDate)
         : undefined,
+      voltageId: updateCutpowerdocDto.voltageId
+        ? Number(updateCutpowerdocDto.voltageId)
+        : null,
       cutpowerFile: updateCutpowerdocDto.cutpowerFile,
     },
   });

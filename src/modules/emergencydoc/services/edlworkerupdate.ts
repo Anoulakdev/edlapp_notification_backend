@@ -173,6 +173,9 @@ export async function edlWorkerUpdate(
           emergencyAudio: updateEmergencydocDto.emergencyAudio || null,
           provinceId: user.provinceId ? Number(user.provinceId) : null,
           districtId: user.districtId ? Number(user.districtId) : null,
+          voltageId: updateEmergencydocDto.voltageId
+            ? Number(updateEmergencydocDto.voltageId)
+            : null,
         },
       });
 

@@ -11,6 +11,7 @@ export class FindAllTurnoffDocOptions {
   endDate?: string;
   provinceId?: number;
   districtId?: number;
+  voltageId?: number;
   filterMyDocs?: boolean;
 }
 
@@ -24,13 +25,19 @@ export async function FindAllTurnoffDoc(
 
   if (options.startDate) {
     where.startDate = {
-      gte: moment(options.startDate).startOf('day').toDate(),
+      gte: moment
+        .tz(options.startDate, 'Asia/Vientiane')
+        .startOf('day')
+        .toDate(),
     };
   }
 
   if (options.endDate) {
     where.endDate = {
-      lte: moment(options.endDate).endOf('day').toDate(),
+      lte: moment
+        .tz(options.endDate, 'Asia/Vientiane')
+        .endOf('day')
+        .toDate(),
     };
   }
 
@@ -91,6 +98,10 @@ export async function FindAllTurnoffDoc(
     }
   }
 
+  if (options.voltageId) {
+    where.voltageId = Number(options.voltageId);
+  }
+
   if (options.search) {
     const searchLower = options.search.trim();
     if (searchLower) {
@@ -130,6 +141,7 @@ export async function FindAllTurnoffDoc(
     },
     province: true,
     district: true,
+    voltage: true,
     turnoffAddresses: {
       select: {
         id: true,

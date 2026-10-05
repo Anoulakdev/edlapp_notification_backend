@@ -8,6 +8,8 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { PrismaService } from '../../prisma/prisma.service';
+import { unreadCount } from './services/unreadCount';
 
 @WebSocketGateway({
   cors: {
@@ -21,12 +23,34 @@ export class ConversationGateway
   @WebSocketServer()
   server: Server;
 
-  handleConnection(client: Socket) {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
+    try {
+      const data = await unreadCount(this.prisma);
+      client.emit('totalUnreadCountUpdate', data);
+      client.emit('unreadCountUpdate', data);
+    } catch (e) {
+      console.error('Failed to emit initial unread count on connect:', e);
+    }
   }
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
+  }
+
+  @SubscribeMessage('getTotalUnreadCount')
+  async handleGetTotalUnreadCount(@ConnectedSocket() client: Socket) {
+    try {
+      const data = await unreadCount(this.prisma);
+      client.emit('totalUnreadCountUpdate', data);
+      client.emit('unreadCountUpdate', data);
+      return data;
+    } catch (e) {
+      console.error('Failed to get total unread count:', e);
+      return { total: 0, unreadCount: 0, unreadAgentCount: 0 };
+    }
   }
 
   @SubscribeMessage('joinRoom')
@@ -69,6 +93,7 @@ export class ConversationGateway
 
   // Helper method to emit new message to both conversation room and topic room
   emitNewMessage(conversationId: number, topicId: number, message: any) {
+    if (!this.server) return;
     const convRoom = `conversation_${conversationId}`;
     const topicRoom = `topic_${topicId}`;
     const payload = { ...message, topicId };
@@ -79,10 +104,24 @@ export class ConversationGateway
 
   // Helper method to emit topic unread count updates globally
   emitTopicUnreadCountUpdate(topicId: number, unreadCount: number) {
+    if (!this.server) return;
     this.server.emit('topicUnreadCountUpdate', { topicId, unreadCount });
     console.log(
       `Emitted topicUnreadCountUpdate to topic_${topicId} globally: ${unreadCount}`,
     );
+  }
+
+  // Helper method to emit total unread count updates globally in real-time
+  emitTotalUnreadCountUpdate(total: number) {
+    if (!this.server) return;
+    const payload = {
+      total,
+      unreadAgentCount: total,
+      unreadCount: total,
+    };
+    this.server.emit('totalUnreadCountUpdate', payload);
+    this.server.emit('unreadCountUpdate', payload);
+    console.log(`Emitted totalUnreadCountUpdate globally: ${total}`);
   }
 
   // Helper method to emit message seen status
@@ -91,6 +130,7 @@ export class ConversationGateway
     topicId: number,
     senderType: 'edlapp' | 'callcenter',
   ) {
+    if (!this.server) return;
     const convRoom = `conversation_${conversationId}`;
     const topicRoom = `topic_${topicId}`;
     const payload = { conversationId, topicId, senderType };
@@ -103,6 +143,7 @@ export class ConversationGateway
 
   // Helper method to emit updated message to both conversation room and topic room
   emitUpdateMessage(conversationId: number, topicId: number, message: any) {
+    if (!this.server) return;
     const convRoom = `conversation_${conversationId}`;
     const topicRoom = `topic_${topicId}`;
     const payload = { ...message, topicId };
@@ -117,6 +158,7 @@ export class ConversationGateway
     topicId: number,
     messageId: number,
   ) {
+    if (!this.server) return;
     const convRoom = `conversation_${conversationId}`;
     const topicRoom = `topic_${topicId}`;
     const payload = { messageId, conversationId, topicId };
@@ -127,6 +169,7 @@ export class ConversationGateway
 
   // Helper method to emit rating request to conversation room
   emitRequestRating(conversationId: number, topicId: number, data: any) {
+    if (!this.server) return;
     const convRoom = `conversation_${conversationId}`;
     const topicRoom = `topic_${topicId}`;
     const payload = { ...data, conversationId, topicId };
@@ -141,6 +184,7 @@ export class ConversationGateway
     topicId: number,
     ratingData: any,
   ) {
+    if (!this.server) return;
     const convRoom = `conversation_${conversationId}`;
     const topicRoom = `topic_${topicId}`;
     const payload = { ...ratingData, conversationId, topicId };

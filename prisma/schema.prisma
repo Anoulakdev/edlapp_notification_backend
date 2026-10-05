@@ -36,6 +36,9 @@ model User {
   branch           Branch?           @relation(fields: [branchId], references: [id])
   repairDistrictId Int?
   repairDistrict   RepairDistrict?   @relation(fields: [repairDistrictId], references: [id])
+  isOnline         Boolean           @default(false)
+  lastLoginAt      DateTime?         @db.Timestamptz(0)
+  lastActiveAt     DateTime?         @db.Timestamptz(0)
   createdAt        DateTime          @default(now()) @db.Timestamptz(0)
   updatedAt        DateTime          @updatedAt @db.Timestamptz(0)
   fcmtokens        FcmToken[]
@@ -53,6 +56,17 @@ model User {
   branchs          Branch[]          @relation("userBranch")
   repairDistricts  RepairDistrict[]  @relation("userRepairDistrict")
   agentRatings     AgentRating[]     @relation("AgentRatings")
+  typeEquipments   TypeEquipment[]
+  equipments       Equipment[]
+
+  @@index([roleId])
+  @@index([status])
+  @@index([isOnline])
+  @@index([provinceId])
+  @@index([districtId])
+  @@index([branchId])
+  @@index([repairDistrictId])
+  @@index([lastActiveAt])
 }
 
 model FcmToken {
@@ -263,6 +277,8 @@ model TurnoffDoc {
   province         Province?        @relation(fields: [provinceId], references: [id])
   districtId       Int?
   district         District?        @relation(fields: [districtId], references: [id])
+  voltageId        Int?
+  voltage          Voltage?         @relation(fields: [voltageId], references: [id])
   createdById      Int
   createdBy        User             @relation(fields: [createdById], references: [id])
   createdAt        DateTime         @default(now()) @db.Timestamptz(0)
@@ -273,6 +289,7 @@ model TurnoffDoc {
   @@index([createdById])
   @@index([provinceId])
   @@index([districtId])
+  @@index([voltageId])
   @@index([startDate])
   @@index([createdAt])
 }
@@ -288,6 +305,7 @@ model TurnoffAddress {
   updatedAt DateTime   @updatedAt @db.Timestamptz(0)
 
   @@index([turnoffId])
+  @@index([villageId])
 }
 
 model TurnoffAssign {
@@ -320,6 +338,8 @@ model EmergencyDoc {
   province           Province?          @relation(fields: [provinceId], references: [id])
   districtId         Int?
   district           District?          @relation(fields: [districtId], references: [id])
+  voltageId          Int?
+  voltage            Voltage?           @relation(fields: [voltageId], references: [id])
   createdById        Int
   createdBy          User               @relation(fields: [createdById], references: [id])
   createdAt          DateTime           @default(now()) @db.Timestamptz(0)
@@ -330,6 +350,7 @@ model EmergencyDoc {
   @@index([createdById])
   @@index([provinceId])
   @@index([districtId])
+  @@index([voltageId])
   @@index([emergencyDate])
   @@index([createdAt])
 }
@@ -345,6 +366,7 @@ model EmergencyAddress {
   updatedAt   DateTime     @updatedAt @db.Timestamptz(0)
 
   @@index([emergencyId])
+  @@index([villageId])
 }
 
 model EmergencyAssign {
@@ -371,6 +393,8 @@ model CutpowerDoc {
   province          Province?         @relation(fields: [provinceId], references: [id])
   districtId        Int?
   district          District?         @relation(fields: [districtId], references: [id])
+  voltageId         Int?
+  voltage           Voltage?          @relation(fields: [voltageId], references: [id])
   createdById       Int
   createdBy         User              @relation(fields: [createdById], references: [id])
   createdAt         DateTime          @default(now()) @db.Timestamptz(0)
@@ -381,6 +405,7 @@ model CutpowerDoc {
   @@index([createdById])
   @@index([provinceId])
   @@index([districtId])
+  @@index([voltageId])
   @@index([cutpowerDate])
   @@index([createdAt])
 }
@@ -396,6 +421,7 @@ model CutpowerAddress {
   updatedAt  DateTime    @updatedAt @db.Timestamptz(0)
 
   @@index([cutpowerId])
+  @@index([villageId])
 }
 
 model CutpowerAssign {
@@ -436,6 +462,7 @@ model RegisterMeter {
   idcardImg        String?          @db.VarChar(255)
   lat              Float?
   lng              Float?
+  comment          String?          @db.Text
   provinceId       Int
   province         Province         @relation(fields: [provinceId], references: [id])
   districtId       Int
@@ -608,6 +635,41 @@ model ProblemStatus {
   problemdocs ProblemDoc[]
 }
 
+model TypeEquipment {
+  id                Int                @id @default(autoincrement())
+  name              String             @db.VarChar(255)
+  code              String?            @db.VarChar(255)
+  actived           Boolean            @default(true)
+  createdById       Int
+  createdBy         User               @relation(fields: [createdById], references: [id])
+  createdAt         DateTime           @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(0)
+  equipments        Equipment[]
+  problemEquipments ProblemEquipment[]
+}
+
+model Equipment {
+  id                Int                @id @default(autoincrement())
+  typeEquipmentId   Int
+  typeEquipment     TypeEquipment      @relation(fields: [typeEquipmentId], references: [id])
+  name              String             @db.VarChar(255)
+  actived           Boolean            @default(true)
+  createdById       Int
+  createdBy         User               @relation(fields: [createdById], references: [id])
+  createdAt         DateTime           @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(0)
+  problemEquipments ProblemEquipment[]
+}
+
+model TypeUnit {
+  id                Int                @id @default(autoincrement())
+  name              String             @db.VarChar(255)
+  actived           Boolean            @default(true)
+  createdAt         DateTime           @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(0)
+  problemEquipments ProblemEquipment[]
+}
+
 model ProblemDoc {
   id               Int             @id @default(autoincrement())
   problemtypeId    Int
@@ -644,31 +706,63 @@ model ProblemDoc {
   @@index([districtId])
   @@index([branchId])
   @@index([repairDistrictId])
+  @@index([villageId])
   @@index([createdById])
   @@index([createdAt])
 }
 
 model ProblemAssign {
-  id             Int        @id @default(autoincrement())
-  problemId      Int        @unique
-  problem        ProblemDoc @relation(fields: [problemId], references: [id])
-  userSendId     Int?
-  userSend       User?      @relation("userSend", fields: [userSendId], references: [id])
-  sendAt         DateTime?  @db.Timestamptz(0)
-  sendTime       Int?
-  userReceiverId Int?
-  userReceiver   User?      @relation("UserReceiver", fields: [userReceiverId], references: [id])
-  receiveAt      DateTime?  @db.Timestamptz(0)
-  receiveTime    Int?
-  userActiveId   Int?
-  userActive     User?      @relation("UserActive", fields: [userActiveId], references: [id])
-  activeAt       DateTime?  @db.Timestamptz(0)
-  activeTime     Int?
-  commentText    String?    @db.VarChar(255)
-  commentAudio   String?    @db.VarChar(255)
-  commentImg     String?    @db.VarChar(255)
+  id                Int                @id @default(autoincrement())
+  problemId         Int                @unique
+  problem           ProblemDoc         @relation(fields: [problemId], references: [id])
+  userSendId        Int?
+  userSend          User?              @relation("userSend", fields: [userSendId], references: [id])
+  sendAt            DateTime?          @db.Timestamptz(0)
+  sendTime          Int?
+  userReceiverId    Int?
+  userReceiver      User?              @relation("UserReceiver", fields: [userReceiverId], references: [id])
+  receiveAt         DateTime?          @db.Timestamptz(0)
+  receiveTime       Int?
+  userActiveId      Int?
+  userActive        User?              @relation("UserActive", fields: [userActiveId], references: [id])
+  activeAt          DateTime?          @db.Timestamptz(0)
+  activeTime        Int?
+  commentText       String?            @db.VarChar(255)
+  commentAudio      String?            @db.VarChar(255)
+  commentImg        String?            @db.VarChar(255)
+  problemEquipments ProblemEquipment[]
 
   @@index([userSendId])
   @@index([userReceiverId])
   @@index([userActiveId])
+}
+
+model ProblemEquipment {
+  id              Int           @id @default(autoincrement())
+  problemAssignId Int
+  problemAssign   ProblemAssign @relation(fields: [problemAssignId], references: [id])
+  typeEquipmentId Int
+  typeEquipment   TypeEquipment @relation(fields: [typeEquipmentId], references: [id])
+  equipmentId     Int
+  equipment       Equipment     @relation(fields: [equipmentId], references: [id])
+  amount          Int
+  typeUnitId      Int
+  typeUnit        TypeUnit      @relation(fields: [typeUnitId], references: [id])
+  comment         String?       @db.Text
+
+  @@index([problemAssignId])
+  @@index([typeEquipmentId])
+  @@index([equipmentId])
+  @@index([typeUnitId])
+}
+
+model Voltage {
+  id            Int            @id @default(autoincrement())
+  name          String         @db.VarChar(255)
+  actived       Boolean        @default(true)
+  createdAt     DateTime       @default(now()) @db.Timestamptz(0)
+  updatedAt     DateTime       @updatedAt @db.Timestamptz(0)
+  turnoffDocs   TurnoffDoc[]
+  emergencyDocs EmergencyDoc[]
+  cutpowerDocs  CutpowerDoc[]
 }

@@ -1,11 +1,13 @@
 import { PrismaService } from '../../../prisma/prisma.service';
 import { UpdateRegistermeterDto } from '../dto/update-registermeter.dto';
 import { NotFoundException } from '@nestjs/common';
+import { AuthUser } from '../../../interfaces/auth-user.interface';
 import * as fs from 'fs';
 import * as path from 'path';
 
 export async function updateRegisterMeter(
   prisma: PrismaService,
+  user: AuthUser,
   id: number,
   updateRegistermeterDto: UpdateRegistermeterDto,
 ) {
@@ -64,6 +66,8 @@ export async function updateRegisterMeter(
     updateRegistermeterDto.idcardImg = oldIdcardImg || undefined;
   }
 
+  const meterStatusId = user.roleId === 2 || user.roleId === 4 ? 2 : 1;
+
   return await prisma.registerMeter.update({
     where: { id },
     data: {
@@ -95,6 +99,8 @@ export async function updateRegisterMeter(
         updateRegistermeterDto.villageId !== null
           ? Number(updateRegistermeterDto.villageId)
           : undefined,
+      meterStatusId,
+      comment: null,
     },
   });
 }

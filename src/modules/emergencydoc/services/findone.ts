@@ -22,6 +22,7 @@ export async function findOneEmergencyDoc(prisma: PrismaService, id: number) {
       },
       province: true,
       district: true,
+      voltage: true,
       emergencyAddresses: {
         select: {
           id: true,

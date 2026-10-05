@@ -8,6 +8,8 @@ export interface FindAllUserOptions {
   search?: string;
   roleId?: number;
   status?: string;
+  isOnline?: boolean | string;
+  onlineStatus?: string;
   departmentId?: number;
   divisionId?: number;
   posId?: number;
@@ -45,10 +47,39 @@ export async function findAllUser(
   }
 
   if (options.status) {
-    let statusValue = options.status;
-    if (statusValue === 'Active') statusValue = 'A';
-    if (statusValue === 'Inactive') statusValue = 'C';
-    where.status = statusValue;
+    const statusTrim = options.status.toLowerCase().trim();
+    if (statusTrim === 'online') {
+      where.isOnline = true;
+    } else if (statusTrim === 'offline') {
+      where.isOnline = false;
+    } else {
+      let statusValue = options.status;
+      if (statusValue === 'Active') statusValue = 'A';
+      if (statusValue === 'Inactive') statusValue = 'C';
+      where.status = statusValue;
+    }
+  }
+
+  if (options.isOnline !== undefined && options.isOnline !== null) {
+    if (typeof options.isOnline === 'boolean') {
+      where.isOnline = options.isOnline;
+    } else if (typeof options.isOnline === 'string') {
+      const str = options.isOnline.toLowerCase().trim();
+      if (str === 'true' || str === 'online' || str === '1') {
+        where.isOnline = true;
+      } else if (str === 'false' || str === 'offline' || str === '0') {
+        where.isOnline = false;
+      }
+    }
+  }
+
+  if (options.onlineStatus) {
+    const str = options.onlineStatus.toLowerCase().trim();
+    if (str === 'online') {
+      where.isOnline = true;
+    } else if (str === 'offline') {
+      where.isOnline = false;
+    }
   }
 
   const employeeWhere: Prisma.EmployeeWhereInput = {};
@@ -116,6 +147,10 @@ export async function findAllUser(
     branchId: true,
     repairDistrict: true,
     repairDistrictId: true,
+    isOnline: true,
+    lastLoginAt: true,
+    lastActiveAt: true,
+    createdAt: true,
     employee: {
       include: {
         department: true,
@@ -148,6 +183,17 @@ export async function findAllUser(
     },
   ];
 
+  const mapUser = (u: any) => ({
+    ...u,
+    isOnline: Boolean(u.isOnline),
+    onlineStatus: u.isOnline ? 'online' : 'offline',
+    lastLoginAt: u.lastLoginAt,
+    lastLoginTimeAgo: formatTimeAgoLao(u.lastLoginAt),
+    lastLoginText: formatTimeAgoLao(u.lastLoginAt),
+    lastActiveAt: u.lastActiveAt,
+    lastActiveTimeAgo: formatTimeAgoLao(u.lastActiveAt),
+  });
+
   if (page !== undefined && limit !== undefined) {
     const skip = (page - 1) * limit;
     const take = limit;
@@ -166,7 +212,7 @@ export async function findAllUser(
     const totalPages = Math.ceil(total / limit);
 
     return {
-      data,
+      data: data.map(mapUser),
       total,
       page,
       limit,
@@ -174,9 +220,50 @@ export async function findAllUser(
     };
   }
 
-  return prisma.user.findMany({
+  const users = await prisma.user.findMany({
     where,
     orderBy,
     select,
   });
+
+  return users.map(mapUser);
+}
+
+/**
+ * ຄິດໄລ່ໄລຍະເວລາທີ່ຜ່ານມາ (Relative Time) ເຊັ່ນ: ນາທີ, ຊົ່ວໂມງ, ມື້, ເດືອນ
+ */
+export function formatTimeAgoLao(date: Date | string | null | undefined): string {
+  if (!date) return 'ບໍ່ເຄີຍເຂົ້າໃຊ້';
+
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return 'ບໍ່ເຄີຍເຂົ້າໃຊ້';
+
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - d.getTime()) / 1000);
+
+  if (diffInSeconds < 0) return 'ຫາກໍ່ເຂົ້າໃຊ້';
+  if (diffInSeconds < 60) return 'ຫາກໍ່ເຂົ້າໃຊ້';
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} ນາທີກ່ອນ`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} ຊົ່ວໂມງກ່ອນ`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) {
+    return `${diffInDays} ມື້ກ່ອນ`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths < 12) {
+    return `${diffInMonths} ເດືອນກ່ອນ`;
+  }
+
+  const diffInYears = Math.floor(diffInDays / 365);
+  return `${diffInYears} ປີກ່ອນ`;
 }

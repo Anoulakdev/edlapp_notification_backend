@@ -40,6 +40,12 @@ import { ProblemstatusModule } from './modules/problemstatus/problemstatus.modul
 import { ProblemdocModule } from './modules/problemdoc/problemdoc.module';
 import { ReportModule } from './modules/report/report.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { VoltageModule } from './modules/voltage/voltage.module';
+import { TypeequipmentModule } from './modules/typeequipment/typeequipment.module';
+import { EquipmentModule } from './modules/equipment/equipment.module';
+import { TypeunitModule } from './modules/typeunit/typeunit.module';
+import { BsModule } from './modules/bs/bs.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -79,6 +85,12 @@ import { PaymentModule } from './modules/payment/payment.module';
     ProblemdocModule,
     ReportModule,
     PaymentModule,
+    VoltageModule,
+    TypeequipmentModule,
+    EquipmentModule,
+    TypeunitModule,
+    BsModule,
+    DashboardModule,
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

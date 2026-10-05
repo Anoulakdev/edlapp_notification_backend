@@ -10,6 +10,7 @@ export class FindAllEmergencyDocOptions {
   emergencyDate?: string;
   provinceId?: number;
   districtId?: number;
+  voltageId?: number;
   filterMyDocs?: boolean;
 }
 
@@ -91,6 +92,10 @@ export async function FindAllEmergencyDoc(
     }
   }
 
+  if (options.voltageId) {
+    where.voltageId = Number(options.voltageId);
+  }
+
   if (options.search) {
     const searchLower = options.search.trim();
     if (searchLower) {
@@ -130,6 +135,7 @@ export async function FindAllEmergencyDoc(
     },
     province: true,
     district: true,
+    voltage: true,
     emergencyAddresses: {
       select: {
         id: true,

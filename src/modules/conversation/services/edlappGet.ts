@@ -30,27 +30,29 @@ export async function edlAppGet(
     return [];
   }
 
-  // Reset unreadExternalCount and mark call center messages as seen
-  await prisma.$transaction(async (tx) => {
-    await tx.conversation.update({
-      where: { id: conversation.id },
-      data: {
-        unreadExternalCount: 0,
-      },
-    });
+  // Reset unreadExternalCount and mark call center messages as seen only if unread count > 0
+  if ((conversation.unreadExternalCount || 0) > 0) {
+    await prisma.$transaction(async (tx) => {
+      await tx.conversation.update({
+        where: { id: conversation.id },
+        data: {
+          unreadExternalCount: 0,
+        },
+      });
 
-    await tx.message.updateMany({
-      where: {
-        conversationId: conversation.id,
-        senderType: 'callcenter',
-        status: { not: 'seen' },
-      },
-      data: {
-        status: 'seen',
-        seenAt: new Date(),
-      },
+      await tx.message.updateMany({
+        where: {
+          conversationId: conversation.id,
+          senderType: 'callcenter',
+          status: { not: 'seen' },
+        },
+        data: {
+          status: 'seen',
+          seenAt: new Date(),
+        },
+      });
     });
-  });
+  }
 
   const messageWhere: any = {
     conversationId: conversation.id,

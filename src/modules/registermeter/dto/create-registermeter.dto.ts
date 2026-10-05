@@ -57,4 +57,8 @@ export class CreateRegistermeterDto {
   @IsInt()
   @IsOptional()
   createdById?: number;
+
+  @IsString()
+  @IsOptional()
+  comment?: string;
 }

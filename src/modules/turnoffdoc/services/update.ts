@@ -100,10 +100,13 @@ export async function updateTurnoffDoc(
     finalEndTime,
   );
 
+  const restUpdateDto = { ...updateTurnoffdocDto };
+  delete restUpdateDto.villageId;
+
   return await prisma.turnoffDoc.update({
     where: { id },
     data: {
-      ...updateTurnoffdocDto,
+      ...restUpdateDto,
       startDate: updateTurnoffdocDto.startDate
         ? new Date(updateTurnoffdocDto.startDate)
         : undefined,
@@ -112,6 +115,9 @@ export async function updateTurnoffDoc(
         : undefined,
       startTime: updateTurnoffdocDto.startTime,
       endTime: updateTurnoffdocDto.endTime,
+      voltageId: updateTurnoffdocDto.voltageId
+        ? Number(updateTurnoffdocDto.voltageId)
+        : null,
       useTime,
       turnoffFile: updateTurnoffdocDto.turnoffFile,
     },

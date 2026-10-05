@@ -31,27 +31,29 @@ export async function callGet(
     return [];
   }
 
-  // Reset unreadAgentCount and mark edlapp messages as seen
-  await prisma.$transaction(async (tx) => {
-    await tx.conversation.update({
-      where: { id: conversation.id },
-      data: {
-        unreadAgentCount: 0,
-      },
-    });
+  // Reset unreadAgentCount and mark edlapp messages as seen only if not viewing history and unread count > 0
+  if (!options.isHistory && (conversation.unreadAgentCount || 0) > 0) {
+    await prisma.$transaction(async (tx) => {
+      await tx.conversation.update({
+        where: { id: conversation.id },
+        data: {
+          unreadAgentCount: 0,
+        },
+      });
 
-    await tx.message.updateMany({
-      where: {
-        conversationId: conversation.id,
-        senderType: 'edlapp',
-        status: { not: 'seen' },
-      },
-      data: {
-        status: 'seen',
-        seenAt: new Date(),
-      },
+      await tx.message.updateMany({
+        where: {
+          conversationId: conversation.id,
+          senderType: 'edlapp',
+          status: { not: 'seen' },
+        },
+        data: {
+          status: 'seen',
+          seenAt: new Date(),
+        },
+      });
     });
-  });
+  }
 
   const messageWhere: any = {
     conversationId: conversation.id,

@@ -1,5 +1,16 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import {
+  ProblemEquipmentItemDto,
+  transformProblemEquipments,
+} from './problem-equipment.dto';
 
 export class CreateReceiverDto {
   @Type(() => Number)
@@ -33,4 +44,18 @@ export class CreateReceiverDto {
   @IsString()
   @IsOptional()
   commentImg?: string;
+
+  @IsOptional()
+  @Transform(transformProblemEquipments)
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProblemEquipmentItemDto)
+  problemEquipments?: ProblemEquipmentItemDto[];
+
+  @IsOptional()
+  @Transform(transformProblemEquipments)
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProblemEquipmentItemDto)
+  equipments?: ProblemEquipmentItemDto[];
 }

@@ -131,12 +131,16 @@ export async function updateAddress(
       skipDuplicates: true,
     });
 
-    // ✅ insert assign ของผู้ใช้ในหมู่บ้านนั้นๆ
+    // ✅ insert assign ของผู้ใช้ในหมู่บ้านนั้นๆ (batch in chunks of 1000 to prevent Postgres parameter limit)
     if (assignData.length) {
-      await tx.cutpowerAssign.createMany({
-        data: assignData,
-        skipDuplicates: true,
-      });
+      const CHUNK_SIZE = 1000;
+      for (let i = 0; i < assignData.length; i += CHUNK_SIZE) {
+        const chunk = assignData.slice(i, i + CHUNK_SIZE);
+        await tx.cutpowerAssign.createMany({
+          data: chunk,
+          skipDuplicates: true,
+        });
+      }
     }
 
     // ✅ อัปเดต provinceId และ districtId ใน cutpowerDoc

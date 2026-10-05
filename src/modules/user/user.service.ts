@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -13,10 +13,15 @@ import { resetPassword } from './services/resetPassword';
 import { updateStatus } from './services/updateStatus';
 import { removeUser } from './services/remove';
 import { removeFcmToken } from './services/removeFcm';
+import { UserGateway } from './user.gateway';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(forwardRef(() => UserGateway))
+    private userGateway: UserGateway,
+  ) {}
 
   create(createUserDto: CreateUserDto) {
     return createUser(this.prisma, createUserDto);
@@ -52,5 +57,28 @@ export class UserService {
 
   removeFcmToken(id: number) {
     return removeFcmToken(this.prisma, id);
+  }
+
+  async updateOnlineStatus(id: number, isOnline: boolean) {
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: {
+        isOnline: Boolean(isOnline),
+        lastActiveAt: new Date(),
+      },
+      select: {
+        id: true,
+        username: true,
+        isOnline: true,
+        lastLoginAt: true,
+        lastActiveAt: true,
+      },
+    });
+
+    if (this.userGateway) {
+      this.userGateway.broadcastStatus(id, Boolean(isOnline), updated.lastActiveAt || new Date(), updated.lastLoginAt || undefined);
+    }
+
+    return updated;
   }
 }

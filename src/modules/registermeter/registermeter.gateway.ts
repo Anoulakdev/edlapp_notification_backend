@@ -28,7 +28,8 @@ export class RegistermeterGateway
 
   // Broadcast refresh event to all connected clients in registermeter namespace
   emitRefresh() {
-    this.server.emit('registermeterUpdated', { action: 'refresh' });
-    console.log('[RegistermeterGateway] Emitted registermeterUpdated event');
+    this.server?.emit('registermeterUpdated', { action: 'refresh' });
+    this.server?.emit('countMeterUpdated', { action: 'refresh' });
+    console.log('[RegistermeterGateway] Emitted registermeterUpdated and countMeterUpdated events');
   }
 }

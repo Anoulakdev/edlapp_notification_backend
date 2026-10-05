@@ -61,6 +61,7 @@ export class CutpowerdocController {
     @Query('cutpowerDate') cutpowerDate?: string,
     @Query('provinceId') provinceId?: number,
     @Query('districtId') districtId?: number,
+    @Query('voltageId') voltageId?: number,
     @Query('filterMyDocs') filterMyDocs?: string,
   ) {
     return this.cutpowerdocService.findAll(req.user, {
@@ -70,6 +71,7 @@ export class CutpowerdocController {
       cutpowerDate,
       provinceId,
       districtId,
+      voltageId,
       filterMyDocs: filterMyDocs === 'true' || filterMyDocs === '1',
     });
   }

@@ -89,6 +89,7 @@ export class EmergencydocController {
     @Query('emergencyDate') emergencyDate?: string,
     @Query('provinceId') provinceId?: number,
     @Query('districtId') districtId?: number,
+    @Query('voltageId') voltageId?: number,
     @Query('filterMyDocs') filterMyDocs?: string,
   ) {
     return this.emergencydocService.findAll(req.user, {
@@ -98,6 +99,7 @@ export class EmergencydocController {
       emergencyDate,
       provinceId,
       districtId,
+      voltageId,
       filterMyDocs: filterMyDocs === 'true' || filterMyDocs === '1',
     });
   }

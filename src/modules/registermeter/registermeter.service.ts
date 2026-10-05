@@ -11,6 +11,7 @@ import { updateRegisterMeter } from './services/update';
 import { removeRegisterMeter } from './services/remove';
 import { createForward } from './services/createForward';
 import { updateForward } from './services/updateForward';
+import { updateReject } from './services/updateReject';
 
 import {
   FindAllRegistermeter,
@@ -20,6 +21,7 @@ import {
   registerMeterEdlApp,
   RegisterMeterEdlAppOptions,
 } from './services/edlapp';
+import { countMeter } from './services/countMeter';
 import { RegistermeterGateway } from './registermeter.gateway';
 
 @Injectable()
@@ -53,6 +55,10 @@ export class RegistermeterService {
     return FindAllRegistermeter(this.prisma, user, options);
   }
 
+  async countMeter(user: AuthUser) {
+    return countMeter(this.prisma, user);
+  }
+
   async EDLAPP(userAppId: number, options?: RegisterMeterEdlAppOptions) {
     return await registerMeterEdlApp(this.prisma, userAppId, options);
   }
@@ -61,12 +67,26 @@ export class RegistermeterService {
     return findOneRegisterMeter(this.prisma, id);
   }
 
-  async update(id: number, updateRegistermeterDto: UpdateRegistermeterDto) {
+  async update(
+    user: AuthUser,
+    id: number,
+    updateRegistermeterDto: UpdateRegistermeterDto,
+  ) {
     const result = await updateRegisterMeter(
       this.prisma,
+      user,
       id,
       updateRegistermeterDto,
     );
+    this.triggerRefresh();
+    return result;
+  }
+
+  async updateReject(
+    id: number,
+    updateRegistermeterDto: UpdateRegistermeterDto,
+  ) {
+    const result = await updateReject(this.prisma, id, updateRegistermeterDto);
     this.triggerRefresh();
     return result;
   }

@@ -10,6 +10,7 @@ export class EmergencyOptions {
   endDate?: string;
   provinceId?: number;
   districtId?: number;
+  voltageId?: number;
 }
 
 export async function emergencyReport(
@@ -94,6 +95,10 @@ export async function emergencyReport(
     }
   }
 
+  if (options.voltageId) {
+    where.voltageId = Number(options.voltageId);
+  }
+
   if (andFilters.length > 0) {
     where.AND = andFilters;
   }
@@ -118,6 +123,7 @@ export async function emergencyReport(
     },
     province: true,
     district: true,
+    voltage: true,
     emergencyAddresses: {
       select: {
         id: true,

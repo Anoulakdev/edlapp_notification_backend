@@ -10,6 +10,7 @@ export class FindAllCutpowerDocOptions {
   cutpowerDate?: string;
   provinceId?: number;
   districtId?: number;
+  voltageId?: number;
   filterMyDocs?: boolean;
 }
 
@@ -106,6 +107,10 @@ export async function FindAllCutpowerDoc(
     }
   }
 
+  if (options.voltageId) {
+    where.voltageId = Number(options.voltageId);
+  }
+
   if (andFilters.length > 0) {
     where.AND = andFilters;
   }
@@ -130,6 +135,7 @@ export async function FindAllCutpowerDoc(
     },
     province: true,
     district: true,
+    voltage: true,
     cutpowerAddresses: {
       select: {
         id: true,

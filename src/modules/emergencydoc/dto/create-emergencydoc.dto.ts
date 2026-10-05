@@ -62,4 +62,9 @@ export class CreateEmergencydocDto {
   @IsInt({ each: true })
   @IsOptional()
   villageId?: number[];
+
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  voltageId?: number;
 }

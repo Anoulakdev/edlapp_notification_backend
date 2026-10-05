@@ -18,6 +18,9 @@ export async function createCutpowerDoc(
         cutpowerFile: Docfilename,
         provinceId: user.provinceId ? Number(user.provinceId) : null,
         districtId: user.districtId ? Number(user.districtId) : null,
+        voltageId: createCutpowerdocDto.voltageId
+          ? Number(createCutpowerdocDto.voltageId)
+          : null,
         createdById: user.id,
       },
     });

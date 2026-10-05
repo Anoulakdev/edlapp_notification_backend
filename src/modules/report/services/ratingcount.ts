@@ -123,6 +123,7 @@ export async function ratingCountReport(
       rating4: stats.rating4,
       rating5: stats.rating5,
       totalRatings: stats.totalRatings,
+      totalStars: stats.sumRatings,
       averageRating,
     };
   });

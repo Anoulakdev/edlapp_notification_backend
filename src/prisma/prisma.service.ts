@@ -18,6 +18,10 @@ export class PrismaService
       connectionTimeoutMillis: 5000,
     });
 
+    pool.on('error', (err) => {
+      console.error('[PrismaService] Unexpected error on idle PostgreSQL client:', err);
+    });
+
     const adapter = new PrismaPg(pool);
     super({ adapter });
     this.pool = pool;

@@ -10,6 +10,7 @@ export class CutpowerDocOptions {
   endDate?: string;
   provinceId?: number;
   districtId?: number;
+  voltageId?: number;
 }
 
 export async function cutpowerReport(
@@ -94,6 +95,10 @@ export async function cutpowerReport(
     }
   }
 
+  if (options.voltageId) {
+    where.voltageId = Number(options.voltageId);
+  }
+
   if (andFilters.length > 0) {
     where.AND = andFilters;
   }
@@ -118,6 +123,7 @@ export async function cutpowerReport(
     },
     province: true,
     district: true,
+    voltage: true,
     cutpowerAddresses: {
       select: {
         id: true,

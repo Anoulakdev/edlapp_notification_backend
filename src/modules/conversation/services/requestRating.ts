@@ -1,9 +1,10 @@
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuthUser } from '../../../interfaces/auth-user.interface';
 import { RequestRatingDto } from '../dto/request-rating.dto';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import axios from 'axios';
 import { sendFCM } from '../../../fcm/fcm.service';
+import moment from 'moment-timezone';
 
 export async function requestRating(
   prisma: PrismaService,
@@ -17,6 +18,46 @@ export async function requestRating(
 
   if (!conversation) {
     throw new NotFoundException('Conversation not found');
+  }
+
+  // Check if rating has already been requested or submitted today for this user and topic
+  const todayStart = moment().tz('Asia/Vientiane').startOf('day').toDate();
+  const todayEnd = moment().tz('Asia/Vientiane').endOf('day').toDate();
+
+  const [existingTodayMessage, existingTodayRating] = await Promise.all([
+    prisma.message.findFirst({
+      where: {
+        conversation: {
+          externalUserId: conversation.externalUserId,
+          topicId: conversation.topicId,
+        },
+        senderType: 'callcenter',
+        agentId: user.id,
+        content: { contains: 'ດາວ' },
+        createdAt: {
+          gte: todayStart,
+          lte: todayEnd,
+        },
+        deletedAt: null,
+      },
+    }),
+    prisma.agentRating.findFirst({
+      where: {
+        agentId: user.id,
+        externalUserId: conversation.externalUserId,
+        topicId: conversation.topicId,
+        createdAt: {
+          gte: todayStart,
+          lte: todayEnd,
+        },
+      },
+    }),
+  ]);
+
+  if (existingTodayMessage || existingTodayRating) {
+    throw new BadRequestException(
+      'ທ່ານໄດ້ສົ່ງຄຳຮ້ອງຂໍດາວປະເມິນໃຫ້ລູກຄ້ານີ້ໃນຫົວຂໍ້ນີ້ແລ້ວໃນມື້ນີ້ (ສາມາດສົ່ງໄດ້ 1 ຄັ້ງຕໍ່ມື້)',
+    );
   }
 
   // 1. Fetch user FCM tokens from EDLAPP API (same logic as callCreate)
@@ -124,5 +165,69 @@ export async function requestRating(
       id: user.id,
       username: user.username,
     },
+  };
+}
+
+export async function getRatingStatus(
+  prisma: PrismaService,
+  user: AuthUser,
+  conversationId: number,
+) {
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: conversationId },
+    select: { id: true, externalUserId: true, topicId: true },
+  });
+
+  if (!conversation) {
+    throw new NotFoundException('Conversation not found');
+  }
+
+  const todayStart = moment().tz('Asia/Vientiane').startOf('day').toDate();
+  const todayEnd = moment().tz('Asia/Vientiane').endOf('day').toDate();
+
+  const [existingMessage, existingRating] = await Promise.all([
+    prisma.message.findFirst({
+      where: {
+        conversation: {
+          externalUserId: conversation.externalUserId,
+          topicId: conversation.topicId,
+        },
+        senderType: 'callcenter',
+        agentId: user.id,
+        content: { contains: 'ດາວ' },
+        createdAt: {
+          gte: todayStart,
+          lte: todayEnd,
+        },
+        deletedAt: null,
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, createdAt: true },
+    }),
+    prisma.agentRating.findFirst({
+      where: {
+        agentId: user.id,
+        externalUserId: conversation.externalUserId,
+        topicId: conversation.topicId,
+        createdAt: {
+          gte: todayStart,
+          lte: todayEnd,
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, rating: true, createdAt: true },
+    }),
+  ]);
+
+  const requestedToday = !!existingMessage || !!existingRating;
+  const lastRequestedAt =
+    existingMessage?.createdAt || existingRating?.createdAt || null;
+
+  return {
+    canRequest: !requestedToday,
+    requestedToday,
+    lastRequestedAt,
+    isRated: !!existingRating,
+    rating: existingRating?.rating || null,
   };
 }

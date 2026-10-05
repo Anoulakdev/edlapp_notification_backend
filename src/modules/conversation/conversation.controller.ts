@@ -58,7 +58,7 @@ export class ConversationController {
   }
 
   @Post('callcreate')
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   callCreate(
     @Req() req: UserRequest,
     @UploadedFiles()
@@ -94,7 +94,7 @@ export class ConversationController {
   }
 
   @Get('callget')
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   callGet(
     @Query('externalUserId') externalUserId: number,
     @Query('topicId') topicId: number,
@@ -111,6 +111,12 @@ export class ConversationController {
     );
   }
 
+  @Get('unreadcount')
+  @Roles(1, 2, 3, 4, 5, 6)
+  unreadCount() {
+    return this.conversationService.unreadCount();
+  }
+
   @Put(':id')
   updateMessage(
     @Param('id') id: string,
@@ -120,7 +126,7 @@ export class ConversationController {
   }
 
   @Get('topic/:topicId')
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   listByTopic(
     @Param('topicId') topicId: string,
     @Query('isHistory') isHistory?: boolean,
@@ -132,7 +138,7 @@ export class ConversationController {
   }
 
   @Delete('clear/:conversationId')
-  @Roles(2, 4, 7)
+  @Roles(2, 3, 4, 7)
   clearChat(
     @Req() req: UserRequest,
     @Param('conversationId') conversationId: string,
@@ -149,7 +155,7 @@ export class ConversationController {
   }
 
   @Post('request-rating')
-  @Roles(2, 4)
+  @Roles(2, 3, 4)
   requestRating(@Req() req: UserRequest, @Body() dto: RequestRatingDto) {
     return this.conversationService.requestRating(req.user, dto);
   }
@@ -161,9 +167,21 @@ export class ConversationController {
   }
 
   @Get('rating/:conversationId')
-  @Roles(2, 4, 7)
+  @Roles(2, 3, 4, 7)
   getAgentRating(@Param('conversationId') conversationId: string) {
     return this.conversationService.getAgentRatingByConversation(
+      +conversationId,
+    );
+  }
+
+  @Get('rating-status/:conversationId')
+  @Roles(2, 3, 4, 7)
+  getRatingStatus(
+    @Req() req: UserRequest,
+    @Param('conversationId') conversationId: string,
+  ) {
+    return this.conversationService.getRatingStatus(
+      req.user,
       +conversationId,
     );
   }

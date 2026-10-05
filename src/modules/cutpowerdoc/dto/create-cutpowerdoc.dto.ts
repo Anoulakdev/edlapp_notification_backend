@@ -39,4 +39,9 @@ export class CreateCutpowerdocDto {
   @IsInt({ each: true })
   @IsOptional()
   villageId?: number[];
+
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  voltageId?: number;
 }
