@@ -164,4 +164,17 @@ export class ReportController {
       endDate,
     });
   }
+
+  @Get('agentcount')
+  @Roles(2)
+  agentCountReport(
+    @Req() req: UserRequest,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.reportService.agentCountReport(req.user, {
+      startDate,
+      endDate,
+    });
+  }
 }

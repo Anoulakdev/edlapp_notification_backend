@@ -58,6 +58,7 @@ model User {
   agentRatings     AgentRating[]     @relation("AgentRatings")
   typeEquipments   TypeEquipment[]
   equipments       Equipment[]
+  activities       Activity[]
 
   @@index([roleId])
   @@index([status])
@@ -207,18 +208,20 @@ model Province {
 }
 
 model District {
-  id             Int             @id
-  provinceCode   String
-  province       Province        @relation(fields: [provinceCode], references: [province_code])
-  district_name  String          @db.VarChar(255)
-  district_code  String          @unique @db.VarChar(50)
-  villages       Village[]
-  users          User[]
-  turnoffDocs    TurnoffDoc[]
-  emergencyDocs  EmergencyDoc[]
-  cutpowerDocs   CutpowerDoc[]
-  registerMeters RegisterMeter[]
-  problemDocs    ProblemDoc[]
+  id                 Int                @id
+  provinceCode       String
+  province           Province           @relation(fields: [provinceCode], references: [province_code])
+  district_name      String             @db.VarChar(255)
+  district_code      String             @unique @db.VarChar(50)
+  villages           Village[]
+  users              User[]
+  turnoffDocs        TurnoffDoc[]
+  emergencyDocs      EmergencyDoc[]
+  cutpowerDocs       CutpowerDoc[]
+  registerMeters     RegisterMeter[]
+  problemDocs        ProblemDoc[]
+  turnoffAddresses   TurnoffAddress[]
+  emergencyAddresses EmergencyAddress[]
 }
 
 model Village {
@@ -263,6 +266,12 @@ model RepairDistrict {
   @@index([branchId])
 }
 
+model TurnoffStatus {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(255)
+  turnoffDocs TurnoffDoc[]
+}
+
 model TurnoffDoc {
   id               Int              @id @default(autoincrement())
   title            String           @db.VarChar(255)
@@ -279,6 +288,8 @@ model TurnoffDoc {
   district         District?        @relation(fields: [districtId], references: [id])
   voltageId        Int?
   voltage          Voltage?         @relation(fields: [voltageId], references: [id])
+  turnoffStatusId  Int?
+  turnoffStatus    TurnoffStatus?   @relation(fields: [turnoffStatusId], references: [id])
   createdById      Int
   createdBy        User             @relation(fields: [createdById], references: [id])
   createdAt        DateTime         @default(now()) @db.Timestamptz(0)
@@ -295,16 +306,19 @@ model TurnoffDoc {
 }
 
 model TurnoffAddress {
-  id        Int        @id @default(autoincrement())
-  turnoffId Int
-  turnoff   TurnoffDoc @relation(fields: [turnoffId], references: [id])
-  villageId Int
-  village   Village    @relation(fields: [villageId], references: [id])
-  userCount Int?
-  createdAt DateTime   @default(now()) @db.Timestamptz(0)
-  updatedAt DateTime   @updatedAt @db.Timestamptz(0)
+  id         Int        @id @default(autoincrement())
+  turnoffId  Int
+  turnoff    TurnoffDoc @relation(fields: [turnoffId], references: [id])
+  districtId Int?
+  district   District?  @relation(fields: [districtId], references: [id])
+  villageId  Int
+  village    Village    @relation(fields: [villageId], references: [id])
+  userCount  Int?
+  createdAt  DateTime   @default(now()) @db.Timestamptz(0)
+  updatedAt  DateTime   @updatedAt @db.Timestamptz(0)
 
   @@index([turnoffId])
+  @@index([districtId])
   @@index([villageId])
 }
 
@@ -320,6 +334,12 @@ model TurnoffAssign {
   @@index([turnoffId])
   @@index([userAppId])
   @@index([docview])
+}
+
+model EmergencyStatus {
+  id            Int            @id @default(autoincrement())
+  name          String         @db.VarChar(255)
+  emergencyDocs EmergencyDoc[]
 }
 
 model EmergencyDoc {
@@ -340,6 +360,8 @@ model EmergencyDoc {
   district           District?          @relation(fields: [districtId], references: [id])
   voltageId          Int?
   voltage            Voltage?           @relation(fields: [voltageId], references: [id])
+  emergencyStatusId  Int?
+  emergencyStatus    EmergencyStatus?   @relation(fields: [emergencyStatusId], references: [id])
   createdById        Int
   createdBy          User               @relation(fields: [createdById], references: [id])
   createdAt          DateTime           @default(now()) @db.Timestamptz(0)
@@ -359,6 +381,8 @@ model EmergencyAddress {
   id          Int          @id @default(autoincrement())
   emergencyId Int
   emergency   EmergencyDoc @relation(fields: [emergencyId], references: [id])
+  districtId  Int?
+  district    District?    @relation(fields: [districtId], references: [id])
   villageId   Int
   village     Village      @relation(fields: [villageId], references: [id])
   userCount   Int?
@@ -366,6 +390,7 @@ model EmergencyAddress {
   updatedAt   DateTime     @updatedAt @db.Timestamptz(0)
 
   @@index([emergencyId])
+  @@index([districtId])
   @@index([villageId])
 }
 
@@ -765,4 +790,18 @@ model Voltage {
   turnoffDocs   TurnoffDoc[]
   emergencyDocs EmergencyDoc[]
   cutpowerDocs  CutpowerDoc[]
+}
+
+model Activity {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  content     String   @db.Text
+  startDate   DateTime @db.Timestamptz(0)
+  endDate     DateTime @db.Timestamptz(0)
+  location    String   @db.VarChar(255)
+  actFile     String   @db.VarChar(255)
+  createdById Int
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(0)
 }

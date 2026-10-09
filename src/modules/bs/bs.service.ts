@@ -1,10 +1,15 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import axios from 'axios';
-import { PrismaService } from '../../prisma/prisma.service';
+import http from 'http';
+import https from 'https';
+import axios, { AxiosInstance } from 'axios';
 
 @Injectable()
 export class BsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly axiosInstance: AxiosInstance = axios.create({
+    httpAgent: new http.Agent({ keepAlive: true, maxSockets: 100 }),
+    httpsAgent: new https.Agent({ keepAlive: true, maxSockets: 100 }),
+    timeout: 30000,
+  });
 
   async findAll(
     provinceId: number,
@@ -49,10 +54,7 @@ export class BsService {
       }
 
       if (!end_year || !String(end_year).trim()) {
-        throw new HttpException(
-          'end_year is required',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new HttpException('end_year is required', HttpStatus.BAD_REQUEST);
       }
 
       const cleanUrl = url.replace(/\/+$/, '');
@@ -63,11 +65,13 @@ export class BsService {
         end_y: String(end_year).trim(),
       };
 
-      const fetchApi = async (endpoint: string) => {
+      const fetchApi = async (
+        endpoint: string,
+        customParams: Record<string, any> = params,
+      ) => {
         try {
-          const res = await axios.get(`${cleanUrl}/${endpoint}/`, {
-            params,
-            timeout: 30000,
+          const res = await this.axiosInstance.get(`${cleanUrl}/${endpoint}/`, {
+            params: customParams,
           });
           return res.data;
         } catch (error: any) {
@@ -85,12 +89,17 @@ export class BsService {
         }
       };
 
-      const [energy, debt] = await Promise.all([
+      const [energy, debt, meterProgress] = await Promise.all([
         fetchApi('masterList'),
         fetchApi('meterHis'),
+        fetchApi('metterProgress', {
+          account_no: String(accountNo).trim(),
+          province_id: Number(provinceId),
+        }),
       ]);
 
       return {
+        meterProgress,
         energy,
         debt,
       };

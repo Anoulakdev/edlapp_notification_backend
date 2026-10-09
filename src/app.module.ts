@@ -46,6 +46,8 @@ import { EquipmentModule } from './modules/equipment/equipment.module';
 import { TypeunitModule } from './modules/typeunit/typeunit.module';
 import { BsModule } from './modules/bs/bs.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { NotiModule } from './modules/noti/noti.module';
+import { ActivityModule } from './modules/activity/activity.module';
 
 @Module({
   imports: [
@@ -91,6 +93,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     TypeunitModule,
     BsModule,
     DashboardModule,
+    NotiModule,
+    ActivityModule,
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

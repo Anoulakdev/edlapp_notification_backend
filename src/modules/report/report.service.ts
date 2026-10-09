@@ -11,6 +11,7 @@ import {
 } from './services/registermeter';
 import { ratingCountReport, RatingCountOptions } from './services/ratingcount';
 import { ratingDataReport, RatingDataOptions } from './services/ratingdata';
+import { agentCountReport, AgentCountOptions } from './services/agentcount';
 
 @Injectable()
 export class ReportService {
@@ -42,5 +43,9 @@ export class ReportService {
 
   ratingCountReport(user: AuthUser, options?: RatingCountOptions) {
     return ratingCountReport(this.prisma, user, options);
+  }
+
+  agentCountReport(user: AuthUser, options?: AgentCountOptions) {
+    return agentCountReport(this.prisma, user, options);
   }
 }

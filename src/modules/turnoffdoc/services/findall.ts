@@ -34,10 +34,7 @@ export async function FindAllTurnoffDoc(
 
   if (options.endDate) {
     where.endDate = {
-      lte: moment
-        .tz(options.endDate, 'Asia/Vientiane')
-        .endOf('day')
-        .toDate(),
+      lte: moment.tz(options.endDate, 'Asia/Vientiane').endOf('day').toDate(),
     };
   }
 
