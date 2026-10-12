@@ -112,13 +112,16 @@ export async function FindAllRegistermeter(
   if (options.search) {
     const searchLower = options.search.trim();
     if (searchLower) {
-      andFilters.push({
-        OR: [
-          { fullName: { contains: searchLower, mode: 'insensitive' } },
-          { phone: { contains: searchLower, mode: 'insensitive' } },
-          { accountNear: { contains: searchLower, mode: 'insensitive' } },
-        ],
-      });
+      const searchOr: Prisma.RegisterMeterWhereInput[] = [
+        { fullName: { contains: searchLower, mode: 'insensitive' } },
+        { phone: { contains: searchLower, mode: 'insensitive' } },
+        { accountNear: { contains: searchLower, mode: 'insensitive' } },
+      ];
+      const searchNum = Number(searchLower);
+      if (!isNaN(searchNum)) {
+        searchOr.push({ id: searchNum });
+      }
+      andFilters.push({ OR: searchOr });
     }
   }
 

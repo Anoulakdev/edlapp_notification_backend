@@ -29,7 +29,7 @@ export async function findAllUser(
       where.roleId = Number(options.roleId);
     }
   } else if (user.roleId === 2) {
-    const hiddenRoles = [1, 7];
+    const hiddenRoles = [1, 7, 8, 9, 10];
     if (options.roleId !== undefined && options.roleId !== null) {
       const targetRoleId = Number(options.roleId);
       if (!hiddenRoles.includes(targetRoleId)) {
@@ -97,24 +97,46 @@ export async function findAllUser(
   }
 
   if (options.search) {
-    const searchLower = options.search.trim();
-    if (searchLower) {
-      andFilters.push({
-        OR: [
-          { username: { contains: searchLower, mode: 'insensitive' } },
-          {
-            employee: {
-              OR: [
-                { first_name: { contains: searchLower, mode: 'insensitive' } },
-                { last_name: { contains: searchLower, mode: 'insensitive' } },
-                { emp_code: { contains: searchLower, mode: 'insensitive' } },
-                { tel: { contains: searchLower, mode: 'insensitive' } },
-                { email: { contains: searchLower, mode: 'insensitive' } },
-              ],
+    const searchTrimmed = options.search.trim();
+    if (searchTrimmed) {
+      const parts = searchTrimmed.split(/\s+/).filter(Boolean);
+      if (parts.length > 1) {
+        andFilters.push({
+          OR: [
+            { username: { contains: searchTrimmed, mode: 'insensitive' } },
+            {
+              employee: {
+                AND: parts.map((part) => ({
+                  OR: [
+                    { first_name: { contains: part, mode: 'insensitive' } },
+                    { last_name: { contains: part, mode: 'insensitive' } },
+                    { emp_code: { contains: part, mode: 'insensitive' } },
+                    { tel: { contains: part, mode: 'insensitive' } },
+                    { email: { contains: part, mode: 'insensitive' } },
+                  ],
+                })),
+              },
             },
-          },
-        ],
-      });
+          ],
+        });
+      } else {
+        andFilters.push({
+          OR: [
+            { username: { contains: searchTrimmed, mode: 'insensitive' } },
+            {
+              employee: {
+                OR: [
+                  { first_name: { contains: searchTrimmed, mode: 'insensitive' } },
+                  { last_name: { contains: searchTrimmed, mode: 'insensitive' } },
+                  { emp_code: { contains: searchTrimmed, mode: 'insensitive' } },
+                  { tel: { contains: searchTrimmed, mode: 'insensitive' } },
+                  { email: { contains: searchTrimmed, mode: 'insensitive' } },
+                ],
+              },
+            },
+          ],
+        });
+      }
     }
   }
 
@@ -232,7 +254,9 @@ export async function findAllUser(
 /**
  * ຄິດໄລ່ໄລຍະເວລາທີ່ຜ່ານມາ (Relative Time) ເຊັ່ນ: ນາທີ, ຊົ່ວໂມງ, ມື້, ເດືອນ
  */
-export function formatTimeAgoLao(date: Date | string | null | undefined): string {
+export function formatTimeAgoLao(
+  date: Date | string | null | undefined,
+): string {
   if (!date) return 'ບໍ່ເຄີຍເຂົ້າໃຊ້';
 
   const d = new Date(date);

@@ -34,8 +34,18 @@ export class RepairdistrictController {
 
   @Get()
   @Roles(2, 3, 4)
-  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
-    return this.repairdistrictService.findAll(page, limit);
+  findAll(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('branchId') branchId?: number,
+  ) {
+    return this.repairdistrictService.findAll({
+      page,
+      limit,
+      search,
+      branchId,
+    });
   }
 
   @Get('selectrepairdistrict')

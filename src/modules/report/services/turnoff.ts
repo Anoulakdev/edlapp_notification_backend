@@ -180,7 +180,7 @@ export async function turnoffReport(
   const turnoffs = await prisma.turnoffDoc.findMany({
     where,
     orderBy: {
-      id: 'desc',
+      id: 'asc',
     },
     include,
   });

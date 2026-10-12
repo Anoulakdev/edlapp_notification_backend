@@ -29,8 +29,18 @@ export class MessageautoController {
 
   @Get()
   @Roles(2, 3, 4)
-  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
-    return this.messageautoService.findAll(page, limit);
+  findAll(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('topicId') topicId?: number,
+  ) {
+    return this.messageautoService.findAll({
+      page,
+      limit,
+      search,
+      topicId,
+    });
   }
 
   @Get('selectmessageauto')

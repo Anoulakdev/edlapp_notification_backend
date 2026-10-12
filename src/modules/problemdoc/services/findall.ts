@@ -95,11 +95,16 @@ export async function FindAllProblemDoc(
   if (options.search) {
     const searchLower = options.search.trim();
     if (searchLower) {
-      where.OR = [
+      const searchOr: Prisma.ProblemDocWhereInput[] = [
         { fullName: { contains: searchLower, mode: 'insensitive' } },
         { description: { contains: searchLower, mode: 'insensitive' } },
         { tel: { contains: searchLower, mode: 'insensitive' } },
       ];
+      const searchNum = Number(searchLower);
+      if (!isNaN(searchNum)) {
+        searchOr.push({ id: searchNum });
+      }
+      where.OR = searchOr;
     }
   }
 

@@ -2,17 +2,12 @@ import {
   Controller,
   Get,
   Post,
-  Body,
-  Patch,
   Param,
-  Delete,
   Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { VillageService } from './village.service';
-// import { CreateVillageDto } from './dto/create-village.dto';
-// import { UpdateVillageDto } from './dto/update-village.dto';
 import type { UserRequest } from '../../interfaces/user-request.interface';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -28,8 +23,13 @@ export class VillageController {
   }
 
   @Get()
-  findAll() {
-    return this.villageService.findAll();
+  findAll(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('districtCode') districtCode?: string,
+  ) {
+    return this.villageService.findAll({ page, limit, search, districtCode });
   }
 
   @Get('selectvillage')

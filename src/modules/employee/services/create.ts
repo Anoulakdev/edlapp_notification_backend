@@ -20,6 +20,7 @@ interface ApiEmployee {
   email: string;
   image: string;
   office?: ApiEmployeeOffice | null;
+  placeOffice?: ApiEmployeeOffice | null;
 }
 
 interface ApiEmployeeResponse {
@@ -39,21 +40,26 @@ function chunkArray<T>(array: T[], size: number): T[][] {
   return result;
 }
 
-async function fetchEmployeesBatch(
-  empCodeString: string,
-): Promise<ApiEmployee[]> {
+async function fetchEmployeeByCode(
+  empCode: string,
+): Promise<ApiEmployee | null> {
   try {
     const response = await externalApi.get<ApiEmployeeResponse>(
-      `/organization-svc/employee/get?search=${empCodeString}`,
+      `/organization-svc/employee/get?search=${encodeURIComponent(empCode.trim())}`,
     );
 
-    return response.data.data?.employees || [];
+    const employees = response.data.data?.employees || [];
+    return (
+      employees.find((e) => e.emp_code === empCode.trim()) ||
+      employees[0] ||
+      null
+    );
   } catch (err: unknown) {
     console.error(
-      `Failed to fetch employees batch for search string: ${empCodeString}`,
+      `Failed to fetch employee for code: ${empCode}`,
       err,
     );
-    return [];
+    return null;
   }
 }
 
@@ -91,20 +97,19 @@ export async function updateEmployee(prisma: PrismaService) {
   const localEmpMap = new Map(localEmployees.map((emp) => [emp.id, emp]));
 
   let updatedCount = 0;
-  const batchSize = 200; // ปรับเป็น 200 คนต่อกลุ่ม เพื่อความคุ้มค่าของ HTTP Request และความเร็ว
+  const batchSize = 10; // ดึงทีละ 10 คนแบบ Concurrent เพื่อความเร็วและไม่ให้ API ภายนอกรับโหลดหนักเกินไป
 
   // 2. แบ่งกลุ่มพนักงานเป็นกลุ่มย่อย
   const batches = chunkArray(localEmployees, batchSize);
 
   // 3. วนลูปอัปเดตไปทีละกลุ่มแบบ Sequential
   for (const batch of batches) {
-    const empCodes = batch.map((emp) => emp.emp_code).filter(Boolean);
-    if (!empCodes.length) continue;
+    // ดึงข้อมูลพนักงานจาก API ทีละคนแบบ Concurrent
+    const fetchedResults = await Promise.all(
+      batch.map((emp) => fetchEmployeeByCode(emp.emp_code)),
+    );
 
-    const empCodeString = empCodes.join(',');
-
-    // ดึงข้อมูลจาก API เฉพาะพนักงานในกลุ่มปัจจุบัน
-    const apiEmployees = await fetchEmployeesBatch(empCodeString);
+    const apiEmployees = fetchedResults.filter((e): e is ApiEmployee => Boolean(e));
     if (!apiEmployees.length) continue;
 
     const updatePromises: any[] = [];
@@ -117,6 +122,42 @@ export async function updateEmployee(prisma: PrismaService) {
         ? `${process.env.URL_API}/organization-svc/employee/getEmpImg/${emp.emp_code}/${emp.image}`
         : null;
 
+      // ดึง posId จาก office หรือ placeOffice (ต้องเป็นตัวเลข > 0 เท่านั้น)
+      const posId =
+        emp.office?.pos_id && Number(emp.office.pos_id) > 0
+          ? Number(emp.office.pos_id)
+          : emp.placeOffice?.pos_id && Number(emp.placeOffice.pos_id) > 0
+          ? Number(emp.placeOffice.pos_id)
+          : null;
+
+      const departmentId =
+        emp.office?.department_id && Number(emp.office.department_id) > 0
+          ? Number(emp.office.department_id)
+          : emp.placeOffice?.department_id && Number(emp.placeOffice.department_id) > 0
+          ? Number(emp.placeOffice.department_id)
+          : null;
+
+      const divisionId =
+        emp.office?.division_id && Number(emp.office.division_id) > 0
+          ? Number(emp.office.division_id)
+          : emp.placeOffice?.division_id && Number(emp.placeOffice.division_id) > 0
+          ? Number(emp.placeOffice.division_id)
+          : null;
+
+      const officeId =
+        emp.office?.office_id && Number(emp.office.office_id) > 0
+          ? Number(emp.office.office_id)
+          : emp.placeOffice?.office_id && Number(emp.placeOffice.office_id) > 0
+          ? Number(emp.placeOffice.office_id)
+          : null;
+
+      const unitId =
+        emp.office?.unit_id && Number(emp.office.unit_id) > 0
+          ? Number(emp.office.unit_id)
+          : emp.placeOffice?.unit_id && Number(emp.placeOffice.unit_id) > 0
+          ? Number(emp.placeOffice.unit_id)
+          : null;
+
       // ตรวจสอบข้อมูลว่ามีการเปลี่ยนแปลงจริงหรือไม่
       const hasChanged =
         localEmp.first_name !== emp.first_name_la ||
@@ -126,11 +167,11 @@ export async function updateEmployee(prisma: PrismaService) {
         localEmp.tel !== emp.phone ||
         localEmp.email !== emp.email ||
         localEmp.empimg !== apiImgUrl ||
-        localEmp.posId !== (emp.office?.pos_id || null) ||
-        localEmp.departmentId !== (emp.office?.department_id || null) ||
-        localEmp.divisionId !== (emp.office?.division_id || null) ||
-        localEmp.officeId !== (emp.office?.office_id || null) ||
-        localEmp.unitId !== (emp.office?.unit_id || null);
+        localEmp.posId !== posId ||
+        localEmp.departmentId !== departmentId ||
+        localEmp.divisionId !== divisionId ||
+        localEmp.officeId !== officeId ||
+        localEmp.unitId !== unitId;
 
       // ถ้าเปลี่ยนแปลงจริง ค่อย push ใส่ Promises ไปสั่ง update ฐานข้อมูล
       if (hasChanged) {
@@ -146,11 +187,11 @@ export async function updateEmployee(prisma: PrismaService) {
               tel: emp.phone,
               email: emp.email,
               empimg: apiImgUrl,
-              posId: emp.office?.pos_id || null,
-              departmentId: emp.office?.department_id || null,
-              divisionId: emp.office?.division_id || null,
-              officeId: emp.office?.office_id || null,
-              unitId: emp.office?.unit_id || null,
+              posId,
+              departmentId,
+              divisionId,
+              officeId,
+              unitId,
             },
           }),
         );

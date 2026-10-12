@@ -28,7 +28,9 @@ interface ApiEmployee {
   email: string;
   image: string;
   office?: ApiEmployeeOffice | null;
+  placeOffice?: ApiEmployeeOffice | null;
 }
+
 interface ApiEmployeeResponse {
   statusCode?: number;
   message?: string;
@@ -47,7 +49,7 @@ async function fetchEmployees(
 ): Promise<ApiEmployee[]> {
   try {
     const response = await externalApi.get<ApiEmployeeResponse>(
-      `/organization-svc/employee/get?search=${createUserDto.username}`,
+      `/organization-svc/employee/get?search=${encodeURIComponent(createUserDto.username.trim())}`,
     );
 
     return response.data.data?.employees || [];
@@ -72,34 +74,70 @@ export async function createUser(
     throw new InternalServerErrorException('DEFAULT_PASSWORD is not defined');
   }
 
-  // Hash password beforehand (since it doesn't depend on DB state)
+  // Check beforehand if username already exists
+  const existingUser = await prisma.user.findUnique({
+    where: { username: createUserDto.username },
+  });
+
+  if (existingUser) {
+    throw new ConflictException('Username already exists');
+  }
+
+  let employee: Employee | null = await prisma.employee.findUnique({
+    where: { emp_code: createUserDto.username },
+  });
+
+  let matchedEmployee: ApiEmployee | null = null;
+
+  // Fetch external API employee BEFORE opening a database transaction to prevent connection pool exhaustion
+  if (!employee) {
+    const employees = await fetchEmployees(createUserDto);
+    matchedEmployee =
+      employees?.find((emp) => emp.emp_code === createUserDto.username.trim()) ||
+      null;
+
+    if (!matchedEmployee) {
+      throw new NotFoundException(
+        'Employee not found in local database or external API',
+      );
+    }
+  }
+
+  // Hash password beforehand (doesn't hold DB locks)
   const hashedPassword = await bcrypt.hash(process.env.DEFAULT_PASSWORD, 10);
 
   return prisma.$transaction(async (tx) => {
-    // Check if username already exists
-    const existingUser = await tx.user.findUnique({
+    // Re-verify username uniqueness within transaction
+    const userInTx = await tx.user.findUnique({
       where: { username: createUserDto.username },
     });
-
-    if (existingUser) {
+    if (userInTx) {
       throw new ConflictException('Username already exists');
     }
 
-    let employee: Employee | null = await tx.employee.findUnique({
-      where: { emp_code: createUserDto.username },
-    });
+    if (!employee && matchedEmployee) {
+      const officeData = matchedEmployee.office || matchedEmployee.placeOffice;
 
-    if (!employee) {
-      const employees = await fetchEmployees(createUserDto);
-      const matchedEmployee = employees?.find(
-        (emp) => emp.emp_code === createUserDto.username,
-      );
-
-      if (!matchedEmployee) {
-        throw new NotFoundException(
-          'Employee not found in local database or external API',
-        );
-      }
+      const posId =
+        officeData?.pos_id && Number(officeData.pos_id) > 0
+          ? Number(officeData.pos_id)
+          : null;
+      const departmentId =
+        officeData?.department_id && Number(officeData.department_id) > 0
+          ? Number(officeData.department_id)
+          : null;
+      const divisionId =
+        officeData?.division_id && Number(officeData.division_id) > 0
+          ? Number(officeData.division_id)
+          : null;
+      const officeId =
+        officeData?.office_id && Number(officeData.office_id) > 0
+          ? Number(officeData.office_id)
+          : null;
+      const unitId =
+        officeData?.unit_id && Number(officeData.unit_id) > 0
+          ? Number(officeData.unit_id)
+          : null;
 
       employee = await tx.employee.create({
         data: {
@@ -114,13 +152,17 @@ export async function createUser(
           empimg: matchedEmployee.image
             ? `${process.env.URL_API}/organization-svc/employee/getEmpImg/${matchedEmployee.emp_code}/${matchedEmployee.image}`
             : null,
-          posId: matchedEmployee.office?.pos_id || null,
-          departmentId: matchedEmployee.office?.department_id || null,
-          divisionId: matchedEmployee.office?.division_id || null,
-          officeId: matchedEmployee.office?.office_id || null,
-          unitId: matchedEmployee.office?.unit_id || null,
+          posId,
+          departmentId,
+          divisionId,
+          officeId,
+          unitId,
         },
       });
+    }
+
+    if (!employee) {
+      throw new NotFoundException('Employee could not be resolved');
     }
 
     // Create User linked to the employee

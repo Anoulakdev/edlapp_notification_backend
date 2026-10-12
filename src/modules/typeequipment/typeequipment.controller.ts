@@ -34,8 +34,12 @@ export class TypeequipmentController {
 
   @Get()
   @Roles(2, 3, 4)
-  findAll() {
-    return this.typeequipmentService.findAll();
+  findAll(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+  ) {
+    return this.typeequipmentService.findAll({ page, limit, search });
   }
 
   @Get('selecttypeequipment')

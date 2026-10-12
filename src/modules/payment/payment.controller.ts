@@ -24,7 +24,7 @@ export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Get()
-  @Roles(5)
+  @Roles(10)
   findAll(
     @Req() req: UserRequest,
     @Query('accountNo') accountNo?: string,
@@ -35,6 +35,29 @@ export class PaymentController {
     @Query('pageSize') pageSize?: number,
   ) {
     return this.paymentService.findAll(req.user, {
+      accountNo,
+      paymentDateFrom,
+      paymentDateTo,
+      status,
+      page,
+      pageSize,
+    });
+  }
+
+  @Get('selectbranch')
+  @Roles(9)
+  selectBranch(
+    @Req() req: UserRequest,
+    @Query('branchId') branchId?: string,
+    @Query('accountNo') accountNo?: string,
+    @Query('paymentDateFrom') paymentDateFrom?: string,
+    @Query('paymentDateTo') paymentDateTo?: string,
+    @Query('status') status?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
+    return this.paymentService.findAll(req.user, {
+      branchId,
       accountNo,
       paymentDateFrom,
       paymentDateTo,

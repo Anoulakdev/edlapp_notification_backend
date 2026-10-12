@@ -4,7 +4,7 @@ import { UpdateEquipmentDto } from './dto/update-equipment.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthUser } from '../../interfaces/auth-user.interface';
 import { createEquipment } from './services/create';
-import { findAllEquipment } from './services/findall';
+import { findAllEquipment, FindAllEquipmentOptions } from './services/findall';
 import { findOneEquipment } from './services/findone';
 import { updateEquipment } from './services/update';
 import { removeEquipment } from './services/remove';
@@ -19,8 +19,8 @@ export class EquipmentService {
     return createEquipment(this.prisma, authUser, createEquipmentDto);
   }
 
-  findAll() {
-    return findAllEquipment(this.prisma);
+  findAll(options: FindAllEquipmentOptions = {}) {
+    return findAllEquipment(this.prisma, options);
   }
 
   selectEquipment(typeEquipmentId?: number) {

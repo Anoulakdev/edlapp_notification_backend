@@ -3,7 +3,10 @@ import { CreateMessageautoDto } from './dto/create-messageauto.dto';
 import { UpdateMessageautoDto } from './dto/update-messageauto.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { createMessageAuto } from './services/create';
-import { findAllMessageAuto } from './services/findall';
+import {
+  findAllMessageAuto,
+  FindAllMessageAutoOptions,
+} from './services/findall';
 import { findOneMessageAuto } from './services/findone';
 import { removeMessageAuto } from './services/remove';
 import { updateMessageAuto } from './services/update';
@@ -17,8 +20,8 @@ export class MessageautoService {
     return createMessageAuto(this.prisma, createMessageautoDto);
   }
 
-  findAll(page?: number, limit?: number) {
-    return findAllMessageAuto(this.prisma, page, limit);
+  findAll(options: FindAllMessageAutoOptions = {}) {
+    return findAllMessageAuto(this.prisma, options);
   }
 
   selectMessageAuto(topicId?: number, search?: string) {

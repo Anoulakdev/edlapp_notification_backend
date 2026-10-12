@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthUser } from '../../interfaces/auth-user.interface';
 import { createVillage } from './services/create';
-import { findAllVillage } from './services/findall';
+import { findAllVillage, FindAllVillageOptions } from './services/findall';
 import { findOneVillage } from './services/findone';
 import { selectVillage } from './services/selectVillage';
 import { edlWorkerVillage } from './services/edlWorkerVillage';
@@ -17,8 +17,8 @@ export class VillageService {
     return createVillage(this.prisma);
   }
 
-  findAll() {
-    return findAllVillage(this.prisma);
+  findAll(options?: FindAllVillageOptions) {
+    return findAllVillage(this.prisma, options);
   }
 
   selectVillage(districtCode?: string) {

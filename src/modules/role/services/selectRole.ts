@@ -11,7 +11,7 @@ export async function selectRole(prisma: PrismaService, user: AuthUser) {
   } else if (user.roleId === 2) {
     return prisma.role.findMany({
       where: {
-        id: { notIn: [1, 7] },
+        id: { notIn: [1, 7, 8, 9, 10] },
       },
       orderBy: {
         id: 'asc',

@@ -76,7 +76,12 @@ export class UserService {
     });
 
     if (this.userGateway) {
-      this.userGateway.broadcastStatus(id, Boolean(isOnline), updated.lastActiveAt || new Date(), updated.lastLoginAt || undefined);
+      this.userGateway.broadcastStatus(
+        id,
+        Boolean(isOnline),
+        updated.lastActiveAt || new Date(),
+        updated.lastLoginAt || undefined,
+      );
     }
 
     return updated;

@@ -17,5 +17,7 @@ export async function unreadCount(prisma: PrismaService) {
 
   return {
     total,
+    unreadCount: total,
+    unreadAgentCount: total,
   };
 }

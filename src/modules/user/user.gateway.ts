@@ -6,6 +6,7 @@ import {
   ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -16,7 +17,7 @@ import { PrismaService } from '../../prisma/prisma.service';
   },
   namespace: 'users',
 })
-export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer()
   server: Server;
 
@@ -30,6 +31,18 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private broadcastOnlineCountTimer: NodeJS.Timeout | null = null;
 
   constructor(private readonly prisma: PrismaService) {}
+
+  async afterInit() {
+    try {
+      const resetResult = await this.prisma.user.updateMany({
+        where: { isOnline: true },
+        data: { isOnline: false },
+      });
+      console.log(`[UserGateway] Cleared ${resetResult.count} stale online session(s) on startup`);
+    } catch (err) {
+      console.error('[UserGateway] Error clearing stale online sessions on startup:', err);
+    }
+  }
 
   async handleConnection(client: Socket) {
     const rawUserId =

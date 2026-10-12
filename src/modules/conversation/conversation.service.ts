@@ -30,6 +30,14 @@ export class ConversationService {
     private readonly conversationGateway: ConversationGateway,
   ) {}
 
+  private async getTopicUnreadCount(topicId: number): Promise<number> {
+    const result = await this.prisma.conversation.aggregate({
+      where: { topicId: Number(topicId), deletedAt: null },
+      _sum: { unreadAgentCount: true },
+    });
+    return result._sum.unreadAgentCount || 0;
+  }
+
   async edlAppCreate(createConversationDto: CreateConversationDto) {
     const conversation = await edlAppCreate(this.prisma, createConversationDto);
     await this.broadcastNewMessage(conversation.id);
@@ -136,14 +144,7 @@ export class ConversationService {
         );
       }
 
-      const conversations = await this.prisma.conversation.findMany({
-        where: { topicId: Number(topicId), deletedAt: null },
-        select: { unreadAgentCount: true },
-      });
-      const unreadCount = conversations.reduce(
-        (sum, c) => sum + (c.unreadAgentCount || 0),
-        0,
-      );
+      const unreadCount = await this.getTopicUnreadCount(Number(topicId));
       this.conversationGateway.emitTopicUnreadCountUpdate(
         Number(topicId),
         unreadCount,
@@ -194,13 +195,8 @@ export class ConversationService {
     const result = await clearChat(this.prisma, conversationId, userRole);
     if (result.conversation) {
       try {
-        const conversations = await this.prisma.conversation.findMany({
-          where: { topicId: result.conversation.topicId, deletedAt: null },
-          select: { unreadAgentCount: true },
-        });
-        const unreadCount = conversations.reduce(
-          (sum, c) => sum + (c.unreadAgentCount || 0),
-          0,
+        const unreadCount = await this.getTopicUnreadCount(
+          result.conversation.topicId,
         );
         this.conversationGateway.emitTopicUnreadCountUpdate(
           result.conversation.topicId,
@@ -351,14 +347,7 @@ export class ConversationService {
 
         // Fetch and broadcast updated topic unread count
         try {
-          const conversations = await this.prisma.conversation.findMany({
-            where: { topicId, deletedAt: null },
-            select: { unreadAgentCount: true },
-          });
-          const unreadCount = conversations.reduce(
-            (sum, c) => sum + (c.unreadAgentCount || 0),
-            0,
-          );
+          const unreadCount = await this.getTopicUnreadCount(topicId);
           this.conversationGateway.emitTopicUnreadCountUpdate(
             topicId,
             unreadCount,
