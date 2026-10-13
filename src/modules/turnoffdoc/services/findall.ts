@@ -139,6 +139,7 @@ export async function FindAllTurnoffDoc(
     province: true,
     district: true,
     voltage: true,
+    turnoffStatus: true,
     turnoffAddresses: {
       select: {
         id: true,
@@ -161,9 +162,7 @@ export async function FindAllTurnoffDoc(
     const [data, total] = await Promise.all([
       prisma.turnoffDoc.findMany({
         where,
-        orderBy: {
-          id: 'desc',
-        },
+        orderBy: [{ startDate: 'desc' }, { startTime: 'desc' }],
         include,
         skip,
         take,
@@ -194,9 +193,7 @@ export async function FindAllTurnoffDoc(
 
   const turnoffs = await prisma.turnoffDoc.findMany({
     where,
-    orderBy: {
-      id: 'desc',
-    },
+    orderBy: [{ startDate: 'desc' }, { startTime: 'desc' }],
     include,
   });
 

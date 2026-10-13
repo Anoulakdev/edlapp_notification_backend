@@ -6,7 +6,14 @@ export async function findOneTurnoffAssign(prisma: PrismaService, id: number) {
   const turnoffAssign = await prisma.turnoffAssign.findUnique({
     where: { id },
     include: {
-      turnoff: true,
+      turnoff: {
+        include: {
+          province: true,
+          district: true,
+          voltage: true,
+          turnoffStatus: true,
+        },
+      },
     },
   });
   if (!turnoffAssign) throw new NotFoundException('turnoff not found');
@@ -14,10 +21,14 @@ export async function findOneTurnoffAssign(prisma: PrismaService, id: number) {
     ...turnoffAssign,
     createdAt: moment(turnoffAssign.createdAt).tz('Asia/Vientiane').format(),
     updatedAt: moment(turnoffAssign.updatedAt).tz('Asia/Vientiane').format(),
-    turnoff: {
-      ...turnoffAssign.turnoff,
-      startDate: moment(turnoffAssign.turnoff.startDate).format('YYYY-MM-DD'),
-      endDate: moment(turnoffAssign.turnoff.endDate).format('YYYY-MM-DD'),
-    },
+    turnoff: turnoffAssign.turnoff
+      ? {
+          ...turnoffAssign.turnoff,
+          startDate: moment(turnoffAssign.turnoff.startDate).format(
+            'YYYY-MM-DD',
+          ),
+          endDate: moment(turnoffAssign.turnoff.endDate).format('YYYY-MM-DD'),
+        }
+      : null,
   };
 }

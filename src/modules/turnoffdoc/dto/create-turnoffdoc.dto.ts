@@ -56,4 +56,9 @@ export class CreateTurnoffdocDto {
   @IsInt()
   @IsOptional()
   voltageId?: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  turnoffStatusId?: number;
 }

@@ -93,8 +93,9 @@ export async function createUser(
   if (!employee) {
     const employees = await fetchEmployees(createUserDto);
     matchedEmployee =
-      employees?.find((emp) => emp.emp_code === createUserDto.username.trim()) ||
-      null;
+      employees?.find(
+        (emp) => emp.emp_code === createUserDto.username.trim(),
+      ) || null;
 
     if (!matchedEmployee) {
       throw new NotFoundException(

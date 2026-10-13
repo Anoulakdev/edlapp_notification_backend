@@ -15,4 +15,3 @@ export async function findAllMeterstatus(prisma: PrismaService) {
   MemoryCache.set(cacheKey, data, 5 * 60 * 1000);
   return data;
 }
-

@@ -7,41 +7,43 @@ export async function FindAllNoti(prisma: PrismaService, userAppId: number) {
     docview: false,
   };
 
-  const [turnoffAssigns, emergencyAssigns, cutpowerAssigns] = await Promise.all([
-    prisma.turnoffAssign.findMany({
-      where,
-      orderBy: {
-        turnoff: {
-          id: 'desc',
+  const [turnoffAssigns, emergencyAssigns, cutpowerAssigns] = await Promise.all(
+    [
+      prisma.turnoffAssign.findMany({
+        where,
+        orderBy: {
+          turnoff: {
+            id: 'desc',
+          },
         },
-      },
-      include: {
-        turnoff: true,
-      },
-    }),
-    prisma.emergencyAssign.findMany({
-      where,
-      orderBy: {
-        emergency: {
-          id: 'desc',
+        include: {
+          turnoff: true,
         },
-      },
-      include: {
-        emergency: true,
-      },
-    }),
-    prisma.cutpowerAssign.findMany({
-      where,
-      orderBy: {
-        cutpower: {
-          id: 'desc',
+      }),
+      prisma.emergencyAssign.findMany({
+        where,
+        orderBy: {
+          emergency: {
+            id: 'desc',
+          },
         },
-      },
-      include: {
-        cutpower: true,
-      },
-    }),
-  ]);
+        include: {
+          emergency: true,
+        },
+      }),
+      prisma.cutpowerAssign.findMany({
+        where,
+        orderBy: {
+          cutpower: {
+            id: 'desc',
+          },
+        },
+        include: {
+          cutpower: true,
+        },
+      }),
+    ],
+  );
 
   const mappedTurnoff = turnoffAssigns.map((turnoffAssign) => ({
     ...turnoffAssign,

@@ -1,5 +1,7 @@
+import { BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import moment from 'moment-timezone';
+import { Prisma } from '../../../../generated/prisma/client';
 
 export async function FindAllEmergencyAssign(
   prisma: PrismaService,
@@ -7,7 +9,14 @@ export async function FindAllEmergencyAssign(
   page?: number,
   limit?: number,
 ) {
-  const where = { userAppId: Number(userAppId) };
+  const numericUserAppId = Number(userAppId);
+  if (!userAppId || isNaN(numericUserAppId)) {
+    throw new BadRequestException('userAppId is required and must be a valid number');
+  }
+
+  const where: Prisma.EmergencyAssignWhereInput = {
+    userAppId: numericUserAppId,
+  };
 
   if (page !== undefined && limit !== undefined) {
     const skip = (page - 1) * limit;
@@ -16,13 +25,27 @@ export async function FindAllEmergencyAssign(
     const [data, total] = await Promise.all([
       prisma.emergencyAssign.findMany({
         where,
-        orderBy: {
-          emergency: {
-            id: 'desc',
+        orderBy: [
+          {
+            emergency: {
+              emergencyDate: 'desc',
+            },
           },
-        },
+          {
+            emergency: {
+              startTime: 'desc',
+            },
+          },
+        ],
         include: {
-          emergency: true,
+          emergency: {
+            include: {
+              province: true,
+              district: true,
+              voltage: true,
+              emergencyStatus: true,
+            },
+          },
         },
         skip,
         take,
@@ -41,12 +64,14 @@ export async function FindAllEmergencyAssign(
         updatedAt: moment(emergencyAssign.updatedAt)
           .tz('Asia/Vientiane')
           .format(),
-        emergency: {
-          ...emergencyAssign.emergency,
-          emergencyDate: moment(emergencyAssign.emergency.emergencyDate)
-            .tz('Asia/Vientiane')
-            .format('YYYY-MM-DD'),
-        },
+        emergency: emergencyAssign.emergency
+          ? {
+              ...emergencyAssign.emergency,
+              emergencyDate: moment(emergencyAssign.emergency.emergencyDate)
+                .tz('Asia/Vientiane')
+                .format('YYYY-MM-DD'),
+            }
+          : null,
       };
     });
 
@@ -61,13 +86,27 @@ export async function FindAllEmergencyAssign(
 
   const emergencyAssigns = await prisma.emergencyAssign.findMany({
     where,
-    orderBy: {
-      emergency: {
-        id: 'desc',
+    orderBy: [
+      {
+        emergency: {
+          emergencyDate: 'desc',
+        },
       },
-    },
+      {
+        emergency: {
+          startTime: 'desc',
+        },
+      },
+    ],
     include: {
-      emergency: true,
+      emergency: {
+        include: {
+          province: true,
+          district: true,
+          voltage: true,
+          emergencyStatus: true,
+        },
+      },
     },
   });
 
@@ -80,12 +119,14 @@ export async function FindAllEmergencyAssign(
       updatedAt: moment(emergencyAssign.updatedAt)
         .tz('Asia/Vientiane')
         .format(),
-      emergency: {
-        ...emergencyAssign.emergency,
-        emergencyDate: moment(emergencyAssign.emergency.emergencyDate)
-          .tz('Asia/Vientiane')
-          .format('YYYY-MM-DD'),
-      },
+      emergency: emergencyAssign.emergency
+        ? {
+            ...emergencyAssign.emergency,
+            emergencyDate: moment(emergencyAssign.emergency.emergencyDate)
+              .tz('Asia/Vientiane')
+              .format('YYYY-MM-DD'),
+          }
+        : null,
     };
   });
 }

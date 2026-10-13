@@ -55,10 +55,7 @@ async function fetchEmployeeByCode(
       null
     );
   } catch (err: unknown) {
-    console.error(
-      `Failed to fetch employee for code: ${empCode}`,
-      err,
-    );
+    console.error(`Failed to fetch employee for code: ${empCode}`, err);
     return null;
   }
 }
@@ -109,7 +106,9 @@ export async function updateEmployee(prisma: PrismaService) {
       batch.map((emp) => fetchEmployeeByCode(emp.emp_code)),
     );
 
-    const apiEmployees = fetchedResults.filter((e): e is ApiEmployee => Boolean(e));
+    const apiEmployees = fetchedResults.filter((e): e is ApiEmployee =>
+      Boolean(e),
+    );
     if (!apiEmployees.length) continue;
 
     const updatePromises: any[] = [];
@@ -127,36 +126,38 @@ export async function updateEmployee(prisma: PrismaService) {
         emp.office?.pos_id && Number(emp.office.pos_id) > 0
           ? Number(emp.office.pos_id)
           : emp.placeOffice?.pos_id && Number(emp.placeOffice.pos_id) > 0
-          ? Number(emp.placeOffice.pos_id)
-          : null;
+            ? Number(emp.placeOffice.pos_id)
+            : null;
 
       const departmentId =
         emp.office?.department_id && Number(emp.office.department_id) > 0
           ? Number(emp.office.department_id)
-          : emp.placeOffice?.department_id && Number(emp.placeOffice.department_id) > 0
-          ? Number(emp.placeOffice.department_id)
-          : null;
+          : emp.placeOffice?.department_id &&
+              Number(emp.placeOffice.department_id) > 0
+            ? Number(emp.placeOffice.department_id)
+            : null;
 
       const divisionId =
         emp.office?.division_id && Number(emp.office.division_id) > 0
           ? Number(emp.office.division_id)
-          : emp.placeOffice?.division_id && Number(emp.placeOffice.division_id) > 0
-          ? Number(emp.placeOffice.division_id)
-          : null;
+          : emp.placeOffice?.division_id &&
+              Number(emp.placeOffice.division_id) > 0
+            ? Number(emp.placeOffice.division_id)
+            : null;
 
       const officeId =
         emp.office?.office_id && Number(emp.office.office_id) > 0
           ? Number(emp.office.office_id)
           : emp.placeOffice?.office_id && Number(emp.placeOffice.office_id) > 0
-          ? Number(emp.placeOffice.office_id)
-          : null;
+            ? Number(emp.placeOffice.office_id)
+            : null;
 
       const unitId =
         emp.office?.unit_id && Number(emp.office.unit_id) > 0
           ? Number(emp.office.unit_id)
           : emp.placeOffice?.unit_id && Number(emp.placeOffice.unit_id) > 0
-          ? Number(emp.placeOffice.unit_id)
-          : null;
+            ? Number(emp.placeOffice.unit_id)
+            : null;
 
       // ตรวจสอบข้อมูลว่ามีการเปลี่ยนแปลงจริงหรือไม่
       const hasChanged =

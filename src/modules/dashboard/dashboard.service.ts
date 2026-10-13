@@ -30,4 +30,3 @@ export class DashboardService {
     return dashAll(this.prisma, user, year, provinceId, districtId);
   }
 }
-

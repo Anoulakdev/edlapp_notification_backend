@@ -125,6 +125,7 @@ export async function edlWorkerCreate(
           voltageId: createEmergencydocDto.voltageId
             ? Number(createEmergencydocDto.voltageId)
             : null,
+          emergencyStatusId: 1,
           createdById: user.id,
         },
       });

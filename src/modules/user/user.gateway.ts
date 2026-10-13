@@ -17,7 +17,9 @@ import { PrismaService } from '../../prisma/prisma.service';
   },
   namespace: 'users',
 })
-export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
+export class UserGateway
+  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
+{
   @WebSocketServer()
   server: Server;
 
@@ -38,16 +40,20 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         where: { isOnline: true },
         data: { isOnline: false },
       });
-      console.log(`[UserGateway] Cleared ${resetResult.count} stale online session(s) on startup`);
+      console.log(
+        `[UserGateway] Cleared ${resetResult.count} stale online session(s) on startup`,
+      );
     } catch (err) {
-      console.error('[UserGateway] Error clearing stale online sessions on startup:', err);
+      console.error(
+        '[UserGateway] Error clearing stale online sessions on startup:',
+        err,
+      );
     }
   }
 
   async handleConnection(client: Socket) {
     const rawUserId =
-      client.handshake.auth?.userId ||
-      client.handshake.query?.userId;
+      client.handshake.auth?.userId || client.handshake.query?.userId;
 
     if (rawUserId) {
       const userId = Number(rawUserId);
@@ -96,7 +102,10 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect, On
             data: { lastActiveAt: now },
           });
         } catch (e) {
-          console.error(`[UserGateway] Heartbeat update error for user ${userId}:`, e);
+          console.error(
+            `[UserGateway] Heartbeat update error for user ${userId}:`,
+            e,
+          );
         }
       }
       return { success: true, timestamp: now };
@@ -127,13 +136,20 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect, On
           },
         });
       } catch (err) {
-        console.error(`[UserGateway] Failed to update user ${userId} to online:`, err);
+        console.error(
+          `[UserGateway] Failed to update user ${userId} to online:`,
+          err,
+        );
       }
 
       this.broadcastStatus(userId, true, now);
-      console.log(`[UserGateway] User ${userId} is now ONLINE (Socket: ${socketId})`);
+      console.log(
+        `[UserGateway] User ${userId} is now ONLINE (Socket: ${socketId})`,
+      );
     } else {
-      console.log(`[UserGateway] User ${userId} connected additional socket ${socketId} (Total: ${sockets.size})`);
+      console.log(
+        `[UserGateway] User ${userId} connected additional socket ${socketId} (Total: ${sockets.size})`,
+      );
     }
 
     // Send the current list of online user IDs to the connected client
@@ -166,18 +182,30 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect, On
             },
           });
         } catch (err) {
-          console.error(`[UserGateway] Failed to update user ${userId} to offline:`, err);
+          console.error(
+            `[UserGateway] Failed to update user ${userId} to offline:`,
+            err,
+          );
         }
 
         this.broadcastStatus(userId, false, now);
-        console.log(`[UserGateway] User ${userId} is now OFFLINE (All sockets disconnected)`);
+        console.log(
+          `[UserGateway] User ${userId} is now OFFLINE (All sockets disconnected)`,
+        );
       } else {
-        console.log(`[UserGateway] User ${userId} disconnected socket ${socketId} (Remaining: ${sockets.size})`);
+        console.log(
+          `[UserGateway] User ${userId} disconnected socket ${socketId} (Remaining: ${sockets.size})`,
+        );
       }
     }
   }
 
-  broadcastStatus(userId: number, isOnline: boolean, timestamp = new Date(), lastLoginAt?: Date) {
+  broadcastStatus(
+    userId: number,
+    isOnline: boolean,
+    timestamp = new Date(),
+    lastLoginAt?: Date,
+  ) {
     if (this.server) {
       this.server.emit('userStatusChanged', {
         userId,
@@ -198,7 +226,10 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect, On
     }
     this.broadcastOnlineCountTimer = setTimeout(() => {
       this.broadcastOnlineCount().catch((err) => {
-        console.error('[UserGateway] Error in debounced broadcastOnlineCount:', err);
+        console.error(
+          '[UserGateway] Error in debounced broadcastOnlineCount:',
+          err,
+        );
       });
     }, delay);
   }

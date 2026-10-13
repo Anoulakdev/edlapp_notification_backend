@@ -180,9 +180,6 @@ export class ConversationController {
     @Req() req: UserRequest,
     @Param('conversationId') conversationId: string,
   ) {
-    return this.conversationService.getRatingStatus(
-      req.user,
-      +conversationId,
-    );
+    return this.conversationService.getRatingStatus(req.user, +conversationId);
   }
 }

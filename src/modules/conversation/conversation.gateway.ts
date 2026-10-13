@@ -175,7 +175,9 @@ export class ConversationGateway
     const payload = { ...data, conversationId, topicId };
     this.server.to(convRoom).emit('ratingRequested', payload);
     this.server.to(topicRoom).emit('ratingRequested', payload);
-    console.log(`Emitted ratingRequested to rooms ${convRoom} and ${topicRoom}`);
+    console.log(
+      `Emitted ratingRequested to rooms ${convRoom} and ${topicRoom}`,
+    );
   }
 
   // Helper method to emit submitted rating to conversation room & topic room
@@ -190,6 +192,8 @@ export class ConversationGateway
     const payload = { ...ratingData, conversationId, topicId };
     this.server.to(convRoom).emit('ratingSubmitted', payload);
     this.server.to(topicRoom).emit('ratingSubmitted', payload);
-    console.log(`Emitted ratingSubmitted to rooms ${convRoom} and ${topicRoom}`);
+    console.log(
+      `Emitted ratingSubmitted to rooms ${convRoom} and ${topicRoom}`,
+    );
   }
 }

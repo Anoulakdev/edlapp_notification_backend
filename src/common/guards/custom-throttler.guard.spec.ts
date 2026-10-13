@@ -59,22 +59,30 @@ describe('CustomThrottlerGuard & Rate Limiting (2000 Users Support)', () => {
   });
 
   it('should allow requests within the limit', async () => {
-    const res1 = await request(app.getHttpServer()).post('/test/auth/login').send({ username: 'user1' });
+    const res1 = await request(app.getHttpServer())
+      .post('/test/auth/login')
+      .send({ username: 'user1' });
     expect(res1.status).toBe(201);
 
-    const res2 = await request(app.getHttpServer()).post('/test/auth/login').send({ username: 'user1' });
+    const res2 = await request(app.getHttpServer())
+      .post('/test/auth/login')
+      .send({ username: 'user1' });
     expect(res2.status).toBe(201);
   });
 
   it('should block brute force attempts with HTTP 429 when exceeding limit for the same username', async () => {
-    const res = await request(app.getHttpServer()).post('/test/auth/login').send({ username: 'user1' });
+    const res = await request(app.getHttpServer())
+      .post('/test/auth/login')
+      .send({ username: 'user1' });
     expect(res.status).toBe(429);
     expect(res.body.message).toContain('ມີການຮ້ອງຂໍຫຼາຍເກີນໄປ');
   });
 
   it('should allow different users from the SAME IP to log in without blocking each other', async () => {
     // user1 is already rate limited above. user2 on the same IP should still be allowed!
-    const resUser2 = await request(app.getHttpServer()).post('/test/auth/login').send({ username: 'user2' });
+    const resUser2 = await request(app.getHttpServer())
+      .post('/test/auth/login')
+      .send({ username: 'user2' });
     expect(resUser2.status).toBe(201);
   });
 

@@ -9,7 +9,14 @@ export async function findOneEmergencyAssign(
   const emergencyAssign = await prisma.emergencyAssign.findUnique({
     where: { id },
     include: {
-      emergency: true,
+      emergency: {
+        include: {
+          province: true,
+          district: true,
+          voltage: true,
+          emergencyStatus: true,
+        },
+      },
     },
   });
   if (!emergencyAssign) throw new NotFoundException('emergency not found');
@@ -17,11 +24,13 @@ export async function findOneEmergencyAssign(
     ...emergencyAssign,
     createdAt: moment(emergencyAssign.createdAt).tz('Asia/Vientiane').format(),
     updatedAt: moment(emergencyAssign.updatedAt).tz('Asia/Vientiane').format(),
-    emergency: {
-      ...emergencyAssign.emergency,
-      emergencyDate: moment(emergencyAssign.emergency.emergencyDate)
-        .tz('Asia/Vientiane')
-        .format('YYYY-MM-DD'),
-    },
+    emergency: emergencyAssign.emergency
+      ? {
+          ...emergencyAssign.emergency,
+          emergencyDate: moment(emergencyAssign.emergency.emergencyDate)
+            .tz('Asia/Vientiane')
+            .format('YYYY-MM-DD'),
+        }
+      : null,
   };
 }

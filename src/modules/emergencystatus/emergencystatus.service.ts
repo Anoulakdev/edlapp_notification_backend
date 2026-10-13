@@ -1,26 +1,39 @@
 import { Injectable } from '@nestjs/common';
 import { CreateEmergencystatusDto } from './dto/create-emergencystatus.dto';
 import { UpdateEmergencystatusDto } from './dto/update-emergencystatus.dto';
+import { PrismaService } from '../../prisma/prisma.service';
+import { createEmergencyStatus } from './services/create';
+import { findAllEmergencyStatus } from './services/findall';
+import { findOneEmergencyStatus } from './services/findone';
+import { updateEmergencyStatus } from './services/update';
+import { removeEmergencyStatus } from './services/remove';
+import { selectEmergencyStatus } from './services/selectEmergencyStatus';
 
 @Injectable()
 export class EmergencystatusService {
+  constructor(private prisma: PrismaService) {}
+
   create(createEmergencystatusDto: CreateEmergencystatusDto) {
-    return 'This action adds a new emergencystatus';
+    return createEmergencyStatus(this.prisma, createEmergencystatusDto);
   }
 
   findAll() {
-    return `This action returns all emergencystatus`;
+    return findAllEmergencyStatus(this.prisma);
+  }
+
+  selectEmergencyStatus() {
+    return selectEmergencyStatus(this.prisma);
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} emergencystatus`;
+    return findOneEmergencyStatus(this.prisma, id);
   }
 
   update(id: number, updateEmergencystatusDto: UpdateEmergencystatusDto) {
-    return `This action updates a #${id} emergencystatus`;
+    return updateEmergencyStatus(this.prisma, id, updateEmergencystatusDto);
   }
 
   remove(id: number) {
-    return `This action removes a #${id} emergencystatus`;
+    return removeEmergencyStatus(this.prisma, id);
   }
 }

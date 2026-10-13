@@ -67,4 +67,9 @@ export class CreateEmergencydocDto {
   @IsInt()
   @IsOptional()
   voltageId?: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  emergencyStatusId?: number;
 }

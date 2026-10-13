@@ -106,6 +106,15 @@ export class TurnoffdocController {
     return this.turnoffdocService.updateAddress(+id, updateTurnoffdocDto);
   }
 
+  @Put('updatestatus/:id')
+  @Roles(2, 3, 4, 5, 6)
+  updateStatus(
+    @Param('id') id: string,
+    @Body() updateTurnoffdocDto: UpdateTurnoffdocDto,
+  ) {
+    return this.turnoffdocService.updateStatus(+id, updateTurnoffdocDto);
+  }
+
   @Delete(':id')
   @Roles(2, 3, 4, 5, 6)
   remove(@Param('id') id: string) {

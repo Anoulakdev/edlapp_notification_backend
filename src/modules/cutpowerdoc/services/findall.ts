@@ -159,7 +159,7 @@ export async function FindAllCutpowerDoc(
       prisma.cutpowerDoc.findMany({
         where,
         orderBy: {
-          id: 'desc',
+          cutpowerDate: 'desc',
         },
         include,
         skip,
@@ -193,7 +193,7 @@ export async function FindAllCutpowerDoc(
   const cutpowerDocs = await prisma.cutpowerDoc.findMany({
     where,
     orderBy: {
-      id: 'desc',
+      cutpowerDate: 'desc',
     },
     include,
   });

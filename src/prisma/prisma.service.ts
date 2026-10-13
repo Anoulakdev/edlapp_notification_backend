@@ -19,7 +19,10 @@ export class PrismaService
     });
 
     pool.on('error', (err) => {
-      console.error('[PrismaService] Unexpected error on idle PostgreSQL client:', err);
+      console.error(
+        '[PrismaService] Unexpected error on idle PostgreSQL client:',
+        err,
+      );
     });
 
     const adapter = new PrismaPg(pool);

@@ -1,5 +1,6 @@
 import { PrismaService } from '../../../prisma/prisma.service';
 import { externalApi } from '../../../utils/external-api';
+import { MemoryCache } from '../../../utils/cache.util';
 
 interface ApiVillage {
   village_id: number;
@@ -89,6 +90,8 @@ export async function createVillage(prisma: PrismaService) {
       });
     }
   }
+
+  MemoryCache.deleteByPrefix('select:villages');
 
   return {
     success: true,

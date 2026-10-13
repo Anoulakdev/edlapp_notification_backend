@@ -1,10 +1,7 @@
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuthUser } from '../../../interfaces/auth-user.interface';
 
-export async function edlWorkerVillage(
-  prisma: PrismaService,
-  user?: AuthUser,
-) {
+export async function edlWorkerVillage(prisma: PrismaService, user?: AuthUser) {
   if (!user?.districtId) {
     return [];
   }

@@ -23,7 +23,11 @@ export async function updateRepair(
   const filesToDelete: string[] = [];
 
   if (updateReceiverDto.commentAudio) {
-    if (oldFileAudio && updateReceiverDto.commentAudio !== oldFileAudio && process.env.UPLOAD_BASE_PATH) {
+    if (
+      oldFileAudio &&
+      updateReceiverDto.commentAudio !== oldFileAudio &&
+      process.env.UPLOAD_BASE_PATH
+    ) {
       filesToDelete.push(
         path.resolve(process.env.UPLOAD_BASE_PATH, 'audio', oldFileAudio),
       );
@@ -33,7 +37,11 @@ export async function updateRepair(
   }
 
   if (updateReceiverDto.commentImg) {
-    if (oldFileImg && updateReceiverDto.commentImg !== oldFileImg && process.env.UPLOAD_BASE_PATH) {
+    if (
+      oldFileImg &&
+      updateReceiverDto.commentImg !== oldFileImg &&
+      process.env.UPLOAD_BASE_PATH
+    ) {
       filesToDelete.push(
         path.resolve(process.env.UPLOAD_BASE_PATH, 'comment', oldFileImg),
       );

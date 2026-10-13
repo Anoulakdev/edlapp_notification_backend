@@ -68,7 +68,7 @@ export async function createAgentRating(
   }
 
   // 4. Create or update AgentRating for this messageId / conversation
-  let existingRating = targetMessageId
+  const existingRating = targetMessageId
     ? await prisma.agentRating.findUnique({
         where: { messageId: targetMessageId },
       })

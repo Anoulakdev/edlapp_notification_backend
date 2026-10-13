@@ -1,5 +1,7 @@
+import { BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import moment from 'moment-timezone';
+import { Prisma } from '../../../../generated/prisma/client';
 
 export async function FindAllCutpowerAssign(
   prisma: PrismaService,
@@ -7,7 +9,14 @@ export async function FindAllCutpowerAssign(
   page?: number,
   limit?: number,
 ) {
-  const where = { userAppId: Number(userAppId) };
+  const numericUserAppId = Number(userAppId);
+  if (!userAppId || isNaN(numericUserAppId)) {
+    throw new BadRequestException('userAppId is required and must be a valid number');
+  }
+
+  const where: Prisma.CutpowerAssignWhereInput = {
+    userAppId: numericUserAppId,
+  };
 
   if (page !== undefined && limit !== undefined) {
     const skip = (page - 1) * limit;
@@ -18,11 +27,17 @@ export async function FindAllCutpowerAssign(
         where,
         orderBy: {
           cutpower: {
-            id: 'desc',
+            cutpowerDate: 'desc',
           },
         },
         include: {
-          cutpower: true,
+          cutpower: {
+            include: {
+              province: true,
+              district: true,
+              voltage: true,
+            },
+          },
         },
         skip,
         take,
@@ -41,12 +56,14 @@ export async function FindAllCutpowerAssign(
         updatedAt: moment(cutpowerAssign.updatedAt)
           .tz('Asia/Vientiane')
           .format(),
-        cutpower: {
-          ...cutpowerAssign.cutpower,
-          cutpowerDate: moment(cutpowerAssign.cutpower.cutpowerDate)
-            .tz('Asia/Vientiane')
-            .format('YYYY-MM-DD'),
-        },
+        cutpower: cutpowerAssign.cutpower
+          ? {
+              ...cutpowerAssign.cutpower,
+              cutpowerDate: moment(cutpowerAssign.cutpower.cutpowerDate)
+                .tz('Asia/Vientiane')
+                .format('YYYY-MM-DD'),
+            }
+          : null,
       };
     });
 
@@ -63,11 +80,17 @@ export async function FindAllCutpowerAssign(
     where,
     orderBy: {
       cutpower: {
-        id: 'desc',
+        cutpowerDate: 'desc',
       },
     },
     include: {
-      cutpower: true,
+      cutpower: {
+        include: {
+          province: true,
+          district: true,
+          voltage: true,
+        },
+      },
     },
   });
 
@@ -76,12 +99,14 @@ export async function FindAllCutpowerAssign(
       ...cutpowerAssign,
       createdAt: moment(cutpowerAssign.createdAt).tz('Asia/Vientiane').format(),
       updatedAt: moment(cutpowerAssign.updatedAt).tz('Asia/Vientiane').format(),
-      cutpower: {
-        ...cutpowerAssign.cutpower,
-        cutpowerDate: moment(cutpowerAssign.cutpower.cutpowerDate)
-          .tz('Asia/Vientiane')
-          .format('YYYY-MM-DD'),
-      },
+      cutpower: cutpowerAssign.cutpower
+        ? {
+            ...cutpowerAssign.cutpower,
+            cutpowerDate: moment(cutpowerAssign.cutpower.cutpowerDate)
+              .tz('Asia/Vientiane')
+              .format('YYYY-MM-DD'),
+          }
+        : null,
     };
   });
 }

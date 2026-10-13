@@ -124,6 +124,7 @@ export async function emergencyReport(
     province: true,
     district: true,
     voltage: true,
+    emergencyStatus: true,
     emergencyAddresses: {
       select: {
         id: true,
@@ -146,9 +147,7 @@ export async function emergencyReport(
     const [data, total] = await Promise.all([
       prisma.emergencyDoc.findMany({
         where,
-        orderBy: {
-          id: 'asc',
-        },
+        orderBy: [{ emergencyDate: 'asc' }, { startTime: 'asc' }],
         include,
         skip,
         take,
@@ -180,9 +179,7 @@ export async function emergencyReport(
 
   const emergencies = await prisma.emergencyDoc.findMany({
     where,
-    orderBy: {
-      id: 'asc',
-    },
+    orderBy: [{ emergencyDate: 'asc' }, { startTime: 'asc' }],
     include,
   });
 

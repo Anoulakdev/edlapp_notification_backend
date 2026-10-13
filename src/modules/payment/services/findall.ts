@@ -90,9 +90,15 @@ export async function findAllPayment(
     };
 
     let totalAmount = 0;
-    if (response.data?.totalAmount !== undefined && response.data?.totalAmount !== null) {
+    if (
+      response.data?.totalAmount !== undefined &&
+      response.data?.totalAmount !== null
+    ) {
       totalAmount = parseAmount(response.data.totalAmount);
-    } else if (response.data?.total_amount !== undefined && response.data?.total_amount !== null) {
+    } else if (
+      response.data?.total_amount !== undefined &&
+      response.data?.total_amount !== null
+    ) {
       totalAmount = parseAmount(response.data.total_amount);
     } else if (response.data && Array.isArray(response.data.items)) {
       if (response.data.totalPages <= 1 && Number(params.page) === 1) {
@@ -116,17 +122,27 @@ export async function findAllPayment(
 
             const baseFilterParams: Record<string, any> = {};
             if (params.status) baseFilterParams.status = params.status;
-            if (params.provinceId) baseFilterParams.provinceId = params.provinceId;
-            if (params.paymentDateFrom) baseFilterParams.paymentDateFrom = params.paymentDateFrom;
-            if (params.paymentDateTo) baseFilterParams.paymentDateTo = params.paymentDateTo;
+            if (params.provinceId)
+              baseFilterParams.provinceId = params.provinceId;
+            if (params.paymentDateFrom)
+              baseFilterParams.paymentDateFrom = params.paymentDateFrom;
+            if (params.paymentDateTo)
+              baseFilterParams.paymentDateTo = params.paymentDateTo;
             if (params.accountNo) baseFilterParams.accountNo = params.accountNo;
 
             let calculatedTotal = 0;
             const BATCH_SIZE = 10;
             const maxPagesToFetch = Math.min(totalPages, 50);
 
-            for (let startPage = 1; startPage <= maxPagesToFetch; startPage += BATCH_SIZE) {
-              const endPage = Math.min(startPage + BATCH_SIZE - 1, maxPagesToFetch);
+            for (
+              let startPage = 1;
+              startPage <= maxPagesToFetch;
+              startPage += BATCH_SIZE
+            ) {
+              const endPage = Math.min(
+                startPage + BATCH_SIZE - 1,
+                maxPagesToFetch,
+              );
               const pagePromises: Promise<any[]>[] = [];
 
               for (let p = startPage; p <= endPage; p++) {

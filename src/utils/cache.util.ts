@@ -36,6 +36,14 @@ export class MemoryCache {
     this.cache.delete(key);
   }
 
+  static deleteByPrefix(prefix: string): void {
+    for (const key of this.cache.keys()) {
+      if (key.startsWith(prefix)) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
   static clear(): void {
     this.cache.clear();
   }

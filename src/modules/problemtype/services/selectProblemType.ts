@@ -23,4 +23,3 @@ export async function selectProblemType(prisma: PrismaService) {
   MemoryCache.set(cacheKey, data, 5 * 60 * 1000);
   return data;
 }
-

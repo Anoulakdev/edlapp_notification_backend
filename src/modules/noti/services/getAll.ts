@@ -292,14 +292,32 @@ export async function FindDocumentAll(
     const pId = provinceId ? Number(provinceId) : undefined;
     const dId = districtId ? Number(districtId) : undefined;
     if (pId) {
-      whereTurnoff.turnoff = { ...(whereTurnoff.turnoff || {}), provinceId: pId };
-      whereEmergency.emergency = { ...(whereEmergency.emergency || {}), provinceId: pId };
-      whereCutpower.cutpower = { ...(whereCutpower.cutpower || {}), provinceId: pId };
+      whereTurnoff.turnoff = {
+        ...(whereTurnoff.turnoff || {}),
+        provinceId: pId,
+      };
+      whereEmergency.emergency = {
+        ...(whereEmergency.emergency || {}),
+        provinceId: pId,
+      };
+      whereCutpower.cutpower = {
+        ...(whereCutpower.cutpower || {}),
+        provinceId: pId,
+      };
     }
     if (dId) {
-      whereTurnoff.turnoff = { ...(whereTurnoff.turnoff || {}), districtId: dId };
-      whereEmergency.emergency = { ...(whereEmergency.emergency || {}), districtId: dId };
-      whereCutpower.cutpower = { ...(whereCutpower.cutpower || {}), districtId: dId };
+      whereTurnoff.turnoff = {
+        ...(whereTurnoff.turnoff || {}),
+        districtId: dId,
+      };
+      whereEmergency.emergency = {
+        ...(whereEmergency.emergency || {}),
+        districtId: dId,
+      };
+      whereCutpower.cutpower = {
+        ...(whereCutpower.cutpower || {}),
+        districtId: dId,
+      };
     }
   }
 

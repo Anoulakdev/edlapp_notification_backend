@@ -163,7 +163,10 @@ export async function dashAll(
 
   // Helper for ultra-fast Vientiane month calculation (UTC+7) without heavy Moment allocation
   const getVientianeMonth = (dateVal: Date | string): number => {
-    const timeMs = typeof dateVal === 'string' ? new Date(dateVal).getTime() : dateVal.getTime();
+    const timeMs =
+      typeof dateVal === 'string'
+        ? new Date(dateVal).getTime()
+        : dateVal.getTime();
     return new Date(timeMs + 7 * 3600000).getUTCMonth();
   };
 

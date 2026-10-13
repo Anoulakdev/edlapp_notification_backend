@@ -301,7 +301,9 @@ model TurnoffDoc {
   @@index([provinceId])
   @@index([districtId])
   @@index([voltageId])
+  @@index([turnoffStatusId])
   @@index([startDate])
+  @@index([startDate, startTime])
   @@index([createdAt])
 }
 
@@ -373,7 +375,9 @@ model EmergencyDoc {
   @@index([provinceId])
   @@index([districtId])
   @@index([voltageId])
+  @@index([emergencyStatusId])
   @@index([emergencyDate])
+  @@index([emergencyDate, startTime])
   @@index([createdAt])
 }
 

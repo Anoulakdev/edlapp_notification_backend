@@ -14,6 +14,7 @@ import { removeEmergencyDoc } from './services/remove';
 import { updateAddress } from './services/updateAddress';
 import { edlWorkerCreate } from './services/edlworkercreate';
 import { edlWorkerUpdate } from './services/edlworkerupdate';
+import { updateStatus } from './services/updateStatus';
 import { EmergencydocGateway } from './emergencydoc.gateway';
 
 @Injectable()
@@ -88,6 +89,12 @@ export class EmergencydocService {
     updateEmergencydocDto: UpdateEmergencydocDto,
   ) {
     const result = await updateAddress(this.prisma, id, updateEmergencydocDto);
+    this.triggerRefresh();
+    return result;
+  }
+
+  async updateStatus(id: number, updateEmergencydocDto: UpdateEmergencydocDto) {
+    const result = await updateStatus(this.prisma, id, updateEmergencydocDto);
     this.triggerRefresh();
     return result;
   }

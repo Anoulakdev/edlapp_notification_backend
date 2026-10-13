@@ -30,6 +30,8 @@ export class RegistermeterGateway
   emitRefresh() {
     this.server?.emit('registermeterUpdated', { action: 'refresh' });
     this.server?.emit('countMeterUpdated', { action: 'refresh' });
-    console.log('[RegistermeterGateway] Emitted registermeterUpdated and countMeterUpdated events');
+    console.log(
+      '[RegistermeterGateway] Emitted registermeterUpdated and countMeterUpdated events',
+    );
   }
 }

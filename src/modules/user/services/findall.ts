@@ -126,9 +126,18 @@ export async function findAllUser(
             {
               employee: {
                 OR: [
-                  { first_name: { contains: searchTrimmed, mode: 'insensitive' } },
-                  { last_name: { contains: searchTrimmed, mode: 'insensitive' } },
-                  { emp_code: { contains: searchTrimmed, mode: 'insensitive' } },
+                  {
+                    first_name: {
+                      contains: searchTrimmed,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    last_name: { contains: searchTrimmed, mode: 'insensitive' },
+                  },
+                  {
+                    emp_code: { contains: searchTrimmed, mode: 'insensitive' },
+                  },
                   { tel: { contains: searchTrimmed, mode: 'insensitive' } },
                   { email: { contains: searchTrimmed, mode: 'insensitive' } },
                 ],

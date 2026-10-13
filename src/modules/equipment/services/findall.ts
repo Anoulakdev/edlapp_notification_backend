@@ -23,7 +23,11 @@ export async function findAllEquipment(
     if (searchTrimmed) {
       const searchOr: Prisma.EquipmentWhereInput[] = [
         { name: { contains: searchTrimmed, mode: 'insensitive' } },
-        { typeEquipment: { name: { contains: searchTrimmed, mode: 'insensitive' } } },
+        {
+          typeEquipment: {
+            name: { contains: searchTrimmed, mode: 'insensitive' },
+          },
+        },
       ];
       const searchNum = Number(searchTrimmed);
       if (!isNaN(searchNum)) {

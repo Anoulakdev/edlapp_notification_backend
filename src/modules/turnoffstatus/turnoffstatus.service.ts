@@ -1,26 +1,39 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTurnoffstatusDto } from './dto/create-turnoffstatus.dto';
 import { UpdateTurnoffstatusDto } from './dto/update-turnoffstatus.dto';
+import { PrismaService } from '../../prisma/prisma.service';
+import { createTurnoffStatus } from './services/create';
+import { findAllTurnoffStatus } from './services/findall';
+import { findOneTurnoffStatus } from './services/findone';
+import { updateTurnoffStatus } from './services/update';
+import { removeTurnoffStatus } from './services/remove';
+import { selectTurnoffStatus } from './services/selectTurnoffStatus';
 
 @Injectable()
 export class TurnoffstatusService {
+  constructor(private prisma: PrismaService) {}
+
   create(createTurnoffstatusDto: CreateTurnoffstatusDto) {
-    return 'This action adds a new turnoffstatus';
+    return createTurnoffStatus(this.prisma, createTurnoffstatusDto);
   }
 
   findAll() {
-    return `This action returns all turnoffstatus`;
+    return findAllTurnoffStatus(this.prisma);
+  }
+
+  selectTurnoffStatus() {
+    return selectTurnoffStatus(this.prisma);
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} turnoffstatus`;
+    return findOneTurnoffStatus(this.prisma, id);
   }
 
   update(id: number, updateTurnoffstatusDto: UpdateTurnoffstatusDto) {
-    return `This action updates a #${id} turnoffstatus`;
+    return updateTurnoffStatus(this.prisma, id, updateTurnoffstatusDto);
   }
 
   remove(id: number) {
-    return `This action removes a #${id} turnoffstatus`;
+    return removeTurnoffStatus(this.prisma, id);
   }
 }

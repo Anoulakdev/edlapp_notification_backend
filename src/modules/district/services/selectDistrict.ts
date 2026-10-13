@@ -8,8 +8,7 @@ export async function selectDistrict(
   provinceCode?: string,
   user?: AuthUser,
 ) {
-  const isSpecialRole5 =
-    user && user.roleId === 5 && provinceCode === '1';
+  const isSpecialRole5 = user && user.roleId === 5 && provinceCode === '1';
   const divisionId = user?.employee?.divisionId;
 
   const cacheKey = `select:districts:${provinceCode || 'all'}:${isSpecialRole5 ? divisionId : 'normal'}`;
@@ -46,4 +45,3 @@ export async function selectDistrict(
   MemoryCache.set(cacheKey, data, 5 * 60 * 1000);
   return data;
 }
-

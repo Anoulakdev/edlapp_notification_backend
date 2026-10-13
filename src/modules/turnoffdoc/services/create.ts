@@ -81,6 +81,7 @@ export async function createTurnoffDoc(
         voltageId: createTurnoffdocDto.voltageId
           ? Number(createTurnoffdocDto.voltageId)
           : null,
+        turnoffStatusId: 1,
         createdById: user.id,
       },
     });

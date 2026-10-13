@@ -4,7 +4,10 @@ import { UpdateTypeequipmentDto } from './dto/update-typeequipment.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthUser } from '../../interfaces/auth-user.interface';
 import { createTypeEquipment } from './services/create';
-import { findAllTypeEquipment, FindAllTypeEquipmentOptions } from './services/findall';
+import {
+  findAllTypeEquipment,
+  FindAllTypeEquipmentOptions,
+} from './services/findall';
 import { findOneTypeEquipment } from './services/findone';
 import { updateTypeEquipment } from './services/update';
 import { removeTypeEquipment } from './services/remove';

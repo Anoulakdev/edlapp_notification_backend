@@ -139,6 +139,15 @@ export class EmergencydocController {
     return this.emergencydocService.updateAddress(+id, updateEmergencydocDto);
   }
 
+  @Put('updatestatus/:id')
+  @Roles(2, 3, 4, 5, 6)
+  updateStatus(
+    @Param('id') id: string,
+    @Body() updateEmergencydocDto: UpdateEmergencydocDto,
+  ) {
+    return this.emergencydocService.updateStatus(+id, updateEmergencydocDto);
+  }
+
   @Put('edlworkerupdate/:id')
   @Roles(6)
   edlWorkerUpdate(

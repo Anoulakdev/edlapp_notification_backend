@@ -1,5 +1,7 @@
+import { BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import moment from 'moment-timezone';
+import { Prisma } from '../../../../generated/prisma/client';
 
 export async function FindAllTurnoffAssign(
   prisma: PrismaService,
@@ -7,7 +9,14 @@ export async function FindAllTurnoffAssign(
   page?: number,
   limit?: number,
 ) {
-  const where = { userAppId: Number(userAppId) };
+  const numericUserAppId = Number(userAppId);
+  if (!userAppId || isNaN(numericUserAppId)) {
+    throw new BadRequestException('userAppId is required and must be a valid number');
+  }
+
+  const where: Prisma.TurnoffAssignWhereInput = {
+    userAppId: numericUserAppId,
+  };
 
   if (page !== undefined && limit !== undefined) {
     const skip = (page - 1) * limit;
@@ -16,13 +25,27 @@ export async function FindAllTurnoffAssign(
     const [data, total] = await Promise.all([
       prisma.turnoffAssign.findMany({
         where,
-        orderBy: {
-          turnoff: {
-            id: 'desc',
+        orderBy: [
+          {
+            turnoff: {
+              startDate: 'desc',
+            },
           },
-        },
+          {
+            turnoff: {
+              startTime: 'desc',
+            },
+          },
+        ],
         include: {
-          turnoff: true,
+          turnoff: {
+            include: {
+              province: true,
+              district: true,
+              voltage: true,
+              turnoffStatus: true,
+            },
+          },
         },
         skip,
         take,
@@ -41,13 +64,17 @@ export async function FindAllTurnoffAssign(
         updatedAt: moment(turnoffAssign.updatedAt)
           .tz('Asia/Vientiane')
           .format(),
-        turnoff: {
-          ...turnoffAssign.turnoff,
-          startDate: moment(turnoffAssign.turnoff.startDate).format(
-            'YYYY-MM-DD',
-          ),
-          endDate: moment(turnoffAssign.turnoff.endDate).format('YYYY-MM-DD'),
-        },
+        turnoff: turnoffAssign.turnoff
+          ? {
+              ...turnoffAssign.turnoff,
+              startDate: moment(turnoffAssign.turnoff.startDate).format(
+                'YYYY-MM-DD',
+              ),
+              endDate: moment(turnoffAssign.turnoff.endDate).format(
+                'YYYY-MM-DD',
+              ),
+            }
+          : null,
       };
     });
 
@@ -62,13 +89,27 @@ export async function FindAllTurnoffAssign(
 
   const turnoffAssigns = await prisma.turnoffAssign.findMany({
     where,
-    orderBy: {
-      turnoff: {
-        id: 'desc',
+    orderBy: [
+      {
+        turnoff: {
+          startDate: 'desc',
+        },
       },
-    },
+      {
+        turnoff: {
+          startTime: 'desc',
+        },
+      },
+    ],
     include: {
-      turnoff: true,
+      turnoff: {
+        include: {
+          province: true,
+          district: true,
+          voltage: true,
+          turnoffStatus: true,
+        },
+      },
     },
   });
 
@@ -77,11 +118,15 @@ export async function FindAllTurnoffAssign(
       ...turnoffAssign,
       createdAt: moment(turnoffAssign.createdAt).tz('Asia/Vientiane').format(),
       updatedAt: moment(turnoffAssign.updatedAt).tz('Asia/Vientiane').format(),
-      turnoff: {
-        ...turnoffAssign.turnoff,
-        startDate: moment(turnoffAssign.turnoff.startDate).format('YYYY-MM-DD'),
-        endDate: moment(turnoffAssign.turnoff.endDate).format('YYYY-MM-DD'),
-      },
+      turnoff: turnoffAssign.turnoff
+        ? {
+            ...turnoffAssign.turnoff,
+            startDate: moment(turnoffAssign.turnoff.startDate).format(
+              'YYYY-MM-DD',
+            ),
+            endDate: moment(turnoffAssign.turnoff.endDate).format('YYYY-MM-DD'),
+          }
+        : null,
     };
   });
 }

@@ -93,7 +93,9 @@ export async function agentCountReport(
     });
 
   // Sort descending by totalCount, then by agentId
-  resultList.sort((a, b) => b.totalCount - a.totalCount || a.agentId - b.agentId);
+  resultList.sort(
+    (a, b) => b.totalCount - a.totalCount || a.agentId - b.agentId,
+  );
 
   return resultList;
 }

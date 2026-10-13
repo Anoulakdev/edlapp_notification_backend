@@ -12,6 +12,7 @@ import { findOneTurnoffDoc } from './services/findone';
 import { updateTurnoffDoc } from './services/update';
 import { removeTurnoffDoc } from './services/remove';
 import { updateAddress } from './services/updateAddress';
+import { updateStatus } from './services/updateStatus';
 import { TurnoffdocGateway } from './turnoffdoc.gateway';
 
 @Injectable()
@@ -56,6 +57,12 @@ export class TurnoffdocService {
 
   async updateAddress(id: number, updateTurnoffdocDto: UpdateTurnoffdocDto) {
     const result = await updateAddress(this.prisma, id, updateTurnoffdocDto);
+    this.triggerRefresh();
+    return result;
+  }
+
+  async updateStatus(id: number, updateTurnoffdocDto: UpdateTurnoffdocDto) {
+    const result = await updateStatus(this.prisma, id, updateTurnoffdocDto);
     this.triggerRefresh();
     return result;
   }
