@@ -19,6 +19,7 @@ export async function createActivity(
         startDate: new Date(createActivityDto.startDate),
         endDate: new Date(createActivityDto.endDate),
         actFile: Docfilename,
+        facebookLink: createActivityDto.facebookLink || null,
         createdById: user.id,
       },
     });

@@ -797,15 +797,16 @@ model Voltage {
 }
 
 model Activity {
-  id          Int      @id @default(autoincrement())
-  title       String   @db.VarChar(255)
-  content     String   @db.Text
-  startDate   DateTime @db.Timestamptz(0)
-  endDate     DateTime @db.Timestamptz(0)
-  location    String   @db.VarChar(255)
-  actFile     String   @db.VarChar(255)
-  createdById Int
-  createdBy   User     @relation(fields: [createdById], references: [id])
-  createdAt   DateTime @default(now()) @db.Timestamptz(0)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(0)
+  id           Int      @id @default(autoincrement())
+  title        String   @db.VarChar(255)
+  content      String   @db.Text
+  startDate    DateTime @db.Timestamptz(0)
+  endDate      DateTime @db.Timestamptz(0)
+  location     String   @db.VarChar(255)
+  actFile      String   @db.VarChar(255)
+  facebookLink String?  @db.Text
+  createdById  Int
+  createdBy    User     @relation(fields: [createdById], references: [id])
+  createdAt    DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(0)
 }

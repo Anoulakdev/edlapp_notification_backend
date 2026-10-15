@@ -33,13 +33,27 @@ export async function FindDocumentAll(
       const [data, total] = await Promise.all([
         prisma.turnoffAddress.findMany({
           where,
-          orderBy: {
-            turnoff: {
-              id: 'desc',
+          orderBy: [
+            {
+              turnoff: {
+                startDate: 'desc',
+              },
             },
-          },
+            {
+              turnoff: {
+                startTime: 'desc',
+              },
+            },
+          ],
           include: {
-            turnoff: true,
+            turnoff: {
+              include: {
+                province: true,
+                district: true,
+                voltage: true,
+                turnoffStatus: true,
+              },
+            },
           },
           skip,
           take,
@@ -77,13 +91,27 @@ export async function FindDocumentAll(
 
     const data = await prisma.turnoffAddress.findMany({
       where,
-      orderBy: {
-        turnoff: {
-          id: 'desc',
+      orderBy: [
+        {
+          turnoff: {
+            startDate: 'desc',
+          },
         },
-      },
+        {
+          turnoff: {
+            startTime: 'desc',
+          },
+        },
+      ],
       include: {
-        turnoff: true,
+        turnoff: {
+          include: {
+            province: true,
+            district: true,
+            voltage: true,
+            turnoffStatus: true,
+          },
+        },
       },
     });
 
@@ -121,13 +149,27 @@ export async function FindDocumentAll(
       const [data, total] = await Promise.all([
         prisma.emergencyAddress.findMany({
           where,
-          orderBy: {
-            emergency: {
-              id: 'desc',
+          orderBy: [
+            {
+              emergency: {
+                emergencyDate: 'desc',
+              },
             },
-          },
+            {
+              emergency: {
+                startTime: 'desc',
+              },
+            },
+          ],
           include: {
-            emergency: true,
+            emergency: {
+              include: {
+                province: true,
+                district: true,
+                voltage: true,
+                emergencyStatus: true,
+              },
+            },
           },
           skip,
           take,
@@ -164,13 +206,27 @@ export async function FindDocumentAll(
 
     const data = await prisma.emergencyAddress.findMany({
       where,
-      orderBy: {
-        emergency: {
-          id: 'desc',
+      orderBy: [
+        {
+          emergency: {
+            emergencyDate: 'desc',
+          },
         },
-      },
+        {
+          emergency: {
+            startTime: 'desc',
+          },
+        },
+      ],
       include: {
-        emergency: true,
+        emergency: {
+          include: {
+            province: true,
+            district: true,
+            voltage: true,
+            emergencyStatus: true,
+          },
+        },
       },
     });
 
@@ -209,11 +265,17 @@ export async function FindDocumentAll(
           where,
           orderBy: {
             cutpower: {
-              id: 'desc',
+              cutpowerDate: 'desc',
             },
           },
           include: {
-            cutpower: true,
+            cutpower: {
+              include: {
+                province: true,
+                district: true,
+                voltage: true,
+              },
+            },
           },
           skip,
           take,
@@ -252,11 +314,17 @@ export async function FindDocumentAll(
       where,
       orderBy: {
         cutpower: {
-          id: 'desc',
+          cutpowerDate: 'desc',
         },
       },
       include: {
-        cutpower: true,
+        cutpower: {
+          include: {
+            province: true,
+            district: true,
+            voltage: true,
+          },
+        },
       },
     });
 

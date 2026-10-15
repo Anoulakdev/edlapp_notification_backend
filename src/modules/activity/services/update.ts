@@ -61,6 +61,10 @@ export async function updateActivity(
         ? new Date(updateActivityDto.endDate)
         : undefined,
       actFile: updateActivityDto.actFile,
+      facebookLink:
+        updateActivityDto.facebookLink !== undefined
+          ? updateActivityDto.facebookLink || null
+          : undefined,
     },
   });
 }

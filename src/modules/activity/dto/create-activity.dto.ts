@@ -24,4 +24,8 @@ export class CreateActivityDto {
   @IsOptional()
   @IsString()
   actFile?: string;
+
+  @IsOptional()
+  @IsString()
+  facebookLink?: string;
 }
