@@ -24,21 +24,21 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
+const registerMeterFileInterceptor = FileFieldsInterceptor(
+  [
+    { name: 'billNearImg', maxCount: 1 },
+    { name: 'idcardImg', maxCount: 1 },
+  ],
+  multerConfig('registermeter'),
+);
+
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(
-  FileFieldsInterceptor(
-    [
-      { name: 'billNearImg', maxCount: 1 },
-      { name: 'idcardImg', maxCount: 1 },
-    ],
-    multerConfig('registermeter'),
-  ),
-)
 @Controller('registermeters')
 export class RegistermeterController {
   constructor(private readonly registermeterService: RegistermeterService) {}
 
   @Post()
+  @UseInterceptors(registerMeterFileInterceptor)
   @Roles(2, 4, 7)
   create(
     @Req() req: UserRequest,
@@ -121,6 +121,7 @@ export class RegistermeterController {
   }
 
   @Put(':id')
+  @UseInterceptors(registerMeterFileInterceptor)
   @Roles(2, 4, 7)
   update(
     @Req() req: UserRequest,

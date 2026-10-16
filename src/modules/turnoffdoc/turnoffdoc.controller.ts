@@ -24,12 +24,12 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(FileInterceptor('turnoffFile', multerConfig('turnoff')))
 @Controller('turnoffdocs')
 export class TurnoffdocController {
   constructor(private readonly turnoffdocService: TurnoffdocService) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor('turnoffFile', multerConfig('turnoff')))
   @Roles(2, 3, 4, 5, 6)
   create(
     @UploadedFile() turnoffFile: Express.Multer.File,
@@ -85,6 +85,7 @@ export class TurnoffdocController {
   }
 
   @Put(':id')
+  @UseInterceptors(FileInterceptor('turnoffFile', multerConfig('turnoff')))
   @Roles(2, 3, 4, 5, 6)
   update(
     @Param('id') id: string,

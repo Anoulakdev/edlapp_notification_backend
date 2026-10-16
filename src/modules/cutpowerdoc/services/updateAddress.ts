@@ -36,6 +36,8 @@ export async function updateAddress(
             'x-api-key': process.env.API_KEY,
           },
           timeout: 30000,
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
         },
       );
 
@@ -158,7 +160,7 @@ export async function updateAddress(
       title: cutpowerdoc.title,
       cutpowerDate: cutpowerdoc.cutpowerDate,
     };
-  });
+  }, { timeout: 30000, maxWait: 10000 });
 
   // ✅ Send FCM notifications in the background (WITHOUT await to optimize API response time/performance)
   if (fcmTokens.length) {

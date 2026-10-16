@@ -24,12 +24,12 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(FileInterceptor('actFile', multerConfig('activity')))
 @Controller('activities')
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor('actFile', multerConfig('activity')))
   @Roles(8)
   create(
     @UploadedFile() actFile: Express.Multer.File,
@@ -70,6 +70,12 @@ export class ActivityController {
     });
   }
 
+  @Get('countact')
+  @Roles(7, 8)
+  countAct() {
+    return this.activityService.countAct();
+  }
+
   @Get(':id')
   @Roles(7, 8)
   findOne(@Param('id') id: string) {
@@ -77,6 +83,7 @@ export class ActivityController {
   }
 
   @Put(':id')
+  @UseInterceptors(FileInterceptor('actFile', multerConfig('activity')))
   @Roles(8)
   update(
     @Param('id') id: string,

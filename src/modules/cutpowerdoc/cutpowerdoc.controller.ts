@@ -24,12 +24,12 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(FileInterceptor('cutpowerFile', multerConfig('cutpower')))
 @Controller('cutpowerdocs')
 export class CutpowerdocController {
   constructor(private readonly cutpowerdocService: CutpowerdocService) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor('cutpowerFile', multerConfig('cutpower')))
   @Roles(2, 3, 4, 5, 6)
   create(
     @UploadedFile() cutpowerFile: Express.Multer.File,
@@ -83,6 +83,7 @@ export class CutpowerdocController {
   }
 
   @Put(':id')
+  @UseInterceptors(FileInterceptor('cutpowerFile', multerConfig('cutpower')))
   @Roles(2, 3, 4, 5, 6)
   update(
     @Param('id') id: string,

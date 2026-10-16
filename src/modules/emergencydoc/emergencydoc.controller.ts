@@ -22,21 +22,21 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
+const emergencyFileInterceptor = FileFieldsInterceptor(
+  [
+    { name: 'emergencyImg', maxCount: 1 },
+    { name: 'emergencyAudio', maxCount: 1 },
+  ],
+  multerConfig('emergency'),
+);
+
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(
-  FileFieldsInterceptor(
-    [
-      { name: 'emergencyImg', maxCount: 1 },
-      { name: 'emergencyAudio', maxCount: 1 },
-    ],
-    multerConfig('emergency'),
-  ),
-)
 @Controller('emergencydocs')
 export class EmergencydocController {
   constructor(private readonly emergencydocService: EmergencydocService) {}
 
   @Post()
+  @UseInterceptors(emergencyFileInterceptor)
   @Roles(2, 3, 4, 5, 6)
   create(
     @UploadedFiles()
@@ -57,6 +57,7 @@ export class EmergencydocController {
   }
 
   @Post('edlworkercreate')
+  @UseInterceptors(emergencyFileInterceptor)
   @Roles(6)
   edlWorkerCreate(
     @UploadedFiles()
@@ -111,6 +112,7 @@ export class EmergencydocController {
   }
 
   @Put(':id')
+  @UseInterceptors(emergencyFileInterceptor)
   @Roles(2, 3, 4, 5, 6)
   update(
     @Param('id') id: string,
@@ -149,6 +151,7 @@ export class EmergencydocController {
   }
 
   @Put('edlworkerupdate/:id')
+  @UseInterceptors(emergencyFileInterceptor)
   @Roles(6)
   edlWorkerUpdate(
     @Param('id') id: string,

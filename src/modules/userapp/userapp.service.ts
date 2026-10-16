@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import axios from 'axios';
+import moment from 'moment-timezone';
 import { CreateUserappDto } from './dto/create-userapp.dto';
 
 function extractErrorMessage(error: any, fallback: string): string {
@@ -64,7 +65,25 @@ export class UserappService {
         timeout: config.timeout,
       });
 
-      return response.data;
+      const resData = response.data;
+
+      if (resData && Array.isArray(resData.data)) {
+        resData.data = resData.data.map((user: any) => ({
+          ...user,
+          created_at: user.created_at
+            ? moment(user.created_at).tz('Asia/Vientiane').format()
+            : null,
+        }));
+      } else if (Array.isArray(resData)) {
+        return resData.map((user: any) => ({
+          ...user,
+          created_at: user.created_at
+            ? moment(user.created_at).tz('Asia/Vientiane').format()
+            : null,
+        }));
+      }
+
+      return resData;
     } catch (error: any) {
       console.error(
         'Failed to fetch userapp from EDL App API:',

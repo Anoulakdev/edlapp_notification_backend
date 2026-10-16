@@ -16,55 +16,75 @@ export async function updateActivity(
   if (!activity) throw new NotFoundException('activity not found');
 
   const oldFile = activity.actFile || '';
+  const isNewFile = Boolean(
+    updateActivityDto.actFile && updateActivityDto.actFile !== oldFile,
+  );
 
-  if (updateActivityDto.actFile && updateActivityDto.actFile !== oldFile) {
-    const oldFilePath = path.resolve(
-      process.env.UPLOAD_BASE_PATH || '',
-      'activity',
-      oldFile,
-    );
-
-    // ตรวจสอบว่าไฟล์มีอยู่หรือไม่ก่อนจะลบ
-    fs.access(oldFilePath, fs.constants.F_OK, (err) => {
-      if (!err) {
-        fs.unlink(oldFilePath, (err) => {
-          if (err) {
-            console.error('Error deleting old icon:', err);
-          }
-        });
-      }
-    });
-  } else {
-    // ✅ ถ้าไม่มีรูปใหม่ ให้ใช้รูปเก่า
+  if (!isNewFile) {
     updateActivityDto.actFile = oldFile;
   }
 
-  return await prisma.activity.update({
-    where: { id },
-    data: {
-      title:
-        updateActivityDto.title !== undefined
-          ? updateActivityDto.title
+  try {
+    const updated = await prisma.activity.update({
+      where: { id },
+      data: {
+        title:
+          updateActivityDto.title !== undefined
+            ? updateActivityDto.title
+            : undefined,
+        content:
+          updateActivityDto.content !== undefined
+            ? updateActivityDto.content
+            : undefined,
+        location:
+          updateActivityDto.location !== undefined
+            ? updateActivityDto.location
+            : undefined,
+        startDate: updateActivityDto.startDate
+          ? new Date(updateActivityDto.startDate)
           : undefined,
-      content:
-        updateActivityDto.content !== undefined
-          ? updateActivityDto.content
+        endDate: updateActivityDto.endDate
+          ? new Date(updateActivityDto.endDate)
           : undefined,
-      location:
-        updateActivityDto.location !== undefined
-          ? updateActivityDto.location
-          : undefined,
-      startDate: updateActivityDto.startDate
-        ? new Date(updateActivityDto.startDate)
-        : undefined,
-      endDate: updateActivityDto.endDate
-        ? new Date(updateActivityDto.endDate)
-        : undefined,
-      actFile: updateActivityDto.actFile,
-      facebookLink:
-        updateActivityDto.facebookLink !== undefined
-          ? updateActivityDto.facebookLink || null
-          : undefined,
-    },
-  });
+        actFile: updateActivityDto.actFile,
+        facebookLink:
+          updateActivityDto.facebookLink !== undefined
+            ? updateActivityDto.facebookLink || null
+            : undefined,
+      },
+    });
+
+    // Delete old file only after database update succeeds
+    if (isNewFile && oldFile) {
+      const oldFilePath = path.resolve(
+        process.env.UPLOAD_BASE_PATH || '',
+        'activity',
+        oldFile,
+      );
+      try {
+        await fs.promises.access(oldFilePath, fs.constants.F_OK);
+        await fs.promises.unlink(oldFilePath);
+      } catch (fsErr) {
+        // Old file might not exist on disk, ignore
+      }
+    }
+
+    return updated;
+  } catch (error) {
+    // If update failed and a new file was uploaded, remove the new file to prevent disk leak
+    if (isNewFile && updateActivityDto.actFile) {
+      const newFilePath = path.resolve(
+        process.env.UPLOAD_BASE_PATH || '',
+        'activity',
+        updateActivityDto.actFile,
+      );
+      try {
+        await fs.promises.access(newFilePath, fs.constants.F_OK);
+        await fs.promises.unlink(newFilePath);
+      } catch (fsErr) {
+        console.error('Error cleaning up newly uploaded file on error:', fsErr);
+      }
+    }
+    throw error;
+  }
 }

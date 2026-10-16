@@ -8,6 +8,7 @@ import { findAllActivity, findAllActivityOptions } from './services/findall';
 import { findOneActivity } from './services/findone';
 import { updateActivity } from './services/update';
 import { removeActivity } from './services/remove';
+import { countAct } from './services/countAct';
 
 @Injectable()
 export class ActivityService {
@@ -23,6 +24,10 @@ export class ActivityService {
 
   findAll(user: AuthUser, options?: findAllActivityOptions) {
     return findAllActivity(this.prisma, user, options);
+  }
+
+  countAct() {
+    return countAct(this.prisma);
   }
 
   findOne(id: number) {

@@ -24,21 +24,21 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
+const conversationFileInterceptor = FileFieldsInterceptor(
+  [
+    { name: 'fileImg', maxCount: 1 },
+    { name: 'fileAudio', maxCount: 1 },
+  ],
+  multerConfig('conversation'),
+);
+
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(
-  FileFieldsInterceptor(
-    [
-      { name: 'fileImg', maxCount: 1 },
-      { name: 'fileAudio', maxCount: 1 },
-    ],
-    multerConfig('conversation'),
-  ),
-)
 @Controller('conversations')
 export class ConversationController {
   constructor(private readonly conversationService: ConversationService) {}
 
   @Post('edlappcreate')
+  @UseInterceptors(conversationFileInterceptor)
   @Roles(7)
   edlAppCreate(
     @UploadedFiles()
@@ -58,6 +58,7 @@ export class ConversationController {
   }
 
   @Post('callcreate')
+  @UseInterceptors(conversationFileInterceptor)
   @Roles(2, 3, 4)
   callCreate(
     @Req() req: UserRequest,

@@ -11,7 +11,9 @@ export async function FindAllCutpowerAssign(
 ) {
   const numericUserAppId = Number(userAppId);
   if (!userAppId || isNaN(numericUserAppId)) {
-    throw new BadRequestException('userAppId is required and must be a valid number');
+    throw new BadRequestException(
+      'userAppId is required and must be a valid number',
+    );
   }
 
   const where: Prisma.CutpowerAssignWhereInput = {

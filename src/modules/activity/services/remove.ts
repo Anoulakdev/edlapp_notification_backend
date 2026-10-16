@@ -9,6 +9,10 @@ export async function removeActivity(prisma: PrismaService, id: number) {
   });
   if (!activity) throw new NotFoundException('activity not found');
 
+  await prisma.activity.delete({
+    where: { id },
+  });
+
   if (activity.actFile) {
     const filePath = path.resolve(
       process.env.UPLOAD_BASE_PATH || '',
@@ -16,20 +20,13 @@ export async function removeActivity(prisma: PrismaService, id: number) {
       activity.actFile,
     );
 
-    fs.access(filePath, fs.constants.F_OK, (err) => {
-      if (!err) {
-        fs.unlink(filePath, (err) => {
-          if (err) {
-            console.error('Error deleting image:', err);
-          }
-        });
-      }
-    });
+    try {
+      await fs.promises.access(filePath, fs.constants.F_OK);
+      await fs.promises.unlink(filePath);
+    } catch (err) {
+      console.error('Error deleting image:', err);
+    }
   }
-
-  await prisma.activity.delete({
-    where: { id },
-  });
 
   return {
     statusCode: HttpStatus.OK,

@@ -49,71 +49,103 @@ export async function sendFCM(
   title: string,
   body: string,
   data?: Record<string, string>,
+  options?: { concurrency?: number; batchSize?: number },
 ) {
-  if (!tokens.length) return;
+  if (!tokens.length)
+    return { totalSuccess: 0, totalFailure: 0, totalBatches: 0 };
 
   initFirebase();
 
-  const batchSize = 500;
-  const results: any[] = [];
+  const batchSize = Math.min(options?.batchSize || 500, 500);
+  const totalTokens = tokens.length;
+  const totalBatches = Math.ceil(totalTokens / batchSize);
+  const isLargeScale = totalTokens > 5000;
+  const concurrency = options?.concurrency || (isLargeScale ? 15 : 5);
+
   let totalSuccess = 0;
   let totalFailure = 0;
+  let currentBatchIndex = 0;
 
-  for (let i = 0; i < tokens.length; i += batchSize) {
-    const chunk = tokens.slice(i, i + batchSize);
-    const batchIdx = Math.floor(i / batchSize) + 1;
+  console.log(
+    `🚀 [FCM] Broadcasting to ${totalTokens.toLocaleString()} tokens (${totalBatches.toLocaleString()} batches, concurrency=${concurrency})...`,
+  );
 
-    try {
-      const response = await admin.messaging().sendEachForMulticast({
-        tokens: chunk,
-        notification: {
-          title,
-          body,
-        },
-        data: data || undefined,
-        apns: {
-          headers: {
-            'apns-priority': '10',
+  const startTime = Date.now();
+
+  async function worker() {
+    while (true) {
+      const idx = currentBatchIndex++;
+      if (idx >= totalBatches) break;
+
+      const start = idx * batchSize;
+      const chunk = tokens.slice(start, start + batchSize);
+      const batchNum = idx + 1;
+
+      try {
+        const response = await admin.messaging().sendEachForMulticast({
+          tokens: chunk,
+          notification: {
+            title,
+            body,
           },
-          payload: {
-            aps: {
-              sound: 'default',
+          data: data || undefined,
+          apns: {
+            headers: {
+              'apns-priority': '10',
+            },
+            payload: {
+              aps: {
+                sound: 'default',
+              },
             },
           },
-        },
-        android: {
-          priority: 'high',
-        },
-      });
+          android: {
+            priority: 'high',
+          },
+        });
 
-      const successCount = response.successCount || 0;
-      const failureCount = response.failureCount || 0;
-      totalSuccess += successCount;
-      totalFailure += failureCount;
+        const successCount = response.successCount || 0;
+        const failureCount = response.failureCount || 0;
+        totalSuccess += successCount;
+        totalFailure += failureCount;
 
-      console.log(
-        `🚀 FCM Batch ${batchIdx}: Success = ${successCount}, Failure = ${failureCount}`,
-      );
-
-      // ✅ handle invalid token
-      response.responses.forEach((res, idx) => {
-        if (!res.success) {
-          console.log('❌ Invalid token:', chunk[idx], res.error);
+        if (!isLargeScale) {
+          console.log(
+            `🚀 FCM Batch ${batchNum}/${totalBatches}: Success = ${successCount}, Failure = ${failureCount}`,
+          );
+          response.responses.forEach((res, resIdx) => {
+            if (!res.success) {
+              console.log(
+                '❌ Invalid token:',
+                chunk[resIdx],
+                res.error?.message,
+              );
+            }
+          });
+        } else if (batchNum % 50 === 0 || batchNum === totalBatches) {
+          const percent = ((batchNum / totalBatches) * 100).toFixed(1);
+          const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(1);
+          console.log(
+            `🚀 [FCM Progress] ${batchNum}/${totalBatches} batches (${percent}%) in ${elapsedSec}s - Success: ${totalSuccess.toLocaleString()}, Failure: ${totalFailure.toLocaleString()}`,
+          );
         }
-      });
-
-      results.push(response);
-    } catch (error) {
-      console.error(
-        `Error sending batch ${batchIdx} FCM notifications:`,
-        error,
-      );
+      } catch (error) {
+        console.error(
+          `Error sending batch ${batchNum}/${totalBatches} FCM notifications:`,
+          error,
+        );
+      }
     }
   }
 
+  const workerCount = Math.min(concurrency, totalBatches);
+  const workers = Array.from({ length: workerCount }, () => worker());
+  await Promise.all(workers);
+
+  const totalTimeSec = ((Date.now() - startTime) / 1000).toFixed(2);
   console.log(
-    `📢 Total FCM Notification Status: Success = ${totalSuccess}, Failure = ${totalFailure}`,
+    `📢 [FCM Done] Total: ${totalTokens.toLocaleString()} tokens in ${totalTimeSec}s | Success: ${totalSuccess.toLocaleString()} | Failure: ${totalFailure.toLocaleString()}`,
   );
 
-  return results;
+  return { totalSuccess, totalFailure, totalBatches };
 }
