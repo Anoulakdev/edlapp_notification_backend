@@ -50,6 +50,7 @@ import { NotiModule } from './modules/noti/noti.module';
 import { ActivityModule } from './modules/activity/activity.module';
 import { TurnoffstatusModule } from './modules/turnoffstatus/turnoffstatus.module';
 import { EmergencystatusModule } from './modules/emergencystatus/emergencystatus.module';
+import { UserappModule } from './modules/userapp/userapp.module';
 
 @Module({
   imports: [
@@ -99,6 +100,7 @@ import { EmergencystatusModule } from './modules/emergencystatus/emergencystatus
     ActivityModule,
     TurnoffstatusModule,
     EmergencystatusModule,
+    UserappModule,
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
