@@ -5,12 +5,11 @@ export async function findOneEquipment(prisma: PrismaService, id: number) {
   const equipment = await prisma.equipment.findUnique({
     where: { id },
     include: {
-      typeEquipment: {
+      branch: {
         select: {
           id: true,
           name: true,
           code: true,
-          actived: true,
         },
       },
       createdBy: {

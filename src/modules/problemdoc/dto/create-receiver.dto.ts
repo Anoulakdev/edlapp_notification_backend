@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -33,6 +34,11 @@ export class CreateReceiverDto {
   @IsOptional()
   repairDistrictId?: number;
 
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  parentProblemId?: number;
+
   @IsString()
   @IsOptional()
   commentText?: string;
@@ -44,6 +50,27 @@ export class CreateReceiverDto {
   @IsString()
   @IsOptional()
   commentImg?: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  voltageId?: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  typeRepairId?: number;
+
+  @Transform(({ value }) =>
+    value === 'true' || value === true || value === 1 || value === '1'
+      ? true
+      : value === 'false' || value === false || value === 0 || value === '0'
+        ? false
+        : undefined,
+  )
+  @IsBoolean()
+  @IsOptional()
+  carRepair?: boolean;
 
   @IsOptional()
   @Transform(transformProblemEquipments)

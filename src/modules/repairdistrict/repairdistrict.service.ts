@@ -25,8 +25,8 @@ export class RepairdistrictService {
     return findAllRepairDistrict(this.prisma, options);
   }
 
-  selectRepairDistrict(branchId?: number) {
-    return selectRepairDistrict(this.prisma, branchId);
+  selectRepairDistrict(user: AuthUser, branchId?: number) {
+    return selectRepairDistrict(this.prisma, user, branchId);
   }
 
   findOne(id: number) {

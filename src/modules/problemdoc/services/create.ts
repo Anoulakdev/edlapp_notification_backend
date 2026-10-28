@@ -27,11 +27,14 @@ export async function createProblemDoc(
       data: {
         ...createProblemdocDto,
         problemtypeId: Number(createProblemdocDto.problemtypeId),
-        lat: Number(createProblemdocDto.lat),
-        lng: Number(createProblemdocDto.lng),
+        lat: Number(createProblemdocDto.lat || 0),
+        lng: Number(createProblemdocDto.lng || 0),
         provinceId: Number(createProblemdocDto.provinceId),
         districtId: Number(createProblemdocDto.districtId),
         villageId: Number(createProblemdocDto.villageId),
+        parentProblemId: createProblemdocDto.parentProblemId
+          ? Number(createProblemdocDto.parentProblemId)
+          : null,
         sourcetypeId,
         createdById,
         problemImg: Docfilename || null,

@@ -1,13 +1,11 @@
-import { IsNotEmpty, IsString, IsInt } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateEquipmentDto {
-  @Type(() => Number)
-  @IsInt()
-  @IsNotEmpty()
-  typeEquipmentId: number;
-
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  unit: string;
 }

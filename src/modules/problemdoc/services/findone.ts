@@ -3,6 +3,77 @@ import { NotFoundException } from '@nestjs/common';
 import moment from 'moment-timezone';
 import axios from 'axios';
 
+const problemAssignInclude = {
+  userSend: {
+    select: {
+      id: true,
+      employee: {
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          gender: true,
+          emp_code: true,
+          tel: true,
+        },
+      },
+    },
+  },
+  userReceiver: {
+    select: {
+      id: true,
+      employee: {
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          gender: true,
+          emp_code: true,
+          tel: true,
+        },
+      },
+    },
+  },
+  userActive: {
+    select: {
+      id: true,
+      employee: {
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          gender: true,
+          emp_code: true,
+          tel: true,
+        },
+      },
+    },
+  },
+  voltage: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  typeRepair: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  problemEquipments: {
+    include: {
+      equipment: {
+        select: {
+          id: true,
+          name: true,
+          unit: true,
+        },
+      },
+    },
+  },
+};
+
 export async function findOneProblemDoc(prisma: PrismaService, id: number) {
   const problemdoc = await prisma.problemDoc.findUnique({
     where: { id },
@@ -34,81 +105,39 @@ export async function findOneProblemDoc(prisma: PrismaService, id: number) {
           code: true,
         },
       },
-      problemAssigns: {
-        include: {
-          userSend: {
-            select: {
-              id: true,
-              employee: {
-                select: {
-                  id: true,
-                  first_name: true,
-                  last_name: true,
-                  gender: true,
-                  emp_code: true,
-                  tel: true,
-                },
-              },
-            },
-          },
-          userReceiver: {
-            select: {
-              id: true,
-              employee: {
-                select: {
-                  id: true,
-                  first_name: true,
-                  last_name: true,
-                  gender: true,
-                  emp_code: true,
-                  tel: true,
-                },
-              },
-            },
-          },
-          userActive: {
-            select: {
-              id: true,
-              employee: {
-                select: {
-                  id: true,
-                  first_name: true,
-                  last_name: true,
-                  gender: true,
-                  emp_code: true,
-                  tel: true,
-                },
-              },
-            },
-          },
-          problemEquipments: {
-            include: {
-              typeEquipment: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-              equipment: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-              typeUnit: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
+      parentProblem: {
+        select: {
+          id: true,
+          fullName: true,
+          tel: true,
+          description: true,
+          createdAt: true,
+          problemAssigns: {
+            include: problemAssignInclude,
           },
         },
+      },
+      duplicateProblems: {
+        select: {
+          id: true,
+          fullName: true,
+          tel: true,
+          description: true,
+          createdAt: true,
+        },
+      },
+      problemAssigns: {
+        include: problemAssignInclude,
       },
     },
   });
 
   if (!problemdoc) throw new NotFoundException('problemDoc not found');
+
+  const problemAssigns =
+    problemdoc.parentProblemId && problemdoc.parentProblem?.problemAssigns
+      ? problemdoc.parentProblem.problemAssigns
+      : problemdoc.problemAssigns;
 
   let createdName = '';
   let createdTel = '';
@@ -161,6 +190,7 @@ export async function findOneProblemDoc(prisma: PrismaService, id: number) {
 
   return {
     ...problemdoc,
+    problemAssigns,
     createdName,
     createdTel,
     createdAt: moment(problemdoc.createdAt).tz('Asia/Vientiane').format(),

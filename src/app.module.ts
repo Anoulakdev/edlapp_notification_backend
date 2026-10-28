@@ -41,9 +41,8 @@ import { ProblemdocModule } from './modules/problemdoc/problemdoc.module';
 import { ReportModule } from './modules/report/report.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { VoltageModule } from './modules/voltage/voltage.module';
-import { TypeequipmentModule } from './modules/typeequipment/typeequipment.module';
 import { EquipmentModule } from './modules/equipment/equipment.module';
-import { TypeunitModule } from './modules/typeunit/typeunit.module';
+import { TyperepairModule } from './modules/typerepair/typerepair.module';
 import { BsModule } from './modules/bs/bs.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { NotiModule } from './modules/noti/noti.module';
@@ -91,9 +90,8 @@ import { UserappModule } from './modules/userapp/userapp.module';
     ReportModule,
     PaymentModule,
     VoltageModule,
-    TypeequipmentModule,
     EquipmentModule,
-    TypeunitModule,
+    TyperepairModule,
     BsModule,
     DashboardModule,
     NotiModule,

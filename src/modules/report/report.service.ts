@@ -12,6 +12,14 @@ import {
 import { ratingCountReport, RatingCountOptions } from './services/ratingcount';
 import { ratingDataReport, RatingDataOptions } from './services/ratingdata';
 import { agentCountReport, AgentCountOptions } from './services/agentcount';
+import {
+  equipmentCountReport,
+  EquipmentCountOptions,
+} from './services/equipmentcount';
+import {
+  equipmentDataReport,
+  EquipmentDataOptions,
+} from './services/equipmentdata';
 
 @Injectable()
 export class ReportService {
@@ -31,6 +39,14 @@ export class ReportService {
 
   problemReport(user: AuthUser, options?: ProblemOptions) {
     return problemReport(this.prisma, user, options);
+  }
+
+  equipmentDataReport(user: AuthUser, options?: EquipmentDataOptions) {
+    return equipmentDataReport(this.prisma, user, options);
+  }
+
+  equipmentCountReport(user: AuthUser, options?: EquipmentCountOptions) {
+    return equipmentCountReport(this.prisma, user, options);
   }
 
   registermeterReport(user: AuthUser, options?: RegistermeterOptions) {

@@ -24,7 +24,7 @@ export class EquipmentController {
   constructor(private readonly equipmentService: EquipmentService) {}
 
   @Post()
-  @Roles(2, 3, 4)
+  @Roles(5)
   create(
     @Req() req: UserRequest,
     @Body() createEquipmentDto: CreateEquipmentDto,
@@ -33,24 +33,23 @@ export class EquipmentController {
   }
 
   @Get()
-  @Roles(2, 3, 4)
+  @Roles(5)
   findAll(
+    @Req() req: UserRequest,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('search') search?: string,
-    @Query('typeEquipmentId') typeEquipmentId?: number,
   ) {
-    return this.equipmentService.findAll({
+    return this.equipmentService.findAll(req.user, {
       page,
       limit,
       search,
-      typeEquipmentId,
     });
   }
 
   @Get('selectequipment')
-  selectEquipment(@Query('typeEquipmentId') typeEquipmentId?: number) {
-    return this.equipmentService.selectEquipment(typeEquipmentId);
+  selectEquipment(@Req() req: UserRequest) {
+    return this.equipmentService.selectEquipment(req.user);
   }
 
   @Get(':id')
@@ -59,6 +58,7 @@ export class EquipmentController {
   }
 
   @Put(':id')
+  @Roles(5)
   update(
     @Param('id') id: string,
     @Body() updateEquipmentDto: UpdateEquipmentDto,
@@ -67,12 +67,13 @@ export class EquipmentController {
   }
 
   @Put('updatestatus/:id')
-  @Roles(2, 3, 4)
+  @Roles(5)
   updateStatus(@Param('id') id: string, @Query('actived') actived: string) {
     return this.equipmentService.updateStatus(+id, actived);
   }
 
   @Delete(':id')
+  @Roles(5)
   remove(@Param('id') id: string) {
     return this.equipmentService.remove(+id);
   }

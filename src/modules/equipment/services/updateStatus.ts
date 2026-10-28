@@ -21,6 +21,6 @@ export async function updateStatus(
 
   return {
     statusCode: HttpStatus.OK,
-    message: 'update status type equipment successfully',
+    message: 'update status equipment successfully',
   };
 }

@@ -29,6 +29,9 @@ export class ProblemdocGateway
   // Broadcast refresh event to all connected clients in problemdoc namespace
   emitRefresh() {
     this.server?.emit('problemdocUpdated', { action: 'refresh' });
-    console.log('[ProblemdocGateway] Emitted problemdocUpdated event');
+    this.server?.emit('countProblemUpdated', { action: 'refresh' });
+    console.log(
+      '[ProblemdocGateway] Emitted problemdocUpdated and countProblemUpdated events',
+    );
   }
 }

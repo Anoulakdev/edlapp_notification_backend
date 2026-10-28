@@ -15,31 +15,16 @@ export async function updateProblemDoc(
   if (!problemdoc) throw new NotFoundException('problemDoc not found');
 
   const oldFile = problemdoc.problemImg || '';
-
-  if (
+  const hasNewFile = Boolean(
     updateProblemdocDto.problemImg &&
-    updateProblemdocDto.problemImg !== oldFile
-  ) {
-    const oldFilePath = path.resolve(
-      process.env.UPLOAD_BASE_PATH || '',
-      'problem',
-      oldFile,
-    );
+      updateProblemdocDto.problemImg !== oldFile,
+  );
 
-    fs.access(oldFilePath, fs.constants.F_OK, (err) => {
-      if (!err) {
-        fs.unlink(oldFilePath, (err) => {
-          if (err) {
-            console.error('Error deleting old icon:', err);
-          }
-        });
-      }
-    });
-  } else {
+  if (!hasNewFile) {
     updateProblemdocDto.problemImg = oldFile || undefined;
   }
 
-  return await prisma.problemDoc.update({
+  const updated = await prisma.problemDoc.update({
     where: { id },
     data: {
       ...updateProblemdocDto,
@@ -74,6 +59,32 @@ export async function updateProblemDoc(
         updateProblemdocDto.villageId !== null
           ? Number(updateProblemdocDto.villageId)
           : undefined,
+      parentProblemId:
+        updateProblemdocDto.parentProblemId !== undefined
+          ? updateProblemdocDto.parentProblemId
+            ? Number(updateProblemdocDto.parentProblemId)
+            : null
+          : undefined,
     },
   });
+
+  if (hasNewFile && oldFile && process.env.UPLOAD_BASE_PATH) {
+    const oldFilePath = path.resolve(
+      process.env.UPLOAD_BASE_PATH,
+      'problem',
+      oldFile,
+    );
+
+    fs.access(oldFilePath, fs.constants.F_OK, (err) => {
+      if (!err) {
+        fs.unlink(oldFilePath, (unlinkErr) => {
+          if (unlinkErr) {
+            console.error('Error deleting old icon:', unlinkErr);
+          }
+        });
+      }
+    });
+  }
+
+  return updated;
 }

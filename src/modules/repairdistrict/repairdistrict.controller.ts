@@ -49,8 +49,11 @@ export class RepairdistrictController {
   }
 
   @Get('selectrepairdistrict')
-  selectRepairDistrict(@Query('branchId') branchId?: number) {
-    return this.repairdistrictService.selectRepairDistrict(branchId);
+  selectRepairDistrict(
+    @Req() req: UserRequest,
+    @Query('branchId') branchId?: number,
+  ) {
+    return this.repairdistrictService.selectRepairDistrict(req.user, branchId);
   }
 
   @Get(':id')

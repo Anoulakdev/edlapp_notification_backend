@@ -22,18 +22,11 @@ async function deleteFileIfExists(
 }
 
 export async function removeRegisterMeter(prisma: PrismaService, id: number) {
-  return await prisma.$transaction(async (tx) => {
+  const filesToDelete = await prisma.$transaction(async (tx) => {
     const registermeter = await tx.registerMeter.findUnique({
       where: { id },
     });
     if (!registermeter) throw new NotFoundException('registermeter not found');
-
-    if (registermeter.billNearImg) {
-      await deleteFileIfExists('registermeter', registermeter.billNearImg);
-    }
-    if (registermeter.idcardImg) {
-      await deleteFileIfExists('registermeter', registermeter.idcardImg);
-    }
 
     await tx.userAcceptMeter.deleteMany({
       where: { meterId: id },
@@ -44,8 +37,18 @@ export async function removeRegisterMeter(prisma: PrismaService, id: number) {
     });
 
     return {
-      statusCode: HttpStatus.OK,
-      message: 'registermeter deleted successfully',
+      billNearImg: registermeter.billNearImg,
+      idcardImg: registermeter.idcardImg,
     };
   });
+
+  await Promise.all([
+    deleteFileIfExists('registermeter', filesToDelete.billNearImg),
+    deleteFileIfExists('registermeter', filesToDelete.idcardImg),
+  ]);
+
+  return {
+    statusCode: HttpStatus.OK,
+    message: 'registermeter deleted successfully',
+  };
 }

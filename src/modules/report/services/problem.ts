@@ -56,9 +56,6 @@ export async function problemReport(
     if (user.branchId) {
       where.branchId = Number(user.branchId);
     }
-    if (options.provinceId) {
-      where.provinceId = Number(options.provinceId);
-    }
     if (options.districtId) {
       where.districtId = Number(options.districtId);
     }
@@ -66,17 +63,13 @@ export async function problemReport(
       where.villageId = Number(options.villageId);
     }
   } else if (user?.roleId === 6) {
-    if (user.branchId) {
-      where.branchId = Number(user.branchId);
-    }
+    where.parentProblemId = null;
     if (user.repairDistrictId) {
       where.repairDistrictId = Number(user.repairDistrictId);
-    }
-    if (options.provinceId) {
-      where.provinceId = Number(options.provinceId);
-    }
-    if (options.districtId) {
-      where.districtId = Number(options.districtId);
+    } else if (user.branchId) {
+      where.branchId = Number(user.branchId);
+    } else {
+      where.repairDistrictId = -1;
     }
     if (options.villageId) {
       where.villageId = Number(options.villageId);

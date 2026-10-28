@@ -2,6 +2,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { AuthUser } from '../../../interfaces/auth-user.interface';
 import { UpdateReceiverDto } from '../dto/update-receiver.dto';
 import { sendFCM } from '../../../fcm/fcm.service';
+import { NotFoundException } from '@nestjs/common';
 
 export async function updateAssign(
   prisma: PrismaService,
@@ -10,15 +11,16 @@ export async function updateAssign(
   updateReceiverDto: UpdateReceiverDto,
 ) {
   const result = await prisma.$transaction(async (tx) => {
+    const targetProblemId = Number(id);
     const findProblemDoc = await tx.problemDoc.findUnique({
-      where: { id },
+      where: { id: targetProblemId },
       select: {
         createdAt: true,
       },
     });
 
     if (!findProblemDoc) {
-      throw new Error('Problem is not found');
+      throw new NotFoundException('Problem is not found');
     }
 
     const now = new Date();
@@ -26,19 +28,20 @@ export async function updateAssign(
     const diffMs = now.getTime() - createdAt.getTime();
     const sendTime = Math.floor(diffMs / (1000 * 60));
 
+    const branchIdVal = user.branchId ? Number(user.branchId) : undefined;
+    const repairDistrictIdVal = updateReceiverDto.repairDistrictId
+      ? Number(updateReceiverDto.repairDistrictId)
+      : undefined;
+
     // 1. Update the problemstatusId in the ProblemDoc table
     const updatedProblemDoc = await tx.problemDoc.update({
-      where: { id },
+      where: { id: targetProblemId },
       data: {
         problemstatusId: updateReceiverDto.problemstatusId
           ? Number(updateReceiverDto.problemstatusId)
           : undefined,
-        branchId: updateReceiverDto.branchId
-          ? Number(updateReceiverDto.branchId)
-          : undefined,
-        repairDistrictId: updateReceiverDto.repairDistrictId
-          ? Number(updateReceiverDto.repairDistrictId)
-          : undefined,
+        branchId: branchIdVal,
+        repairDistrictId: repairDistrictIdVal,
       },
       include: {
         problemtype: true,
@@ -46,10 +49,29 @@ export async function updateAssign(
       },
     });
 
-    // 2. Create the ProblemAssign record
-    const assign = await tx.problemAssign.update({
-      where: { problemId: Number(id) },
-      data: {
+    // Propagate branchId & repairDistrictId to linked duplicate problems if any
+    if (branchIdVal || repairDistrictIdVal) {
+      await tx.problemDoc.updateMany({
+        where: { parentProblemId: targetProblemId },
+        data: {
+          ...(branchIdVal ? { branchId: branchIdVal } : {}),
+          ...(repairDistrictIdVal
+            ? { repairDistrictId: repairDistrictIdVal }
+            : {}),
+        },
+      });
+    }
+
+    // 2. Upsert the ProblemAssign record
+    const assign = await tx.problemAssign.upsert({
+      where: { problemId: targetProblemId },
+      update: {
+        userSendId: user.id,
+        sendAt: now,
+        sendTime: sendTime > 0 ? sendTime : 0,
+      },
+      create: {
+        problemId: targetProblemId,
         userSendId: user.id,
         sendAt: now,
         sendTime: sendTime > 0 ? sendTime : 0,

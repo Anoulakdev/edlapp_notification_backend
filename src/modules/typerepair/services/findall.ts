@@ -1,7 +1,7 @@
 import { PrismaService } from '../../../prisma/prisma.service';
 
-export async function findAllTypeUnit(prisma: PrismaService) {
-  return prisma.typeUnit.findMany({
+export async function findAllTypeRepair(prisma: PrismaService) {
+  return prisma.typeRepair.findMany({
     orderBy: {
       id: 'asc',
     },

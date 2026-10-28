@@ -56,7 +56,6 @@ model User {
   branchs          Branch[]          @relation("userBranch")
   repairDistricts  RepairDistrict[]  @relation("userRepairDistrict")
   agentRatings     AgentRating[]     @relation("AgentRatings")
-  typeEquipments   TypeEquipment[]
   equipments       Equipment[]
   activities       Activity[]
 
@@ -248,6 +247,7 @@ model Branch {
   repairDistricts RepairDistrict[]
   users           User[]
   problemDocs     ProblemDoc[]
+  equipments      Equipment[]
 }
 
 model RepairDistrict {
@@ -632,6 +632,8 @@ model Message {
 
   @@index([conversationId, createdAt])
   @@index([conversationId, deletedAt, createdAt])
+  @@index([agentId, createdAt])
+  @@index([createdAt])
 }
 
 model MessageAuto {
@@ -664,69 +666,62 @@ model ProblemStatus {
   problemdocs ProblemDoc[]
 }
 
-model TypeEquipment {
-  id                Int                @id @default(autoincrement())
-  name              String             @db.VarChar(255)
-  code              String?            @db.VarChar(255)
-  actived           Boolean            @default(true)
-  createdById       Int
-  createdBy         User               @relation(fields: [createdById], references: [id])
-  createdAt         DateTime           @default(now()) @db.Timestamptz(0)
-  updatedAt         DateTime           @updatedAt @db.Timestamptz(0)
-  equipments        Equipment[]
-  problemEquipments ProblemEquipment[]
-}
-
 model Equipment {
   id                Int                @id @default(autoincrement())
-  typeEquipmentId   Int
-  typeEquipment     TypeEquipment      @relation(fields: [typeEquipmentId], references: [id])
+  branchId          Int
+  branch            Branch             @relation(fields: [branchId], references: [id])
   name              String             @db.VarChar(255)
+  unit              String             @db.VarChar(255)
   actived           Boolean            @default(true)
   createdById       Int
   createdBy         User               @relation(fields: [createdById], references: [id])
   createdAt         DateTime           @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime           @updatedAt @db.Timestamptz(0)
   problemEquipments ProblemEquipment[]
+
+  @@index([branchId])
 }
 
-model TypeUnit {
-  id                Int                @id @default(autoincrement())
-  name              String             @db.VarChar(255)
-  actived           Boolean            @default(true)
-  createdAt         DateTime           @default(now()) @db.Timestamptz(0)
-  updatedAt         DateTime           @updatedAt @db.Timestamptz(0)
-  problemEquipments ProblemEquipment[]
+model TypeRepair {
+  id             Int             @id @default(autoincrement())
+  name           String          @db.VarChar(255)
+  actived        Boolean         @default(true)
+  createdAt      DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(0)
+  problemAssigns ProblemAssign[]
 }
 
 model ProblemDoc {
-  id               Int             @id @default(autoincrement())
-  problemtypeId    Int
-  problemtype      ProblemType     @relation(fields: [problemtypeId], references: [id])
-  fullName         String          @db.VarChar(255)
-  description      String?         @db.VarChar(255)
-  tel              String          @db.VarChar(255)
-  lat              Float
-  lng              Float
-  problemImg       String?         @db.VarChar(255)
-  provinceId       Int
-  province         Province        @relation(fields: [provinceId], references: [id])
-  districtId       Int
-  district         District        @relation(fields: [districtId], references: [id])
-  villageId        Int
-  village          Village         @relation(fields: [villageId], references: [id])
-  branchId         Int?
-  branch           Branch?         @relation(fields: [branchId], references: [id])
-  repairDistrictId Int?
-  repairDistrict   RepairDistrict? @relation(fields: [repairDistrictId], references: [id])
-  problemstatusId  Int             @default(1)
-  problemstatus    ProblemStatus   @relation(fields: [problemstatusId], references: [id])
-  sourcetypeId     Int
-  sourcetype       SourceType      @relation(fields: [sourcetypeId], references: [id])
-  createdById      Int
-  createdAt        DateTime        @default(now()) @db.Timestamptz(0)
-  updatedAt        DateTime        @updatedAt @db.Timestamptz(0)
-  problemAssigns   ProblemAssign?
+  id                Int             @id @default(autoincrement())
+  problemtypeId     Int
+  problemtype       ProblemType     @relation(fields: [problemtypeId], references: [id])
+  fullName          String          @db.VarChar(255)
+  description       String?         @db.VarChar(255)
+  tel               String          @db.VarChar(255)
+  lat               Float
+  lng               Float
+  problemImg        String?         @db.VarChar(255)
+  provinceId        Int
+  province          Province        @relation(fields: [provinceId], references: [id])
+  districtId        Int
+  district          District        @relation(fields: [districtId], references: [id])
+  villageId         Int
+  village           Village         @relation(fields: [villageId], references: [id])
+  branchId          Int?
+  branch            Branch?         @relation(fields: [branchId], references: [id])
+  repairDistrictId  Int?
+  repairDistrict    RepairDistrict? @relation(fields: [repairDistrictId], references: [id])
+  problemstatusId   Int             @default(1)
+  problemstatus     ProblemStatus   @relation(fields: [problemstatusId], references: [id])
+  sourcetypeId      Int
+  sourcetype        SourceType      @relation(fields: [sourcetypeId], references: [id])
+  createdById       Int
+  createdAt         DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime        @updatedAt @db.Timestamptz(0)
+  parentProblemId   Int?
+  parentProblem     ProblemDoc?     @relation("DuplicateProblems", fields: [parentProblemId], references: [id])
+  duplicateProblems ProblemDoc[]    @relation("DuplicateProblems")
+  problemAssigns    ProblemAssign?
 
   @@index([problemtypeId])
   @@index([problemstatusId])
@@ -738,6 +733,9 @@ model ProblemDoc {
   @@index([villageId])
   @@index([createdById])
   @@index([createdAt])
+  @@index([parentProblemId])
+  @@index([provinceId, problemstatusId])
+  @@index([branchId, createdAt])
 }
 
 model ProblemAssign {
@@ -759,41 +757,43 @@ model ProblemAssign {
   commentText       String?            @db.VarChar(255)
   commentAudio      String?            @db.VarChar(255)
   commentImg        String?            @db.VarChar(255)
+  voltageId         Int?
+  voltage           Voltage?           @relation(fields: [voltageId], references: [id])
+  typeRepairId      Int?
+  typeRepair        TypeRepair?        @relation(fields: [typeRepairId], references: [id])
+  carRepair         Boolean            @default(false)
   problemEquipments ProblemEquipment[]
 
   @@index([userSendId])
   @@index([userReceiverId])
   @@index([userActiveId])
+  @@index([voltageId])
+  @@index([typeRepairId])
 }
 
 model ProblemEquipment {
   id              Int           @id @default(autoincrement())
   problemAssignId Int
   problemAssign   ProblemAssign @relation(fields: [problemAssignId], references: [id])
-  typeEquipmentId Int
-  typeEquipment   TypeEquipment @relation(fields: [typeEquipmentId], references: [id])
   equipmentId     Int
   equipment       Equipment     @relation(fields: [equipmentId], references: [id])
   amount          Int
-  typeUnitId      Int
-  typeUnit        TypeUnit      @relation(fields: [typeUnitId], references: [id])
   comment         String?       @db.Text
 
   @@index([problemAssignId])
-  @@index([typeEquipmentId])
   @@index([equipmentId])
-  @@index([typeUnitId])
 }
 
 model Voltage {
-  id            Int            @id @default(autoincrement())
-  name          String         @db.VarChar(255)
-  actived       Boolean        @default(true)
-  createdAt     DateTime       @default(now()) @db.Timestamptz(0)
-  updatedAt     DateTime       @updatedAt @db.Timestamptz(0)
-  turnoffDocs   TurnoffDoc[]
-  emergencyDocs EmergencyDoc[]
-  cutpowerDocs  CutpowerDoc[]
+  id             Int             @id @default(autoincrement())
+  name           String          @db.VarChar(255)
+  actived        Boolean         @default(true)
+  createdAt      DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(0)
+  turnoffDocs    TurnoffDoc[]
+  emergencyDocs  EmergencyDoc[]
+  cutpowerDocs   CutpowerDoc[]
+  problemAssigns ProblemAssign[]
 }
 
 model Activity {
@@ -809,4 +809,8 @@ model Activity {
   createdBy    User     @relation(fields: [createdById], references: [id])
   createdAt    DateTime @default(now()) @db.Timestamptz(0)
   updatedAt    DateTime @updatedAt @db.Timestamptz(0)
+
+  @@index([startDate])
+  @@index([endDate])
+  @@index([createdById])
 }

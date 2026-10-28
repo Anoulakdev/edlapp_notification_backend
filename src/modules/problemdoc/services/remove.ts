@@ -22,7 +22,7 @@ async function deleteFileIfExists(
 }
 
 export async function removeProblemDoc(prisma: PrismaService, id: number) {
-  return await prisma.$transaction(async (tx) => {
+  const filesToDelete = await prisma.$transaction(async (tx) => {
     const problemdoc = await tx.problemDoc.findUnique({
       where: { id },
       include: {
@@ -36,11 +36,12 @@ export async function removeProblemDoc(prisma: PrismaService, id: number) {
       await tx.problemEquipment.deleteMany({
         where: { problemAssignId: assign.id },
       });
-      await deleteFileIfExists('audio', assign.commentAudio);
-      await deleteFileIfExists('comment', assign.commentImg);
     }
 
-    await deleteFileIfExists('problem', problemdoc.problemImg);
+    await tx.problemDoc.updateMany({
+      where: { parentProblemId: id },
+      data: { parentProblemId: null },
+    });
 
     await tx.problemAssign.deleteMany({
       where: { problemId: id },
@@ -51,8 +52,20 @@ export async function removeProblemDoc(prisma: PrismaService, id: number) {
     });
 
     return {
-      statusCode: HttpStatus.OK,
-      message: 'problemDoc deleted successfully',
+      commentAudio: assign?.commentAudio,
+      commentImg: assign?.commentImg,
+      problemImg: problemdoc.problemImg,
     };
   });
+
+  await Promise.all([
+    deleteFileIfExists('audio', filesToDelete.commentAudio),
+    deleteFileIfExists('comment', filesToDelete.commentImg),
+    deleteFileIfExists('problem', filesToDelete.problemImg),
+  ]);
+
+  return {
+    statusCode: HttpStatus.OK,
+    message: 'problemDoc deleted successfully',
+  };
 }

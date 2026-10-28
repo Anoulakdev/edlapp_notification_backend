@@ -5,11 +5,6 @@ export class ProblemEquipmentItemDto {
   @Type(() => Number)
   @IsInt()
   @IsNotEmpty()
-  typeEquipmentId: number;
-
-  @Type(() => Number)
-  @IsInt()
-  @IsNotEmpty()
   equipmentId: number;
 
   @Type(() => Number)
@@ -17,11 +12,6 @@ export class ProblemEquipmentItemDto {
   @Min(1)
   @IsNotEmpty()
   amount: number;
-
-  @Type(() => Number)
-  @IsInt()
-  @IsNotEmpty()
-  typeUnitId: number;
 
   @IsString()
   @IsOptional()

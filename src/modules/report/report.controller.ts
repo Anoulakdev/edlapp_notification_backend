@@ -108,6 +108,68 @@ export class ReportController {
     });
   }
 
+  @Get('equipmentdata')
+  @Roles(2, 3, 4, 5, 6)
+  equipmentDataReport(
+    @Req() req: UserRequest,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('provinceId') provinceId?: number,
+    @Query('districtId') districtId?: number,
+    @Query('villageId') villageId?: number,
+    @Query('problemtypeId') problemtypeId?: number,
+    @Query('problemstatusId') problemstatusId?: number,
+    @Query('sourcetypeId') sourcetypeId?: number,
+    @Query('voltageId') voltageId?: number,
+    @Query('typeRepairId') typeRepairId?: number,
+  ) {
+    return this.reportService.equipmentDataReport(req.user, {
+      page,
+      limit,
+      startDate,
+      endDate,
+      provinceId,
+      districtId,
+      villageId,
+      problemtypeId,
+      problemstatusId,
+      sourcetypeId,
+      voltageId,
+      typeRepairId,
+    });
+  }
+
+  @Get('equipmentcount')
+  @Roles(2, 3, 4, 5, 6)
+  equipmentCountReport(
+    @Req() req: UserRequest,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('provinceId') provinceId?: number,
+    @Query('districtId') districtId?: number,
+    @Query('villageId') villageId?: number,
+    @Query('problemtypeId') problemtypeId?: number,
+    @Query('problemstatusId') problemstatusId?: number,
+    @Query('sourcetypeId') sourcetypeId?: number,
+    @Query('voltageId') voltageId?: number,
+    @Query('typeRepairId') typeRepairId?: number,
+  ) {
+    return this.reportService.equipmentCountReport(req.user, {
+      startDate,
+      endDate,
+      provinceId,
+      districtId,
+      villageId,
+      problemtypeId,
+      problemstatusId,
+      sourcetypeId,
+      voltageId,
+      typeRepairId,
+    });
+  }
+
   @Get('registermeter')
   @Roles(2, 3, 4, 5, 6)
   registermeterReport(

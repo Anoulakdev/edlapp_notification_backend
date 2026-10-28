@@ -74,6 +74,16 @@ export async function findAllActivity(
     },
   };
 
+  const mapActivityItem = (activity: any) => ({
+    ...activity,
+    startDate: moment(activity.startDate)
+      .tz('Asia/Vientiane')
+      .format('YYYY-MM-DD'),
+    endDate: moment(activity.endDate).tz('Asia/Vientiane').format('YYYY-MM-DD'),
+    createdAt: moment(activity.createdAt).tz('Asia/Vientiane').format(),
+    updatedAt: moment(activity.updatedAt).tz('Asia/Vientiane').format(),
+  });
+
   if (page !== undefined && limit !== undefined) {
     const skip = (page - 1) * limit;
     const take = limit;
@@ -82,7 +92,7 @@ export async function findAllActivity(
       prisma.activity.findMany({
         where,
         orderBy: {
-          id: 'desc',
+          startDate: 'desc',
         },
         include,
         skip,
@@ -93,18 +103,8 @@ export async function findAllActivity(
 
     const totalPages = Math.ceil(total / limit);
 
-    const mappedData = data.map((activity) => {
-      return {
-        ...activity,
-        startDate: moment(activity.startDate).format('YYYY-MM-DD'),
-        endDate: moment(activity.endDate).format('YYYY-MM-DD'),
-        createdAt: moment(activity.createdAt).tz('Asia/Vientiane').format(),
-        updatedAt: moment(activity.updatedAt).tz('Asia/Vientiane').format(),
-      };
-    });
-
     return {
-      data: mappedData,
+      data: data.map(mapActivityItem),
       total,
       page,
       limit,
@@ -115,18 +115,10 @@ export async function findAllActivity(
   const activities = await prisma.activity.findMany({
     where,
     orderBy: {
-      id: 'desc',
+      startDate: 'desc',
     },
     include,
   });
 
-  return activities.map((activity) => {
-    return {
-      ...activity,
-      startDate: moment(activity.startDate).format('YYYY-MM-DD'),
-      endDate: moment(activity.endDate).format('YYYY-MM-DD'),
-      createdAt: moment(activity.createdAt).tz('Asia/Vientiane').format(),
-      updatedAt: moment(activity.updatedAt).tz('Asia/Vientiane').format(),
-    };
-  });
+  return activities.map(mapActivityItem);
 }

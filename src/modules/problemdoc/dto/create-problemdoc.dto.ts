@@ -58,4 +58,9 @@ export class CreateProblemdocDto {
   @IsInt()
   @IsOptional()
   createdById?: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  parentProblemId?: number;
 }

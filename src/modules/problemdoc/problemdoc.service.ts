@@ -19,6 +19,8 @@ import { problemDocEdlApp, ProblemDocEdlAppOptions } from './services/edlapp';
 import { updateReceiver } from './services/updatereceive';
 import { updateRepair } from './services/repair';
 import { updateStatus } from './services/updateStatus';
+import { updateParentProblem } from './services/updateParentProblem';
+import { countProblem } from './services/countProblem';
 import { ProblemdocGateway } from './problemdoc.gateway';
 
 @Injectable()
@@ -55,6 +57,10 @@ export class ProblemdocService {
 
   async findAll(user: AuthUser, options?: FindAllProblemDocOptions) {
     return await FindAllProblemDoc(this.prisma, user, options);
+  }
+
+  async countProblem(user: AuthUser) {
+    return await countProblem(this.prisma, user);
   }
 
   async EDLAPP(userAppId: number, options?: ProblemDocEdlAppOptions) {
@@ -98,6 +104,16 @@ export class ProblemdocService {
 
   async updateStatus(id: number, updateReceiverDto: UpdateReceiverDto) {
     const result = await updateStatus(this.prisma, id, updateReceiverDto);
+    this.triggerRefresh();
+    return result;
+  }
+
+  async updateParentProblem(id: number, updateReceiverDto: UpdateReceiverDto) {
+    const result = await updateParentProblem(
+      this.prisma,
+      id,
+      updateReceiverDto,
+    );
     this.triggerRefresh();
     return result;
   }

@@ -1,21 +1,22 @@
 import { PrismaService } from '../../../prisma/prisma.service';
 import { Prisma } from '../../../../generated/prisma/client';
+import { AuthUser } from '../../../interfaces/auth-user.interface';
 
 export interface FindAllEquipmentOptions {
   page?: number;
   limit?: number;
   search?: string;
-  typeEquipmentId?: number;
 }
 
 export async function findAllEquipment(
   prisma: PrismaService,
+  user: AuthUser,
   options: FindAllEquipmentOptions = {},
 ) {
   const where: Prisma.EquipmentWhereInput = {};
 
-  if (options.typeEquipmentId) {
-    where.typeEquipmentId = Number(options.typeEquipmentId);
+  if (user?.branchId) {
+    where.branchId = Number(user.branchId);
   }
 
   if (options.search) {
@@ -23,11 +24,7 @@ export async function findAllEquipment(
     if (searchTrimmed) {
       const searchOr: Prisma.EquipmentWhereInput[] = [
         { name: { contains: searchTrimmed, mode: 'insensitive' } },
-        {
-          typeEquipment: {
-            name: { contains: searchTrimmed, mode: 'insensitive' },
-          },
-        },
+        { unit: { contains: searchTrimmed, mode: 'insensitive' } },
       ];
       const searchNum = Number(searchTrimmed);
       if (!isNaN(searchNum)) {
@@ -41,7 +38,12 @@ export async function findAllEquipment(
   const limit = options.limit ? Number(options.limit) : undefined;
 
   const include = {
-    typeEquipment: true,
+    branch: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
     createdBy: {
       select: {
         id: true,
@@ -59,7 +61,7 @@ export async function findAllEquipment(
   };
 
   const orderBy: Prisma.EquipmentOrderByWithRelationInput = {
-    id: 'desc',
+    id: 'asc',
   };
 
   if (page !== undefined && limit !== undefined) {

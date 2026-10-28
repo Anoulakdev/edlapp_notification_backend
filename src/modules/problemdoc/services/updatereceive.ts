@@ -1,6 +1,7 @@
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuthUser } from '../../../interfaces/auth-user.interface';
 import { UpdateReceiverDto } from '../dto/update-receiver.dto';
+import { NotFoundException } from '@nestjs/common';
 
 export async function updateReceiver(
   prisma: PrismaService,
@@ -18,13 +19,15 @@ export async function updateReceiver(
     });
 
     if (!findProblemAssign) {
-      throw new Error('ProblemAssign is not found');
+      throw new NotFoundException('ProblemAssign is not found');
     }
 
     const now = new Date();
-    const sendAt = new Date(findProblemAssign.sendAt!);
-    const diffMs = now.getTime() - sendAt.getTime();
-    const receiveTime = Math.floor(diffMs / (1000 * 60));
+    const sendAt = findProblemAssign.sendAt
+      ? new Date(findProblemAssign.sendAt)
+      : null;
+    const diffMs = sendAt ? now.getTime() - sendAt.getTime() : 0;
+    const receiveTime = diffMs > 0 ? Math.floor(diffMs / (1000 * 60)) : 0;
 
     if (
       updateReceiverDto.problemstatusId !== undefined &&

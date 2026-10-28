@@ -12,6 +12,7 @@ import {
   UploadedFiles,
   UseGuards,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ProblemdocService } from './problemdoc.service';
 import { CreateProblemdocDto } from './dto/create-problemdoc.dto';
@@ -53,7 +54,7 @@ export class ProblemdocController {
   }
 
   @Post('assign')
-  @Roles(3)
+  @Roles(5)
   createAssign(
     @Req() req: UserRequest,
     @Body() createReceiverDto: CreateReceiverDto,
@@ -75,6 +76,7 @@ export class ProblemdocController {
     @Query('provinceId') provinceId?: number,
     @Query('districtId') districtId?: number,
     @Query('villageId') villageId?: number,
+    @Query('parentProblemId') parentProblemId?: number,
     @Query('filterMyDocs') filterMyDocs?: string,
   ) {
     return this.problemdocService.findAll(req.user, {
@@ -88,8 +90,15 @@ export class ProblemdocController {
       provinceId,
       districtId,
       villageId,
+      parentProblemId,
       filterMyDocs: filterMyDocs === 'true' || filterMyDocs === '1',
     });
+  }
+
+  @Get('countproblem')
+  @Roles(5, 6)
+  countProblem(@Req() req: UserRequest) {
+    return this.problemdocService.countProblem(req.user);
   }
 
   @Get('edlapp')
@@ -108,34 +117,34 @@ export class ProblemdocController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.problemdocService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.problemdocService.findOne(id);
   }
 
   @Put(':id')
   @UseInterceptors(FileInterceptor('problemImg', multerConfig('problem')))
   @Roles(4, 7)
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @UploadedFile() problemImg: Express.Multer.File,
     @Body() updateProblemdocDto: UpdateProblemdocDto,
   ) {
     if (problemImg) {
       updateProblemdocDto.problemImg = problemImg.filename;
     }
-    return this.problemdocService.update(+id, updateProblemdocDto);
+    return this.problemdocService.update(id, updateProblemdocDto);
   }
 
   @Put('updateassign/:id')
-  @Roles(3)
+  @Roles(5)
   updateAssign(
     @Req() req: UserRequest,
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateReceiverDto: UpdateReceiverDto,
   ) {
     return this.problemdocService.updateAssign(
       req.user,
-      +id,
+      id,
       updateReceiverDto,
     );
   }
@@ -144,23 +153,32 @@ export class ProblemdocController {
   @Roles(6)
   updateReceiver(
     @Req() req: UserRequest,
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateReceiverDto: UpdateReceiverDto,
   ) {
     return this.problemdocService.updateReceiver(
       req.user,
-      +id,
+      id,
       updateReceiverDto,
     );
   }
 
   @Put('updatestatus/:id')
-  @Roles(3)
+  @Roles(5)
   updateStatus(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateReceiverDto: UpdateReceiverDto,
   ) {
-    return this.problemdocService.updateStatus(+id, updateReceiverDto);
+    return this.problemdocService.updateStatus(id, updateReceiverDto);
+  }
+
+  @Put('updateparentproblem/:id')
+  @Roles(5)
+  updateParentProblem(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateReceiverDto: UpdateReceiverDto,
+  ) {
+    return this.problemdocService.updateParentProblem(id, updateReceiverDto);
   }
 
   @Put('repair/:id')
@@ -176,7 +194,7 @@ export class ProblemdocController {
   @Roles(6)
   updateRepair(
     @Req() req: UserRequest,
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @UploadedFiles()
     files: {
       commentAudio?: Express.Multer.File[];
@@ -192,14 +210,14 @@ export class ProblemdocController {
     }
     return this.problemdocService.updateRepair(
       req.user,
-      +id,
+      id,
       updateReceiverDto,
     );
   }
 
   @Delete(':id')
   @Roles(4, 7)
-  remove(@Param('id') id: string) {
-    return this.problemdocService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.problemdocService.remove(id);
   }
 }

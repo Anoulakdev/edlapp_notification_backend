@@ -15,16 +15,16 @@ import { updateStatus } from './services/updateStatus';
 export class EquipmentService {
   constructor(private prisma: PrismaService) {}
 
-  create(authUser: AuthUser, createEquipmentDto: CreateEquipmentDto) {
-    return createEquipment(this.prisma, authUser, createEquipmentDto);
+  create(user: AuthUser, createEquipmentDto: CreateEquipmentDto) {
+    return createEquipment(this.prisma, user, createEquipmentDto);
   }
 
-  findAll(options: FindAllEquipmentOptions = {}) {
-    return findAllEquipment(this.prisma, options);
+  findAll(user: AuthUser, options: FindAllEquipmentOptions = {}) {
+    return findAllEquipment(this.prisma, user, options);
   }
 
-  selectEquipment(typeEquipmentId?: number) {
-    return selectEquipment(this.prisma, typeEquipmentId);
+  selectEquipment(user: AuthUser) {
+    return selectEquipment(this.prisma, user);
   }
 
   findOne(id: number) {
