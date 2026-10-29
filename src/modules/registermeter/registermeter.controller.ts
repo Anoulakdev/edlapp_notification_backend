@@ -95,7 +95,7 @@ export class RegistermeterController {
   }
 
   @Get('countmeter')
-  @Roles(1, 2, 3, 4, 5, 6)
+  @Roles(2, 3, 5, 6)
   countMeter(@Req() req: UserRequest) {
     return this.registermeterService.countMeter(req.user);
   }
