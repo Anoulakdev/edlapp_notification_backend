@@ -10,7 +10,7 @@ export class BsController {
   constructor(private readonly bsService: BsService) {}
 
   @Get()
-  @Roles(2, 3, 4)
+  @Roles(2, 3, 4, 9, 10)
   findAll(
     @Query('provinceId') provinceId: number,
     @Query('accountNo') accountNo: string,
