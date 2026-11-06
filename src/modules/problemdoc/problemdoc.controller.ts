@@ -125,6 +125,7 @@ export class ProblemdocController {
   @UseInterceptors(FileInterceptor('problemImg', multerConfig('problem')))
   @Roles(4, 7)
   update(
+    @Req() req: UserRequest,
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile() problemImg: Express.Multer.File,
     @Body() updateProblemdocDto: UpdateProblemdocDto,
@@ -132,7 +133,7 @@ export class ProblemdocController {
     if (problemImg) {
       updateProblemdocDto.problemImg = problemImg.filename;
     }
-    return this.problemdocService.update(id, updateProblemdocDto);
+    return this.problemdocService.update(req.user, id, updateProblemdocDto);
   }
 
   @Put('updateassign/:id')
@@ -217,7 +218,10 @@ export class ProblemdocController {
 
   @Delete(':id')
   @Roles(4, 7)
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.problemdocService.remove(id);
+  remove(
+    @Req() req: UserRequest,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.problemdocService.remove(req.user, id);
   }
 }

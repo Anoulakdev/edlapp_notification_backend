@@ -1,11 +1,13 @@
 import { PrismaService } from '../../../prisma/prisma.service';
 import { UpdateProblemdocDto } from '../dto/update-problemdoc.dto';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { AuthUser } from '../../../interfaces/auth-user.interface';
 import * as fs from 'fs';
 import * as path from 'path';
 
 export async function updateProblemDoc(
   prisma: PrismaService,
+  user: AuthUser,
   id: number,
   updateProblemdocDto: UpdateProblemdocDto,
 ) {
@@ -13,6 +15,12 @@ export async function updateProblemDoc(
     where: { id },
   });
   if (!problemdoc) throw new NotFoundException('problemDoc not found');
+
+  if (user.roleId === 7 && problemdoc.createdById !== user.id) {
+    throw new ForbiddenException(
+      'You do not have permission to edit this document',
+    );
+  }
 
   const oldFile = problemdoc.problemImg || '';
   const hasNewFile = Boolean(

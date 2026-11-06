@@ -71,8 +71,17 @@ export class ProblemdocService {
     return await findOneProblemDoc(this.prisma, id);
   }
 
-  async update(id: number, updateProblemdocDto: UpdateProblemdocDto) {
-    const result = await updateProblemDoc(this.prisma, id, updateProblemdocDto);
+  async update(
+    user: AuthUser,
+    id: number,
+    updateProblemdocDto: UpdateProblemdocDto,
+  ) {
+    const result = await updateProblemDoc(
+      this.prisma,
+      user,
+      id,
+      updateProblemdocDto,
+    );
     this.triggerRefresh();
     return result;
   }
@@ -128,8 +137,8 @@ export class ProblemdocService {
     return result;
   }
 
-  async remove(id: number) {
-    const result = await removeProblemDoc(this.prisma, id);
+  async remove(user: AuthUser, id: number) {
+    const result = await removeProblemDoc(this.prisma, user, id);
     this.triggerRefresh();
     return result;
   }

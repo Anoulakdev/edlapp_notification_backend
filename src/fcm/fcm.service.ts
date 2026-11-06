@@ -49,7 +49,7 @@ export async function sendFCM(
   title: string,
   body: string,
   data?: Record<string, string>,
-  options?: { concurrency?: number; batchSize?: number },
+  options?: { concurrency?: number; batchSize?: number; badge?: number },
 ) {
   if (!tokens.length)
     return { totalSuccess: 0, totalFailure: 0, totalBatches: 0 };
@@ -95,6 +95,7 @@ export async function sendFCM(
             },
             payload: {
               aps: {
+                badge: options?.badge !== undefined ? options.badge : 1,
                 sound: 'default',
               },
             },

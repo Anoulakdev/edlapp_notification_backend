@@ -1,5 +1,10 @@
 import { PrismaService } from '../../../prisma/prisma.service';
-import { HttpStatus, NotFoundException } from '@nestjs/common';
+import {
+  HttpStatus,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
+import { AuthUser } from '../../../interfaces/auth-user.interface';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -21,7 +26,11 @@ async function deleteFileIfExists(
   }
 }
 
-export async function removeProblemDoc(prisma: PrismaService, id: number) {
+export async function removeProblemDoc(
+  prisma: PrismaService,
+  user: AuthUser,
+  id: number,
+) {
   const filesToDelete = await prisma.$transaction(async (tx) => {
     const problemdoc = await tx.problemDoc.findUnique({
       where: { id },
@@ -30,6 +39,12 @@ export async function removeProblemDoc(prisma: PrismaService, id: number) {
       },
     });
     if (!problemdoc) throw new NotFoundException('problemDoc not found');
+
+    if (user.roleId === 7 && problemdoc.createdById !== user.id) {
+      throw new ForbiddenException(
+        'You do not have permission to delete this document',
+      );
+    }
 
     const assign = problemdoc.problemAssigns;
     if (assign) {

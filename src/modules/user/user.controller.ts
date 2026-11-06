@@ -9,6 +9,7 @@ import {
   UseGuards,
   Query,
   Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { UserService } from './user.service';
@@ -79,9 +80,15 @@ export class UserController {
 
   @Put(':id/online-status')
   updateOnlineStatus(
+    @Req() req: UserRequest,
     @Param('id') id: string,
     @Body('isOnline') isOnline: boolean,
   ) {
+    if (req.user?.id !== +id && ![1, 2].includes(req.user?.roleId)) {
+      throw new ForbiddenException(
+        'You can only update your own online status',
+      );
+    }
     return this.userService.updateOnlineStatus(+id, isOnline);
   }
 

@@ -51,4 +51,7 @@ async function bootstrap() {
   const port = process.env.PORT || 4500;
   await app.listen(port);
 }
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('[Bootstrap] Fatal error during startup:', err);
+  process.exit(1);
+});

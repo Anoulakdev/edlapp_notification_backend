@@ -171,7 +171,7 @@ export class RegistermeterController {
 
   @Delete(':id')
   @Roles(2, 4, 7)
-  remove(@Param('id') id: string) {
-    return this.registermeterService.remove(+id);
+  remove(@Req() req: UserRequest, @Param('id') id: string) {
+    return this.registermeterService.remove(req.user, +id);
   }
 }

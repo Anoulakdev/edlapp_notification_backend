@@ -17,6 +17,12 @@ export class NotiController {
     return this.notiService.findAll(userAppId);
   }
 
+  @Get('count')
+  @Roles(7)
+  count(@Query('userAppId') userAppId: number) {
+    return this.notiService.count(userAppId);
+  }
+
   @Get('getall')
   @Roles(7)
   getAll(

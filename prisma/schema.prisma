@@ -336,6 +336,7 @@ model TurnoffAssign {
   @@index([turnoffId])
   @@index([userAppId])
   @@index([docview])
+  @@index([userAppId, docview])
 }
 
 model EmergencyStatus {
@@ -410,6 +411,7 @@ model EmergencyAssign {
   @@index([emergencyId])
   @@index([userAppId])
   @@index([docview])
+  @@index([userAppId, docview])
 }
 
 model CutpowerDoc {
@@ -465,6 +467,7 @@ model CutpowerAssign {
   @@index([cutpowerId])
   @@index([userAppId])
   @@index([docview])
+  @@index([userAppId, docview])
 }
 
 model SourceType {

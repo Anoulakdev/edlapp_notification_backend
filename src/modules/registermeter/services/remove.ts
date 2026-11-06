@@ -1,5 +1,10 @@
 import { PrismaService } from '../../../prisma/prisma.service';
-import { HttpStatus, NotFoundException } from '@nestjs/common';
+import {
+  HttpStatus,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
+import { AuthUser } from '../../../interfaces/auth-user.interface';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -21,12 +26,22 @@ async function deleteFileIfExists(
   }
 }
 
-export async function removeRegisterMeter(prisma: PrismaService, id: number) {
+export async function removeRegisterMeter(
+  prisma: PrismaService,
+  user: AuthUser,
+  id: number,
+) {
   const filesToDelete = await prisma.$transaction(async (tx) => {
     const registermeter = await tx.registerMeter.findUnique({
       where: { id },
     });
     if (!registermeter) throw new NotFoundException('registermeter not found');
+
+    if (user.roleId === 7 && registermeter.createdById !== user.id) {
+      throw new ForbiddenException(
+        'You do not have permission to delete this document',
+      );
+    }
 
     await tx.userAcceptMeter.deleteMany({
       where: { meterId: id },

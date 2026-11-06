@@ -119,6 +119,7 @@ export class ConversationController {
   }
 
   @Put(':id')
+  @Roles(2, 3, 4, 7)
   updateMessage(
     @Param('id') id: string,
     @Body() updateConversationDto: UpdateConversationDto,
@@ -151,6 +152,7 @@ export class ConversationController {
   }
 
   @Delete(':id')
+  @Roles(2, 3, 4, 7)
   remove(@Param('id') id: string) {
     return this.conversationService.remove(+id);
   }

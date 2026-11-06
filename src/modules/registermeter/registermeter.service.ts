@@ -101,8 +101,8 @@ export class RegistermeterService {
     return result;
   }
 
-  async remove(id: number) {
-    const result = await removeRegisterMeter(this.prisma, id);
+  async remove(user: AuthUser, id: number) {
+    const result = await removeRegisterMeter(this.prisma, user, id);
     this.triggerRefresh();
     return result;
   }

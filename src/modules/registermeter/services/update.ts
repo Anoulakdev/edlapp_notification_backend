@@ -1,6 +1,6 @@
 import { PrismaService } from '../../../prisma/prisma.service';
 import { UpdateRegistermeterDto } from '../dto/update-registermeter.dto';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AuthUser } from '../../../interfaces/auth-user.interface';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -15,6 +15,12 @@ export async function updateRegisterMeter(
     where: { id },
   });
   if (!registermeter) throw new NotFoundException('registerMeter not found');
+
+  if (user.roleId === 7 && registermeter.createdById !== user.id) {
+    throw new ForbiddenException(
+      'You do not have permission to edit this document',
+    );
+  }
 
   const oldBillImg = registermeter.billNearImg || '';
 

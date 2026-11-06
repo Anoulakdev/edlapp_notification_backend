@@ -1,8 +1,45 @@
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import * as fs from 'fs';
+import { BadRequestException } from '@nestjs/common';
+
+const DANGEROUS_EXTENSIONS = new Set([
+  '.exe',
+  '.bat',
+  '.cmd',
+  '.sh',
+  '.php',
+  '.phtml',
+  '.html',
+  '.htm',
+  '.js',
+  '.ts',
+  '.py',
+  '.jar',
+  '.vbs',
+  '.scr',
+]);
 
 export const multerConfig = (destination?: string) => ({
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100 MB max file size
+  },
+  fileFilter: (
+    _req: any,
+    file: Express.Multer.File,
+    callback: (error: Error | null, acceptFile: boolean) => void,
+  ) => {
+    const ext = extname(file.originalname).toLowerCase();
+    if (DANGEROUS_EXTENSIONS.has(ext)) {
+      return callback(
+        new BadRequestException(
+          `File extension ${ext} is not allowed for security reasons`,
+        ),
+        false,
+      );
+    }
+    callback(null, true);
+  },
   storage: diskStorage({
     destination: (req, file, callback) => {
       let dest = destination;

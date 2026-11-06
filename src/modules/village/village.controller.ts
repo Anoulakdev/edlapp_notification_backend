@@ -13,16 +13,19 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('villages')
 export class VillageController {
   constructor(private readonly villageService: VillageService) {}
 
   @Post()
+  @Roles(1)
   create() {
     return this.villageService.create();
   }
 
   @Get()
+  @Roles(1, 2, 3, 4, 5, 6, 7)
   findAll(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
@@ -37,7 +40,6 @@ export class VillageController {
     return this.villageService.selectVillage(districtCode);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('edlworker')
   @Roles(6)
   edlWorkerVillage(@Req() req: UserRequest) {
@@ -45,6 +47,7 @@ export class VillageController {
   }
 
   @Get(':id')
+  @Roles(1, 2, 3, 4, 5, 6, 7)
   findOne(@Param('id') id: string) {
     return this.villageService.findOne(+id);
   }
