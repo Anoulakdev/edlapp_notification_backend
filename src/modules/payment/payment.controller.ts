@@ -31,6 +31,7 @@ export class PaymentController {
     @Query('paymentDateFrom') paymentDateFrom?: string,
     @Query('paymentDateTo') paymentDateTo?: string,
     @Query('status') status?: string,
+    @Query('supplyDesc') supplyDesc?: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
   ) {
@@ -39,6 +40,7 @@ export class PaymentController {
       paymentDateFrom,
       paymentDateTo,
       status,
+      supplyDesc,
       page,
       pageSize,
     });
@@ -53,6 +55,7 @@ export class PaymentController {
     @Query('paymentDateFrom') paymentDateFrom?: string,
     @Query('paymentDateTo') paymentDateTo?: string,
     @Query('status') status?: string,
+    @Query('supplyDesc') supplyDesc?: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
   ) {
@@ -62,6 +65,7 @@ export class PaymentController {
       paymentDateFrom,
       paymentDateTo,
       status,
+      supplyDesc,
       page,
       pageSize,
     });

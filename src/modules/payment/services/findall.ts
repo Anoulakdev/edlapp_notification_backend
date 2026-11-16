@@ -9,6 +9,7 @@ export interface FindAllPaymentOptions {
   paymentDateFrom?: string;
   paymentDateTo?: string;
   status?: string;
+  supplyDesc?: string;
   page?: number;
   pageSize?: number;
 }
@@ -71,6 +72,10 @@ export async function findAllPayment(
       params.accountNo = query.accountNo;
     }
 
+    if (query.supplyDesc) {
+      params.supplyDesc = query.supplyDesc;
+    }
+
     const headers = {
       Authorization: `Bearer ${token}`,
     };
@@ -107,7 +112,7 @@ export async function findAllPayment(
           0,
         );
       } else {
-        const cacheKey = `${params.provinceId || ''}_${params.status || ''}_${params.paymentDateFrom || ''}_${params.paymentDateTo || ''}_${params.accountNo || ''}`;
+        const cacheKey = `${params.provinceId || ''}_${params.status || ''}_${params.paymentDateFrom || ''}_${params.paymentDateTo || ''}_${params.accountNo || ''}_${params.supplyDesc || ''}`;
         const now = Date.now();
         const cached = summaryCache.get(cacheKey);
 
@@ -129,6 +134,8 @@ export async function findAllPayment(
             if (params.paymentDateTo)
               baseFilterParams.paymentDateTo = params.paymentDateTo;
             if (params.accountNo) baseFilterParams.accountNo = params.accountNo;
+            if (params.supplyDesc)
+              baseFilterParams.supplyDesc = params.supplyDesc;
 
             let calculatedTotal = 0;
             const BATCH_SIZE = 10;
